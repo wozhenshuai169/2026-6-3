@@ -1,0 +1,13 @@
+[
+  {"segmentId":"segment_01","spotId":"main_hall","text":"大家现在看到的是主展厅，它位于景区中轴线的核心位置，也是理解整座古苑历史的起点。"},
+  {"segmentId":"segment_02","spotId":"main_hall","text":"主展厅始建于明代，清代修缮后保留了较完整的空间格局，所以我们能同时看到历史层次和地方工艺。"},
+  {"segmentId":"segment_03","spotId":"main_hall","text":"请抬头看屋顶，灰瓦、脊兽和木构件的组合，体现了本地传统建筑对礼制和实用性的平衡。"},
+  {"segmentId":"segment_04","spotId":"courtyard","text":"从主展厅出来后，我们会进入中心庭院，这里视野开阔，适合观察整组建筑的轴线关系。"},
+  {"segmentId":"segment_05","spotId":"bell_tower","text":"前方是钟楼，它不仅承担报时功能，也在游览动线中提示空间节奏的变化。"},
+  {"segmentId":"segment_06","spotId":"bell_tower","text":"钟楼的重檐结构和榫卯连接，是观察传统木构建筑受力方式的好位置。"},
+  {"segmentId":"segment_07","spotId":"drum_tower","text":"鼓楼与钟楼相对，形成一钟一鼓的格局，让这片空间具有更强的仪式感。"},
+  {"segmentId":"segment_08","spotId":"stone_gallery","text":"石刻长廊保存了多件碑刻复制件，文字内容能补充我们对地方修建历史的理解。"},
+  {"segmentId":"segment_09","spotId":"service_center","text":"游客服务中心提供咨询、失物登记和简易急救支持，也是团队集合时的重要辅助点。"},
+  {"segmentId":"segment_10","spotId":"east_gate","text":"东门靠近停车区，如果有行动不便的游客，后续可由团长确认是否在这里调整集合安排。"}
+]
+

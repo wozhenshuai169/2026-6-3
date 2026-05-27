@@ -1,0 +1,24 @@
+[
+  {"chunkId":"chunk_001","spotId":"main_hall","title":"主展厅历史介绍","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","history"],"content":"主展厅始建于明代，清代曾进行修缮，是景区保存较完整的礼制建筑。"},
+  {"chunkId":"chunk_002","spotId":"main_hall","title":"主展厅屋顶装饰","type":"spot","source":"灵境古苑建筑资料","updatedAt":"2026-05-01","routeIds":["classic","architecture"],"content":"主展厅屋顶采用灰瓦和脊兽装饰，体现本地传统木作与瓦作工艺。"},
+  {"chunkId":"chunk_003","spotId":"main_hall","title":"主展厅参观动线","type":"route","source":"景区路线说明","updatedAt":"2026-05-01","routeIds":["classic"],"content":"主展厅参观后可从右侧廊道前往钟楼，步行约三分钟。"},
+  {"chunkId":"chunk_004","spotId":"main_hall","title":"主展厅右侧休息区","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["classic"],"content":"最近的休息区在主展厅右侧出口附近，步行约120米，旁边有饮水点。"},
+  {"chunkId":"chunk_005","spotId":"bell_tower","title":"钟楼介绍","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","history"],"content":"钟楼位于中轴线北侧，曾用于报时和礼仪活动，是景区内保存较完整的传统建筑之一。"},
+  {"chunkId":"chunk_006","spotId":"bell_tower","title":"钟楼建筑结构","type":"spot","source":"灵境古苑建筑资料","updatedAt":"2026-05-01","routeIds":["architecture"],"content":"钟楼采用重檐结构，木构件连接处保留榫卯做法，适合观察传统建筑受力方式。"},
+  {"chunkId":"chunk_007","spotId":"bell_tower","title":"钟楼安全提示","type":"notice","source":"景区公告","updatedAt":"2026-05-01","routeIds":["classic"],"content":"钟楼台阶较窄，雨天或人流密集时应听从工作人员指引，不建议逆行。"},
+  {"chunkId":"chunk_008","spotId":"drum_tower","title":"鼓楼介绍","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","history"],"content":"鼓楼与钟楼相对，承担仪式提示和空间标识功能，形成一钟一鼓的传统格局。"},
+  {"chunkId":"chunk_009","spotId":"drum_tower","title":"鼓楼展陈","type":"spot","source":"展陈说明","updatedAt":"2026-05-01","routeIds":["history"],"content":"鼓楼内展示传统报时器具复制件，可帮助游客理解古代城市生活节奏。"},
+  {"chunkId":"chunk_010","spotId":"courtyard","title":"中心庭院","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","family"],"content":"中心庭院连接主展厅、钟楼和鼓楼，视野开阔，适合团队短暂停留和合影。"},
+  {"chunkId":"chunk_011","spotId":"courtyard","title":"庭院植被","type":"spot","source":"园林资料","updatedAt":"2026-05-01","routeIds":["family"],"content":"庭院种植银杏和海棠，春季看花，秋季看叶，是路线中节奏较舒缓的一段。"},
+  {"chunkId":"chunk_012","spotId":"stone_gallery","title":"石刻长廊","type":"spot","source":"文物资料","updatedAt":"2026-05-01","routeIds":["history","architecture"],"content":"石刻长廊保存多件碑刻复制件，内容涉及地方修建记录、捐资名单和诗文题记。"},
+  {"chunkId":"chunk_013","spotId":"stone_gallery","title":"石刻观赏方式","type":"spot","source":"讲解员手册","updatedAt":"2026-05-01","routeIds":["history"],"content":"观看石刻时可先看题额，再看正文布局，最后观察刻痕深浅和书体差异。"},
+  {"chunkId":"chunk_014","spotId":"service_center","title":"游客服务中心","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["classic","family"],"content":"游客服务中心提供咨询、失物登记、简易急救包和轮椅借用服务。"},
+  {"chunkId":"chunk_015","spotId":"service_center","title":"卫生间位置","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["classic","family"],"content":"卫生间位于游客服务中心东侧和主展厅右侧出口，两处均有清晰指示牌。"},
+  {"chunkId":"chunk_016","spotId":"east_gate","title":"东门出口","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["short"],"content":"东门出口靠近停车区，适合作为行动不便游客的提前集合点，但离队需团长确认。"},
+  {"chunkId":"chunk_017","spotId":"main_hall","title":"开放时间","type":"notice","source":"景区公告","updatedAt":"2026-05-01","routeIds":["classic","short","history"],"content":"景区常规开放时间为9:00至17:30，重大节假日以当日公告为准。"},
+  {"chunkId":"chunk_018","spotId":"courtyard","title":"人流提醒","type":"notice","source":"景区公告","updatedAt":"2026-05-01","routeIds":["classic"],"content":"中心庭院在上午10点至11点人流较集中，团队应靠右侧停留，避免堵塞主通道。"},
+  {"chunkId":"chunk_019","spotId":"bell_tower","title":"雨天路线提醒","type":"notice","source":"景区公告","updatedAt":"2026-05-01","routeIds":["short"],"content":"雨天可减少钟楼台阶停留时间，优先选择主展厅、庭院和服务中心的短线游览。"},
+  {"chunkId":"chunk_020","spotId":"main_hall","title":"儿童友好提示","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["family"],"content":"带儿童游客可在主展厅右侧领取亲子任务卡，路线以庭院和服务中心为主要停留点。"},
+  {"chunkId":"chunk_021","spotId":"bell_tower","title":"钟楼与鼓楼关系","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","history"],"content":"钟楼和鼓楼共同构成景区礼仪空间的节奏中心，一个偏报时，一个偏仪式提示。"}
+]
+

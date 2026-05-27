@@ -1,0 +1,18 @@
+[project]
+name = "ai-algorithm-service"
+version = "0.1.0"
+description = "AI Algorithm Service for group tour guide orchestration"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
