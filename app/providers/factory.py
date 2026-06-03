@@ -22,8 +22,8 @@ class ProviderFactory:
     @staticmethod
     def get_vision() -> VisionProvider:
         if settings.vision_enabled:
-            # 后续接入 Qwen-VL / GPT-4V 时在此分支
-            logger.warning("[Vision] Real provider not yet implemented, falling back to Mock")
+            from app.providers.vision.qwen_vl import QwenVLVisionProvider
+            return QwenVLVisionProvider()
         from app.providers.vision.mock import MockVisionProvider
         return MockVisionProvider()
 
