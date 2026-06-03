@@ -9,11 +9,13 @@ from app.schemas.rooms import (
     UpdateSpotRequest,
     UpdateSpotResponse,
 )
+from app.schemas.avatar import AvatarStateResponse
 from app.services.rooms import (
     create_room,
     get_room,
     join_room,
     update_current_spot,
+    get_avatar_state,
 )
 from app.services.users import get_user_by_token
 
@@ -62,3 +64,12 @@ async def update_spot(roomId: str, req: UpdateSpotRequest):
         currentSpot=req.spotId,
         status="updated",
     )
+
+
+@router.get("/rooms/{roomId}/avatar-state", response_model=AvatarStateResponse)
+async def avatar_state(roomId: str):
+    """数字人状态：返回当前 AI 导游的 aiStatus / emotion / action"""
+    state = get_avatar_state(roomId)
+    if state is None:
+        raise HTTPException(status_code=404, detail="房间不存在")
+    return AvatarStateResponse(**state)
