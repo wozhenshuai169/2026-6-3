@@ -1,6 +1,8 @@
 from ai_algorithm_service.evaluation import EvaluationHarness
 from ai_algorithm_service.orchestrator import TourAIOrchestrator
 from ai_algorithm_service.schemas import AlgorithmRequest, TouristProfile
+from ai_algorithm_service.api import app
+from fastapi.testclient import TestClient
 
 
 def test_public_question_interrupts_and_returns_citations():
@@ -51,6 +53,8 @@ def test_route_recommendation_uses_memory_tags():
     )
     response = TourAIOrchestrator().recommend_routes(request)
     assert response.routes[0].routeId == "short"
+    assert sum(response.routes[0].scoreBreakdown.values()) == response.routes[0].score
+    assert response.routes[0].durationMinutes == 35
 
 
 def test_memory_extracts_tags_without_raw_text():
@@ -66,4 +70,61 @@ def test_evaluation_harness_covers_spec_metrics():
     assert metrics["privateLeakCount"] == 0
     assert metrics["riskEscalationRecall"] == 1.0
     assert metrics["under10sRate"] == 1.0
+    assert metrics["lowAsrClarificationRate"] == 1.0
+    assert metrics["visionFeatureCoverage"] == 1.0
+    assert metrics["routeScoreBreakdownConsistent"] is True
+    assert metrics["resumeTextCoverage"] == 1.0
 
+
+def test_low_asr_confidence_asks_for_clarification():
+    response = TourAIOrchestrator().handle(
+        AlgorithmRequest(channel="public", inputMode="voice", asrConfidence=0.42, audioFormat="wav")
+    )
+    assert response.decision.decision == "ask_clarification"
+    assert response.decision.nextAction == "ask_clarification"
+    assert "没有听清" in (response.answer or "")
+
+
+def test_public_private_question_emits_private_channel_event():
+    response = TourAIOrchestrator().handle(AlgorithmRequest(channel="public", text="我想去厕所"))
+    assert response.decision.channel == "private"
+    assert any(event["type"] == "suggest_private_channel" for event in response.events)
+
+
+def test_voice_adapter_accepts_wav_mp3_and_rejects_other_formats():
+    voice = TourAIOrchestrator().voice
+    assert voice.asr(audio_format="wav", text_hint="我想去厕所").success is True
+    assert voice.asr(audio_format="mp3", text_hint="我想去厕所").success is True
+    unsupported = voice.asr(audio_format="aac", text_hint="我想去厕所")
+    assert unsupported.success is False
+    assert "wav / mp3" in (unsupported.error or "")
+
+
+def test_voice_orchestrate_returns_asr_algorithm_and_tts():
+    client = TestClient(app)
+    response = client.post(
+        "/v1/voice/orchestrate",
+        json={"channel": "public", "audioFormat": "wav", "audioPath": "toilet_demo.wav"},
+    )
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["asr"]["text"] == "我想去厕所"
+    assert payload["algorithm"]["decision"]["channel"] == "private"
+    assert payload["tts"]["audioUrl"].startswith("/static/tts/")
+
+
+def test_all_demo_vision_spots_return_features_and_rag():
+    orchestrator = TourAIOrchestrator()
+    for spot in orchestrator.data.vision_spots:
+        response = orchestrator.handle(AlgorithmRequest(channel="public", text="介绍这张图", imageUrl=spot["images"][0]))
+        assert response.vision is not None
+        assert response.vision.spotName == spot["spotName"]
+        assert response.vision.visualFeatures
+        assert response.citations
+
+
+def test_resume_text_uses_answer_summary_bridge():
+    response = TourAIOrchestrator().handle(AlgorithmRequest(channel="public", text="主展厅是什么时候建的？"))
+    resume_text = response.stateUpdate["resumeText"]
+    assert "了解了这个年代背景后" in resume_text
+    assert len(resume_text) > 30

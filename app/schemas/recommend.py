@@ -27,3 +27,7 @@ class RouteRecommendResponse(BaseModel):
     estimatedTime: int
     spots: list[RouteSpotSchema]
     reason: str
+    distance: float = 0.0
+    difficulty: str = ""
+    matchedPreferences: list[str] = []
+    scoreBreakdown: dict[str, int] = {}

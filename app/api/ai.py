@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/ai")
 
 @router.post("/public-question", response_model=PublicQuestionResponse)
 async def ask(req: PublicQuestionRequest):
-    result = public_question(req.roomId, req.question)
+    result = await public_question(req.roomId, req.question)
     if result is None:
         raise HTTPException(status_code=404, detail="房间不存在")
     return PublicQuestionResponse(roomId=result["roomId"], answer=result["answer"])
@@ -21,7 +21,11 @@ async def ask(req: PublicQuestionRequest):
 
 @router.post("/public-voice-question", response_model=VoiceQuestionResponse)
 async def voice_ask(req: VoiceQuestionRequest):
-    result = public_voice_question(req.roomId, req.userId, req.channel, req.audioUrl)
+    result = await public_voice_question(
+        req.roomId, req.userId, req.channel, req.audioUrl,
+        audio_format=getattr(req, 'audioFormat', None),
+        text_hint=getattr(req, 'textHint', None),
+    )
     if result is None:
         raise HTTPException(status_code=404, detail="房间不存在")
     return VoiceQuestionResponse(**result)

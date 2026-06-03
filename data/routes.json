@@ -1,6 +1,35 @@
 [
-  {"routeId":"classic","title":"经典中轴线","spotIds":["main_hall","courtyard","bell_tower","drum_tower"],"tags":["history","architecture"],"durationMinutes":60},
-  {"routeId":"short","title":"轻松短线","spotIds":["main_hall","courtyard","service_center","east_gate"],"tags":["less_walking","family_friendly"],"durationMinutes":35},
-  {"routeId":"history","title":"历史深读线","spotIds":["main_hall","bell_tower","drum_tower","stone_gallery"],"tags":["history","architecture","deep_explanation"],"durationMinutes":80}
+  {
+    "routeId": "classic",
+    "title": "经典中轴线",
+    "spotIds": ["main_hall", "courtyard", "bell_tower", "drum_tower"],
+    "tags": ["history", "architecture"],
+    "durationMinutes": 60,
+    "difficulty": "medium",
+    "walkingDifficulty": "medium",
+    "suitableForChildren": true,
+    "suitableForElderly": false
+  },
+  {
+    "routeId": "short",
+    "title": "轻松短线",
+    "spotIds": ["main_hall", "courtyard", "service_center", "east_gate"],
+    "tags": ["less_walking", "family_friendly"],
+    "durationMinutes": 35,
+    "difficulty": "low",
+    "walkingDifficulty": "low",
+    "suitableForChildren": true,
+    "suitableForElderly": true
+  },
+  {
+    "routeId": "history",
+    "title": "历史深读线",
+    "spotIds": ["main_hall", "bell_tower", "drum_tower", "stone_gallery"],
+    "tags": ["history", "architecture", "deep_explanation"],
+    "durationMinutes": 80,
+    "difficulty": "high",
+    "walkingDifficulty": "high",
+    "suitableForChildren": false,
+    "suitableForElderly": false
+  }
 ]
-

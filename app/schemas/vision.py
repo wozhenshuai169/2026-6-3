@@ -23,3 +23,4 @@ class VisionRecognizeResponse(BaseModel):
     recognizedSpot: RecognizedSpotSchema
     description: str
     relatedSpots: list[RelatedSpotSchema] = []
+    visualFeatures: list[str] = []

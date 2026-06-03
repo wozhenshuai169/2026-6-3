@@ -28,6 +28,6 @@
   {"request":{"channel":"public","text":"东门离停车场近吗？","state":{"currentSpotId":"east_gate","currentRouteId":"short","currentSegmentId":"segment_10","isExplaining":true}},"expected":{"decision":"interrupt_and_answer","needsCitation":true}},
   {"request":{"channel":"public","text":"儿童有什么活动？"},"expected":{"decision":"interrupt_and_answer","needsCitation":true}},
   {"request":{"channel":"private","text":"我想换一条少走路的路线"},"expected":{"decision":"private_reply","privateSafe":true}},
-  {"request":{"channel":"public","text":"这座建筑有什么历史价值？"},"expected":{"decision":"interrupt_and_answer","needsCitation":true}}
+  {"request":{"channel":"public","text":"这座建筑有什么历史价值？"},"expected":{"decision":"interrupt_and_answer","needsCitation":true}},
+  {"request":{"channel":"public","text":"","inputMode":"voice","asrConfidence":0.42,"audioFormat":"wav","audioPath":"unclear_demo.wav"},"expected":{"decision":"ask_clarification"}}
 ]
-

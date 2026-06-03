@@ -9,6 +9,7 @@ from .rag import ScenicRAG
 from .routes import RouteRecommender
 from .schemas import AlgorithmRequest, AlgorithmResponse, DecisionResult
 from .vision import VisionRecognizer
+from .voice import VoiceAdapter
 
 
 class TourAIOrchestrator:
@@ -21,6 +22,7 @@ class TourAIOrchestrator:
         self.private_assistant = PrivateAssistant(self.data, self.memory)
         self.vision = VisionRecognizer(self.data, self.rag)
         self.routes = RouteRecommender(self.data)
+        self.voice = VoiceAdapter()
 
     def decide(self, request: AlgorithmRequest) -> DecisionResult:
         return self.decision_router.decide(request)
@@ -28,9 +30,24 @@ class TourAIOrchestrator:
     def handle(self, request: AlgorithmRequest) -> AlgorithmResponse:
         decision = self.decide(request)
         events = [{"type": "decision", "payload": decision.model_dump()}]
+        if request.channel == "public" and decision.channel == "private":
+            events.append(
+                {
+                    "type": "suggest_private_channel",
+                    "payload": {"reason": "该问题属于私人需求，不适合公共播报"},
+                }
+            )
 
         if decision.nextAction == "no_action":
             return AlgorithmResponse(decision=decision, events=events)
+
+        if decision.nextAction == "ask_clarification":
+            return AlgorithmResponse(
+                decision=decision,
+                answer="我没有听清，可以再说一遍或改用文字输入吗？",
+                confidence=request.asrConfidence or 0.0,
+                events=events,
+            )
 
         if decision.nextAction == "human_takeover":
             private = self.private_assistant.handle(request)
@@ -66,13 +83,19 @@ class TourAIOrchestrator:
 
         if decision.nextAction == "vision_recognize":
             vision = self.vision.recognize(request)
+            state_update = {"shouldResume": request.state.isExplaining, "resumeSegmentId": request.state.currentSegmentId}
+            if decision.needInterrupt:
+                state_update = {
+                    **state_update,
+                    **self.explanation.resume_after_answer(request.state, request.text or "图片识别", vision.answer),
+                }
             return AlgorithmResponse(
                 decision=decision,
                 answer=vision.answer,
                 citations=vision.citations,
                 confidence=vision.confidence,
                 vision=vision,
-                stateUpdate={"shouldResume": request.state.isExplaining, "resumeSegmentId": request.state.currentSegmentId},
+                stateUpdate=state_update,
                 events=events,
             )
 
@@ -83,7 +106,7 @@ class TourAIOrchestrator:
         qa = self.rag.query(request.text, request.state)
         state_update = qa.stateUpdate
         if decision.needInterrupt:
-            state_update = {**state_update, **self.explanation.resume_after_answer(request.state, request.text)}
+            state_update = {**state_update, **self.explanation.resume_after_answer(request.state, request.text, qa.answer)}
         return AlgorithmResponse(
             decision=decision,
             answer=qa.answer,
@@ -106,3 +129,21 @@ class TourAIOrchestrator:
     def extract_memory(self, request: AlgorithmRequest) -> dict:
         return self.memory.extract(request.text)
 
+    def handle_voice(self, request: AlgorithmRequest) -> tuple:
+        asr = self.voice.asr(
+            audio_format=request.audioFormat,
+            audio_path=request.audioPath,
+            audio_url=request.audioUrl,
+            text_hint=request.text,
+        )
+        voice_request = request.model_copy(
+            update={
+                "text": asr.text,
+                "inputMode": "voice",
+                "asrConfidence": asr.confidence,
+                "audioFormat": asr.format,
+            }
+        )
+        response = self.handle(voice_request)
+        tts = self.voice.tts(response.answer or "")
+        return asr, response, tts

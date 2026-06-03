@@ -6,6 +6,8 @@ class ASRRequest(BaseModel):
     userId: str
     channel: str  # "public" | "private"
     audioUrl: str
+    audioFormat: str | None = None  # "wav" | "mp3"
+    textHint: str | None = None     # 辅助识别文本
 
 
 class ASRResponse(BaseModel):
@@ -17,6 +19,7 @@ class TTSRequest(BaseModel):
     text: str
     voice: str = "guide_female"
     speed: float = 1.0
+    audioFormat: str = "mp3"  # "wav" | "mp3"
 
 
 class TTSResponse(BaseModel):

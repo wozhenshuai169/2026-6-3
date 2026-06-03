@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 
 Channel = Literal["public", "private", "leader", "system"]
+InputMode = Literal["text", "voice", "image"]
 DecisionType = Literal[
     "ignore",
     "public_reply",
@@ -14,6 +15,7 @@ DecisionType = Literal[
     "notify_leader",
     "emergency_alert",
     "summarize_discussion",
+    "ask_clarification",
 ]
 RiskLevel = Literal["none", "low", "medium", "high"]
 
@@ -50,6 +52,11 @@ class AlgorithmRequest(BaseModel):
     channel: Channel = "public"
     text: str = ""
     imageUrl: str | None = None
+    inputMode: InputMode = "text"
+    asrConfidence: float | None = None
+    audioFormat: Literal["wav", "mp3"] | str | None = None
+    audioUrl: str | None = None
+    audioPath: str | None = None
     state: TourState = Field(default_factory=TourState)
     profile: TouristProfile = Field(default_factory=TouristProfile)
     authorizationGranted: bool | None = None
@@ -63,6 +70,17 @@ class DecisionResult(BaseModel):
     riskLevel: RiskLevel = "none"
     reason: str
     nextAction: str
+    replyChannel: Channel | None = None
+    shouldInterrupt: bool | None = None
+    needLeaderConfirm: bool | None = None
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.replyChannel is None:
+            self.replyChannel = self.channel
+        if self.shouldInterrupt is None:
+            self.shouldInterrupt = self.needInterrupt
+        if self.needLeaderConfirm is None:
+            self.needLeaderConfirm = self.needLeaderNotify
 
 
 class QAResult(BaseModel):
@@ -82,7 +100,9 @@ class PrivateAssistantResult(BaseModel):
 
 class VisionResult(BaseModel):
     recognizedObject: str | None = None
+    spotName: str | None = None
     confidence: float = 0.0
+    visualFeatures: list[str] = Field(default_factory=list)
     answer: str
     citations: list[Citation] = Field(default_factory=list)
     relatedSpots: list[str] = Field(default_factory=list)
@@ -95,6 +115,35 @@ class RouteRecommendation(BaseModel):
     score: float
     reason: str
     tags: list[str] = Field(default_factory=list)
+    durationMinutes: int | None = None
+    difficulty: str | None = None
+    spotIds: list[str] = Field(default_factory=list)
+    matchedPreferences: list[str] = Field(default_factory=list)
+    scoreBreakdown: dict[str, int] = Field(default_factory=dict)
+
+
+class ASRResult(BaseModel):
+    text: str
+    confidence: float
+    language: str = "zh-CN"
+    format: str
+    success: bool = True
+    error: str | None = None
+
+
+class TTSResult(BaseModel):
+    audioUrl: str | None = None
+    voice: str = "guide_female_zh"
+    format: str = "mp3"
+    durationMs: int = 0
+    success: bool = True
+    error: str | None = None
+
+
+class VoiceOrchestrateResponse(BaseModel):
+    asr: ASRResult
+    algorithm: "AlgorithmResponse"
+    tts: TTSResult | None = None
 
 
 class AlgorithmResponse(BaseModel):
@@ -108,4 +157,3 @@ class AlgorithmResponse(BaseModel):
     routes: list[RouteRecommendation] = Field(default_factory=list)
     memoryTags: dict[str, Any] = Field(default_factory=dict)
     events: list[dict[str, Any]] = Field(default_factory=list)
-

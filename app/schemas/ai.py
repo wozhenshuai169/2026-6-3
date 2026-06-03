@@ -22,6 +22,8 @@ class VoiceQuestionRequest(BaseModel):
     userId: str
     channel: str = "public"
     audioUrl: str
+    audioFormat: str | None = None  # "wav" | "mp3"
+    textHint: str | None = None     # 辅助识别文本
 
 
 class VoiceQuestionResponse(BaseModel):
@@ -32,3 +34,4 @@ class VoiceQuestionResponse(BaseModel):
     resumeText: str
     resumeAudioUrl: str
     sources: list[SourceSchema] = []
+    events: list[dict] = []

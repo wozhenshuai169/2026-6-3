@@ -1,0 +1,42 @@
+[
+  {
+    "spotId": "bell_tower",
+    "spotName": "钟楼",
+    "visualFeatures": ["木结构", "重檐", "钟鼓建筑"],
+    "relatedSpots": ["鼓楼", "主展厅"],
+    "images": ["bell_tower_01.jpg", "bell_tower_02.jpg", "bell_tower_03.jpg", "zhonglou_front.jpg", "zhonglou_roof.jpg"],
+    "keywords": ["钟楼", "bell", "zhonglou", "重檐", "报时"]
+  },
+  {
+    "spotId": "drum_tower",
+    "spotName": "鼓楼",
+    "visualFeatures": ["对称布局", "鼓形展陈", "传统楼阁"],
+    "relatedSpots": ["钟楼", "主展厅"],
+    "images": ["drum_tower_01.jpg", "drum_tower_02.jpg", "drum_tower_03.jpg", "gulou_front.jpg", "drum_display.jpg"],
+    "keywords": ["鼓楼", "drum", "gulou", "仪式", "报时器具"]
+  },
+  {
+    "spotId": "main_hall",
+    "spotName": "主展厅",
+    "visualFeatures": ["灰瓦屋顶", "脊兽装饰", "中轴线建筑"],
+    "relatedSpots": ["钟楼", "中心庭院"],
+    "images": ["main_hall_01.jpg", "main_hall_02.jpg", "main_hall_roof.jpg", "exhibition_hall.jpg", "main_axis.jpg"],
+    "keywords": ["主展厅", "展厅", "main_hall", "exhibition", "屋顶", "脊兽"]
+  },
+  {
+    "spotId": "stone_gallery",
+    "spotName": "石刻长廊",
+    "visualFeatures": ["碑刻", "长廊", "石质文字"],
+    "relatedSpots": ["主展厅", "中心庭院"],
+    "images": ["stone_gallery_01.jpg", "stone_gallery_02.jpg", "stone_tablet.jpg", "beike_01.jpg", "inscription.jpg"],
+    "keywords": ["石刻", "碑", "stone", "tablet", "碑刻", "题记"]
+  },
+  {
+    "spotId": "courtyard",
+    "spotName": "中心庭院",
+    "visualFeatures": ["开阔院落", "银杏海棠", "轴线视野"],
+    "relatedSpots": ["主展厅", "游客服务中心"],
+    "images": ["courtyard_01.jpg", "courtyard_02.jpg", "center_yard.jpg", "yingxing_yard.jpg", "garden_axis.jpg"],
+    "keywords": ["庭院", "院落", "courtyard", "yard", "银杏", "海棠"]
+  }
+]

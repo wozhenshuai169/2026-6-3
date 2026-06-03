@@ -33,6 +33,10 @@ class ScenicDataAdapter:
         return self._load_json("routes.json")
 
     @cached_property
+    def vision_spots(self) -> list[dict[str, Any]]:
+        return self._load_json("vision_spots.json")
+
+    @cached_property
     def eval_cases(self) -> list[dict[str, Any]]:
         return self._load_json("eval_cases.json")
 
@@ -55,4 +59,3 @@ class ScenicDataAdapter:
             if chunk.get("type") == "facility":
                 return chunk
         return None
-

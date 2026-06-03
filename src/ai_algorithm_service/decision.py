@@ -7,8 +7,8 @@ from .text_utils import contains_any
 class DecisionRouter:
     """Rules-first intervention router with deterministic safety boundaries."""
 
-    emergency_keywords = ["走失", "迷路", "找不到队伍", "晕", "胸闷", "摔倒", "受伤", "中暑", "事故", "火灾"]
-    safety_keywords = ["身体不舒服", "不舒服", "低血糖", "孩子不见", "老人不见", "封路", "暴雨", "雷电"]
+    emergency_keywords = ["走失", "迷路", "找不到队伍", "集合走散", "走散", "晕", "胸闷", "摔倒", "受伤", "中暑", "事故", "火灾"]
+    safety_keywords = ["身体不舒服", "不舒服", "低血糖", "孩子不见", "老人不见", "封路", "路线封闭", "暴雨", "雷电", "突发天气", "台风", "塌方"]
     leave_keywords = ["离队", "先走", "不跟团", "自己走", "提前走"]
     private_keywords = ["厕所", "洗手间", "休息", "出口", "饮水", "走不动", "老人", "小孩", "没听懂", "重复", "少走路"]
     public_question_keywords = [
@@ -33,6 +33,14 @@ class DecisionRouter:
 
     def decide(self, request: AlgorithmRequest) -> DecisionResult:
         text = request.text.strip()
+        if request.inputMode == "voice" and request.asrConfidence is not None and request.asrConfidence < 0.6:
+            return DecisionResult(
+                decision="ask_clarification",
+                channel="private" if request.channel == "private" else "public",
+                reason="语音识别置信度过低，需要用户确认后再介入",
+                nextAction="ask_clarification",
+            )
+
         if request.imageUrl:
             return DecisionResult(
                 decision="public_reply" if request.channel == "public" else "private_reply",

@@ -6,53 +6,59 @@ from .schemas import AlgorithmRequest, VisionResult
 from .text_utils import contains_any
 
 
+class VisionProvider:
+    def recognize(self, request: AlgorithmRequest) -> dict | None:
+        return None
+
+
 class VisionRecognizer:
-    def __init__(self, data: ScenicDataAdapter, rag: ScenicRAG) -> None:
+    def __init__(self, data: ScenicDataAdapter, rag: ScenicRAG, provider: VisionProvider | None = None) -> None:
         self.data = data
         self.rag = rag
+        self.provider = provider or VisionProvider()
 
     def recognize(self, request: AlgorithmRequest) -> VisionResult:
-        text = " ".join(part for part in [request.text, request.imageUrl or ""] if part)
-        candidates = {
-            "钟楼": ["钟楼", "bell", "zhonglou"],
-            "鼓楼": ["鼓楼", "drum", "gulou"],
-            "主展厅": ["主展厅", "展厅", "main_hall"],
-            "石刻": ["石刻", "碑", "stone"],
-            "庭院": ["庭院", "院落", "courtyard"],
-        }
-        recognized = None
-        for name, keywords in candidates.items():
-            if contains_any(text, keywords):
-                recognized = name
-                break
-        if not recognized:
+        provider_result = self.provider.recognize(request)
+        spot = provider_result or self._match_demo_library(request)
+        if not spot:
             current = request.state.currentSpotId
-            related = [chunk["title"] for chunk in self.data.get_spot_chunks(current)[:2]]
+            related = [item["spotName"] for item in self.data.vision_spots[:3]]
+            current_titles = [chunk["title"] for chunk in self.data.get_spot_chunks(current)[:2]]
             return VisionResult(
                 recognizedObject=None,
+                spotName=None,
                 confidence=0.28,
                 answer="我还不能可靠确认图片里的对象。可以结合当前位置先看这些候选信息，也请补充拍摄角度或文字描述。",
-                relatedSpots=related,
+                visualFeatures=[],
+                relatedSpots=related + current_titles,
                 recommendedAction="ask_for_more_context",
             )
 
-        qa = self.rag.query(f"介绍{recognized}", request.state)
+        qa = self.rag.query(f"介绍{spot['spotName']}", request.state.model_copy(update={"currentSpotId": spot["spotId"]}))
         return VisionResult(
-            recognizedObject=recognized,
-            confidence=0.82,
-            answer=f"你拍到的可能是{recognized}。{qa.answer}",
+            recognizedObject=spot["spotName"],
+            spotName=spot["spotName"],
+            confidence=spot.get("confidence", 0.84),
+            visualFeatures=spot.get("visualFeatures", []),
+            answer=f"你拍到的可能是{spot['spotName']}。{qa.answer}",
             citations=qa.citations,
-            relatedSpots=self._related_spots(recognized),
+            relatedSpots=spot.get("relatedSpots", []),
             recommendedAction="rag_explain",
         )
 
-    def _related_spots(self, recognized: str) -> list[str]:
-        mapping = {
-            "钟楼": ["鼓楼", "主展厅"],
-            "鼓楼": ["钟楼", "主展厅"],
-            "主展厅": ["钟楼", "庭院"],
-            "石刻": ["主展厅", "庭院"],
-            "庭院": ["主展厅", "出口"],
-        }
-        return mapping.get(recognized, [])
-
+    def _match_demo_library(self, request: AlgorithmRequest) -> dict | None:
+        text = " ".join(part for part in [request.text, request.imageUrl or "", request.audioUrl or "", request.audioPath or ""] if part)
+        lowered = text.lower()
+        for spot in self.data.vision_spots:
+            image_names = [image.lower() for image in spot.get("images", [])]
+            keywords = spot.get("keywords", [])
+            if any(image in lowered for image in image_names) or contains_any(text, keywords):
+                return {
+                    "spotId": spot["spotId"],
+                    "spotName": spot["spotName"],
+                    "visualFeatures": spot.get("visualFeatures", []),
+                    "relatedSpots": spot.get("relatedSpots", []),
+                    "confidence": 0.87,
+                }
+                break
+        return None

@@ -1,0 +1,66 @@
+from __future__ import annotations
+
+import hashlib
+from pathlib import PurePath
+
+from .schemas import ASRResult, TTSResult
+
+
+class VoiceAdapter:
+    supported_formats = {"wav", "mp3"}
+    voice = "guide_female_zh"
+
+    def validate_format(self, audio_format: str | None, audio_path: str | None = None, audio_url: str | None = None) -> str:
+        fmt = (audio_format or self._infer_format(audio_path or audio_url or "")).lower().strip(".")
+        if fmt not in self.supported_formats:
+            raise ValueError("只支持 wav / mp3 音频格式")
+        return fmt
+
+    def asr(
+        self,
+        *,
+        audio_format: str | None = None,
+        audio_path: str | None = None,
+        audio_url: str | None = None,
+        text_hint: str | None = None,
+    ) -> ASRResult:
+        try:
+            fmt = self.validate_format(audio_format, audio_path, audio_url)
+        except ValueError as exc:
+            return ASRResult(text="", confidence=0.0, format=audio_format or "unknown", success=False, error=str(exc))
+
+        if text_hint and text_hint.strip():
+            return ASRResult(text=text_hint.strip(), confidence=0.88, format=fmt)
+
+        source = (audio_path or audio_url or "").lower()
+        demos = [
+            (["toilet", "washroom", "restroom", "cesuo"], "我想去厕所", 0.84),
+            (["lost", "miss", "zoushi"], "我找不到队伍了", 0.86),
+            (["tired", "rest", "elderly"], "老人走不动了，附近能休息吗", 0.82),
+            (["bell", "zhonglou"], "这张图是不是钟楼", 0.80),
+            (["route", "short"], "我想换一条少走路的路线", 0.81),
+        ]
+        for keywords, text, confidence in demos:
+            if any(keyword in source for keyword in keywords):
+                return ASRResult(text=text, confidence=confidence, format=fmt)
+
+        return ASRResult(text="", confidence=0.35, format=fmt, success=False, error="我没有听清，可以再说一遍或改用文字输入")
+
+    def tts(self, text: str, *, voice: str | None = None, audio_format: str = "mp3") -> TTSResult:
+        if not text.strip():
+            return TTSResult(audioUrl=None, voice=voice or self.voice, format=audio_format, success=False, error="没有可合成的文本")
+        if audio_format not in self.supported_formats:
+            return TTSResult(audioUrl=None, voice=voice or self.voice, format=audio_format, success=False, error="只支持 wav / mp3 音频格式")
+        digest = hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
+        duration = max(900, min(12000, len(text) * 180))
+        return TTSResult(
+            audioUrl=f"/static/tts/{digest}.{audio_format}",
+            voice=voice or self.voice,
+            format=audio_format,
+            durationMs=duration,
+        )
+
+    def _infer_format(self, source: str) -> str:
+        suffix = PurePath(source).suffix.lower().strip(".")
+        return suffix or "unknown"
+

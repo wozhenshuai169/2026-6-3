@@ -6,7 +6,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 from .evaluation import EvaluationHarness
 from .orchestrator import TourAIOrchestrator
-from .schemas import AlgorithmRequest
+from .schemas import AlgorithmRequest, VoiceOrchestrateResponse
 
 
 app = FastAPI(title="AI Algorithm Service", version="0.1.0")
@@ -58,6 +58,27 @@ def evaluation_run() -> dict:
     return EvaluationHarness(orchestrator).run()
 
 
+@app.post("/v1/voice/asr")
+def voice_asr(request: AlgorithmRequest) -> dict:
+    return orchestrator.voice.asr(
+        audio_format=request.audioFormat,
+        audio_path=request.audioPath,
+        audio_url=request.audioUrl,
+        text_hint=request.text,
+    ).model_dump()
+
+
+@app.post("/v1/voice/tts")
+def voice_tts(request: AlgorithmRequest) -> dict:
+    return orchestrator.voice.tts(request.text).model_dump()
+
+
+@app.post("/v1/voice/orchestrate")
+def voice_orchestrate(request: AlgorithmRequest) -> dict:
+    asr, response, tts = orchestrator.handle_voice(request)
+    return VoiceOrchestrateResponse(asr=asr, algorithm=response, tts=tts).model_dump()
+
+
 @app.websocket("/ws/rooms/{room_id}/stream")
 async def room_stream(websocket: WebSocket, room_id: str) -> None:
     await websocket.accept()
@@ -86,4 +107,3 @@ async def room_stream(websocket: WebSocket, room_id: str) -> None:
 
 def _chunk_text(text: str, size: int) -> list[str]:
     return [text[index : index + size] for index in range(0, len(text), size)]
-
