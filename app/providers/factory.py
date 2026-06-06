@@ -35,6 +35,23 @@ class ProviderFactory:
         from app.providers.map.mock import MockMapProvider
         return MockMapProvider()
 
+    @staticmethod
+    def get_audio():
+        """获取音频 Provider（duck-typing，优先 DashScope）。"""
+        # 优先用 DashScope（复用百炼 API Key）
+        if settings.vision_api_key:
+            from app.providers.audio.dashscope import DashScopeAudioProvider
+            logger.info("[Audio] Using DashScope provider (CosyVoice + Paraformer)")
+            return DashScopeAudioProvider()
+        # 备选 ISI（HMAC-SHA1 签名）
+        if settings.isi_enabled:
+            from app.providers.audio.aliyun_isi import AliyunISIProvider
+            logger.info("[Audio] Using Aliyun ISI provider")
+            return AliyunISIProvider()
+        from app.providers.audio.mock import MockAudioProvider
+        logger.info("[Audio] Using Mock provider")
+        return MockAudioProvider()
+
 
 # 模块级单例（无状态，可安全复用）
 _factory = ProviderFactory()
@@ -42,3 +59,4 @@ _factory = ProviderFactory()
 get_llm = _factory.get_llm
 get_vision = _factory.get_vision
 get_map = _factory.get_map
+get_audio = _factory.get_audio

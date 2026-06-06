@@ -24,3 +24,4 @@ class VisionRecognizeResponse(BaseModel):
     description: str
     relatedSpots: list[RelatedSpotSchema] = []
     visualFeatures: list[str] = []
+    category: str = "spot"  # "spot" | "person" | "object" | "scene" | "unknown"

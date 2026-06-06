@@ -30,6 +30,7 @@ class DeepSeekProvider(LLMProvider):
 
     async def chat(self, messages: list[dict], **kwargs) -> LLMResponse:
         """非流式对话。"""
+        timeout = kwargs.pop("timeout", 60)
         payload = {
             "model": self._model,
             "messages": messages,
@@ -37,14 +38,21 @@ class DeepSeekProvider(LLMProvider):
             "max_tokens": kwargs.get("max_tokens", 2048),
         }
         try:
-            resp = await self._client.post("/chat/completions", json=payload)
+            resp = await self._client.post("/chat/completions", json=payload, timeout=timeout)
             resp.raise_for_status()
             data = resp.json()
-            content = data["choices"][0]["message"]["content"]
+            content = (data["choices"][0]["message"]["content"] or "").strip()
+            # 空回答兜底
+            if not content:
+                logger.warning("[LLM] Empty response from model")
+                content = "抱歉，我暂时无法生成回答，请稍后再试。"
             return LLMResponse(content=content)
+        except httpx.TimeoutException:
+            logger.error("[LLM] Request timeout (%ds)", timeout)
+            raise LLMError("LLM 请求超时") from None
         except httpx.HTTPError as e:
-            logger.error("[DeepSeek] HTTP error: %s", e)
-            raise LLMError(f"DeepSeek API 调用失败: {e}") from e
+            logger.error("[LLM] HTTP error: %s", e)
+            raise LLMError(f"LLM API 调用失败: {e}") from e
 
     async def chat_stream(self, messages: list[dict], **kwargs) -> AsyncIterator[str]:
         """流式对话，逐 chunk yield 文本。"""

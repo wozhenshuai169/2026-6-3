@@ -1,0 +1,18 @@
+# ── Web 框架 ──
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+starlette>=0.44.0
+
+# ── 配置 ──
+pydantic>=2.0
+pydantic-settings>=2.0
+python-dotenv>=1.0
+
+# ── HTTP 客户端 ──
+httpx>=0.28.0
+
+# ── TTS (Microsoft Edge 免费引擎) ──
+edge-tts>=7.0
+
+# ── 工具 ──
+certifi>=2025.0

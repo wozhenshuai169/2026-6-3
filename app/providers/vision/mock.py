@@ -46,6 +46,7 @@ class MockVisionProvider(VisionProvider):
                     description=spot.get("description", f"你拍到的是{spot['spotName']}。"),
                     related_spots=[{"spotId": s, "spotName": s} for s in spot.get("relatedSpots", [])],
                     visual_features=spot.get("visualFeatures", []),
+                    category="spot",
                 )
 
         # 未匹配 → 回退到钟楼
@@ -58,14 +59,16 @@ class MockVisionProvider(VisionProvider):
                     description="我还不能可靠确认图片里的对象。可以结合当前位置先看这些候选信息，也请补充拍摄角度或文字描述。",
                     related_spots=[{"spotId": s, "spotName": s} for s in spot.get("relatedSpots", [])],
                     visual_features=[],
+                    category="unknown",
                 )
 
         # 图库为空时的兜底
         return VisionResult(
             spot_id="unknown",
-            spot_name="未知景点",
+            spot_name="未知",
             confidence=0.28,
             description="我还不能可靠确认图片里的对象，请补充拍摄角度或文字描述。",
             related_spots=[],
             visual_features=[],
+            category="unknown",
         )

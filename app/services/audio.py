@@ -1,27 +1,25 @@
-"""音频处理服务 —— ASR 语音识别 + TTS 语音合成。
+"""音频处理服务 —— ASR + TTS，Provider 模式 + 功能开关 + 异常兜底。"""
 
-对齐 src/ai_algorithm_service/voice.py 的 VoiceAdapter 模式：
-- ASR 支持 text_hint、格式校验、demo 关键词匹配
-- TTS 基于文本哈希生成 URL，估算时长
-"""
+import logging
 
-import hashlib
-
+from app.core.config import settings
+from app.core.logging import Timer
 from app.services.rooms import get_room
+from app.providers.factory import get_audio
 
-# 支持的音频格式
-SUPPORTED_FORMATS = {"wav", "mp3"}
+logger = logging.getLogger(__name__)
+SUPPORTED_FORMATS = {"wav", "mp3", "webm", "ogg", "m4a"}
+_audio = get_audio()
 
 
 def _validate_format(audio_format: str | None = None) -> str:
-    """校验音频格式，非法格式抛 ValueError。"""
     fmt = (audio_format or "wav").lower().strip(".")
     if fmt not in SUPPORTED_FORMATS:
-        raise ValueError("只支持 wav / mp3 音频格式")
+        raise ValueError(f"不支持的音频格式: {fmt}，支持: {', '.join(sorted(SUPPORTED_FORMATS))}")
     return fmt
 
 
-def asr_transcribe(
+async def asr_transcribe(
     room_id: str,
     user_id: str,
     channel: str,
@@ -29,90 +27,75 @@ def asr_transcribe(
     audio_format: str | None = None,
     text_hint: str | None = None,
 ) -> dict | None:
-    """语音识别：提交音频 URL，返回识别文本。
-
-    对齐 VoiceAdapter.asr()：
-    - 有 text_hint 时置信度 0.88
-    - 按音频文件名关键词匹配 demo 语句
-    - 未匹配时返回低置信度
-    """
+    """语音识别，含格式校验、超时兜底。"""
     room = get_room(room_id)
     if room is None:
+        logger.warning("ASR: room %s not found", room_id)
         return None
 
     try:
         fmt = _validate_format(audio_format)
-    except ValueError:
-        return {"text": "", "confidence": 0.0, "format": audio_format or "unknown", "success": False}
+    except ValueError as e:
+        logger.warning("ASR format error: %s", e)
+        return {"text": "", "confidence": 0.0, "success": False,
+                "format": audio_format or "unknown", "error": str(e)}
 
-    # text_hint 优先
-    if text_hint and text_hint.strip():
-        return {"text": text_hint.strip(), "confidence": 0.88, "format": fmt}
+    if not settings.enable_asr:
+        logger.info("ASR disabled by config, using hint fallback")
+        if text_hint and text_hint.strip():
+            return {"text": text_hint.strip(), "confidence": 0.7, "success": True, "format": fmt}
+        return {"text": "", "confidence": 0.0, "success": False,
+                "format": fmt, "error": "ASR 功能已关闭"}
 
-    # 按音频来源关键词匹配 demo 语句
-    source = (audio_url or "").lower()
-    demos = [
-        (["toilet", "washroom", "restroom", "cesuo", "厕所"], "我想去厕所", 0.84),
-        (["lost", "miss", "zoushi", "走散", "找不到"], "我找不到队伍了", 0.86),
-        (["tired", "rest", "elderly", "老人", "走不动"], "老人走不动了，附近能休息吗", 0.82),
-        (["bell", "zhonglou", "钟楼"], "这张图是不是钟楼", 0.80),
-        (["route", "short", "路线", "少走路"], "我想换一条少走路的路线", 0.81),
-    ]
-    for keywords, text, confidence in demos:
-        if any(keyword in source for keyword in keywords):
-            return {"text": text, "confidence": confidence, "format": fmt}
+    with Timer(logger, f"ASR '{audio_url[-30:]}'"):
+        try:
+            result = await _audio.asr_transcribe(
+                audio_url=audio_url,
+                audio_format=fmt,
+                text_hint=text_hint or "",
+                current_spot=room.get("currentSpot", ""),
+            )
+        except Exception as e:
+            logger.error("ASR provider error: %s", e)
+            result = {"text": "", "confidence": 0.0, "success": False,
+                      "format": fmt, "error": f"ASR 异常: {e}"}
 
-    # 回退：根据房间当前景点生成通用问句
-    spot = room.get("currentSpot", "")
-    if spot:
-        text = f"请问{spot}有什么历史故事？"
-    else:
-        text = "这个景区有什么值得看的？"
-
-    return {"text": text, "confidence": 0.35, "format": fmt}
+    result["format"] = fmt
+    return result
 
 
-def tts_synthesize(
+async def tts_synthesize(
     text: str,
     voice: str = "guide_female",
     speed: float = 1.0,
     audio_format: str = "mp3",
 ) -> dict:
-    """语音合成：输入文本，返回合成音频 URL。
-
-    对齐 VoiceAdapter.tts()：
-    - 按 SHA1 哈希生成稳定的 URL
-    - 按文本长度（180ms/字）估算时长
-    """
+    """语音合成，含空文本兜底、engine 降级。"""
     if not text.strip():
-        return {
-            "audioUrl": "",
-            "duration": 0.0,
-            "voice": voice,
-            "format": audio_format,
-            "success": False,
-        }
+        return {"audioUrl": "", "duration": 0.0, "voice": voice,
+                "format": audio_format, "success": False,
+                "error": "文本为空"}
+
+    if not settings.enable_tts:
+        logger.info("TTS disabled by config")
+        return {"audioUrl": "", "duration": 0.0, "voice": voice,
+                "format": audio_format, "success": False,
+                "error": "TTS 功能已关闭"}
 
     try:
         fmt = _validate_format(audio_format)
-    except ValueError:
-        return {
-            "audioUrl": "",
-            "duration": 0.0,
-            "voice": voice,
-            "format": audio_format,
-            "success": False,
-        }
+    except ValueError as e:
+        return {"audioUrl": "", "duration": 0.0, "voice": voice,
+                "format": audio_format, "success": False, "error": str(e)}
 
-    digest = hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
-    url = f"/static/tts/{digest}.{fmt}"
-    duration_ms = max(900, min(12000, len(text) * 180))
-    duration = round(duration_ms / 1000.0 / speed, 1)
+    with Timer(logger, f"TTS '{text[:30]}...'"):
+        try:
+            result = await _audio.tts_synthesize(
+                text=text, voice=voice, speed=speed, audio_format=fmt,
+            )
+        except Exception as e:
+            logger.error("TTS provider error: %s", e)
+            result = {"audioUrl": "", "duration": 0.0, "voice": voice,
+                      "format": fmt, "success": False, "error": f"TTS 异常: {e}"}
 
-    return {
-        "audioUrl": url,
-        "duration": duration,
-        "voice": voice,
-        "format": fmt,
-        "success": True,
-    }
+    return result

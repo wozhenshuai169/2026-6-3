@@ -1,4 +1,4 @@
-# Python
+# ── Python ──
 venv/
 __pycache__/
 *.pyc
@@ -6,19 +6,45 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+*.egg
 
-# IDE
+# ── 测试 ──
+.pytest_cache/
+.pytest_cache/*
+tests/__pycache__/
+*.test_result.*
+test_result*.json
+test_*.json
+test_*.py
+tts_debug.*
+img*_result.*
+
+# ── 运行时 ──
+uploads/tts/
+*.log
+
+# ── IDE ──
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Environment
+# ── 环境 ──
 .env
 .env.local
+.env.*.local
 
-# OS
+# ── OS ──
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# Claude
+# ── Claude ──
 .claude/
-.env
+
+# ── RMDB (C++ 相关) ──
+deps/
+build/
+CMakeLists.txt
+src/
+rmdb_client/

@@ -21,6 +21,7 @@ class VisionResult:
     description: str
     related_spots: list[dict] = field(default_factory=list)
     visual_features: list[str] = field(default_factory=list)  # 视觉特征标签
+    category: str = "spot"  # "spot" | "person" | "object" | "scene" | "unknown"
 
 
 @dataclass

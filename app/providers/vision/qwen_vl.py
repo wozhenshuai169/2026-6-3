@@ -34,16 +34,31 @@ class QwenVLVisionProvider(VisionProvider):
         logger.info("[Vision] Using Qwen-VL (model=%s, base_url=%s)", self._model, self._base_url)
 
     async def recognize(self, image_url: str, hint: str = "") -> VisionResult:
-        """调用 Qwen-VL 识别图片中的景点，返回结构化结果。"""
+        """调用 Qwen-VL 识别图片内容，景区优先，同时支持人物/物体/场景识别。"""
         system_prompt = (
-            "你是一个景区图片识别助手。根据图片内容识别景点名称、"
-            "视觉特征（建筑风格、颜色、材质等），并用中文描述。"
-            "返回 JSON 格式："
-            '{"spotName": "景点名", "confidence": 0.85, "description": "描述",'
-            '"visualFeatures": ["特征1", "特征2"], "relatedSpots": ["相关景点1"]}'
+            "你是一个智能图片识别助手，服务于旅游景区导览场景。\n\n"
+            "## 识别优先级（从高到低）：\n"
+            "1. **景区/建筑/地标**：优先识别图片中的景点、建筑、自然风光、历史遗迹等\n"
+            "2. **人物**：如果图片的主体是人物（单人/多人/雕像/画像），如实描述人物特征\n"
+            "3. **物体/动物**：如果主体是特定物体、动物、艺术品等，如实描述\n"
+            "4. **场景/氛围**：如果以上都不适用，描述整体场景\n\n"
+            "## 分类标签（category）：\n"
+            '- "spot" — 景点/建筑/地标/自然风光\n'
+            '- "person" — 人物照片（真人/雕像/画像）\n'
+            '- "object" — 物体/动物/艺术品\n'
+            '- "scene" — 室内场景/氛围图/插画\n'
+            '- "unknown" — 无法判断\n\n'
+            "## 输出格式（严格 JSON）：\n"
+            '{"category": "分类标签", "spotName": "名称", "confidence": 0.85, '
+            '"description": "详细中文描述", '
+            '"visualFeatures": ["特征1", "特征2"], "relatedSpots": ["相关景点1"]}\n\n'
+            "## 重要规则：\n"
+            "- 是人物就标 person，不要硬说成景点\n"
+            "- 景点不存在时 spotName 用描述性短语（如「黄色上衣的女性」），confidence 如实降低\n"
+            "- 描述要具体：服饰颜色款式、发型、姿态、背景环境等"
         )
 
-        user_prompt = "请识别这张图片中的景点。"
+        user_prompt = "请识别这张图片的内容。"
         if hint:
             user_prompt += f" 提示：可能在 {hint} 附近。"
 
@@ -74,6 +89,27 @@ class QwenVLVisionProvider(VisionProvider):
             # 尝试解析 JSON 响应
             return self._parse_response(content, hint)
 
+        except httpx.HTTPStatusError as e:
+            resp_body = e.response.text if e.response else ""
+            # 内容审核拦截：返回明确提示而非静默降级
+            if "data_inspection_failed" in resp_body or "inappropriate" in resp_body:
+                logger.warning("[Qwen-VL] Content moderation blocked this image")
+                return VisionResult(
+                    spot_id="rejected",
+                    spot_name="图片未通过内容审核",
+                    confidence=0.0,
+                    description="该图片被云端内容安全策略拦截，无法识别。请更换图片或联系管理员。",
+                    related_spots=[],
+                    visual_features=[],
+                    category="unknown",
+                )
+            logger.error("[Qwen-VL] API error: %s — %s", e, resp_body[:300])
+            # 其他HTTP错误降级到 Mock
+            from app.providers.vision.mock import MockVisionProvider
+            logger.warning("[Qwen-VL] Falling back to Mock vision")
+            mock = MockVisionProvider()
+            return await mock.recognize(image_url, hint=hint)
+
         except (httpx.HTTPError, json.JSONDecodeError, KeyError) as e:
             logger.error("[Qwen-VL] API error: %s", e)
             # 降级到 Mock
@@ -99,21 +135,33 @@ class QwenVLVisionProvider(VisionProvider):
         except (json.JSONDecodeError, ValueError):
             # 非 JSON 格式，当作纯文本描述
             parsed = {
-                "spotName": hint or "未知景点",
-                "confidence": 0.75,
+                "category": "unknown",
+                "spotName": hint or "未知",
+                "confidence": 0.5,
                 "description": content.strip()[:500],
                 "visualFeatures": [],
                 "relatedSpots": [],
             }
 
+        category = parsed.get("category", "spot")
+        spot_name = parsed.get("spotName", hint or "未知")
+        confidence = float(parsed.get("confidence", 0.5))
+
+        # 人物/物体/场景类：spot_id 用描述性短语代替
+        if category in ("person", "object", "scene", "unknown"):
+            spot_id = parsed.get("spotId", category)
+        else:
+            spot_id = parsed.get("spotId", hint or "")
+
         return VisionResult(
-            spot_id=parsed.get("spotId", hint or ""),
-            spot_name=parsed.get("spotName", hint or "未知景点"),
-            confidence=float(parsed.get("confidence", 0.8)),
+            spot_id=spot_id,
+            spot_name=spot_name,
+            confidence=confidence,
             description=str(parsed.get("description", "")),
             related_spots=[
                 {"spotId": s, "spotName": s}
                 for s in parsed.get("relatedSpots", [])
             ],
             visual_features=list(parsed.get("visualFeatures", [])),
+            category=category,
         )

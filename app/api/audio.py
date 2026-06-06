@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api/audio")
 @router.post("/asr", response_model=ASRResponse)
 async def asr(req: ASRRequest):
     """语音识别：上传音频URL，返回识别文本"""
-    result = asr_transcribe(
+    result = await asr_transcribe(
         req.roomId, req.userId, req.channel, req.audioUrl,
         audio_format=req.audioFormat,
         text_hint=req.textHint,
@@ -22,5 +22,5 @@ async def asr(req: ASRRequest):
 @router.post("/tts", response_model=TTSResponse)
 async def tts(req: TTSRequest):
     """语音合成：输入文本，返回合成音频URL"""
-    result = tts_synthesize(req.text, req.voice, req.speed, req.audioFormat)
+    result = await tts_synthesize(req.text, req.voice, req.speed, req.audioFormat)
     return TTSResponse(audioUrl=result["audioUrl"], duration=result["duration"])
