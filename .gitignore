@@ -47,4 +47,5 @@ deps/
 build/
 CMakeLists.txt
 src/
+!frontend-v2/src/
 rmdb_client/
