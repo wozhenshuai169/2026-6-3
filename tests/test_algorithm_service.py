@@ -71,9 +71,26 @@ def test_evaluation_harness_covers_spec_metrics():
     assert metrics["riskEscalationRecall"] == 1.0
     assert metrics["under10sRate"] == 1.0
     assert metrics["lowAsrClarificationRate"] == 1.0
+    assert metrics["answerMismatchRate"] <= 0.2
+    assert metrics["unsupportedAnswerRate"] == 0.0
+    assert metrics["privateInfoLeakRate"] == 0.0
+    assert metrics["lowConfidenceFallbackRate"] == 1.0
     assert metrics["visionFeatureCoverage"] == 1.0
     assert metrics["routeScoreBreakdownConsistent"] is True
     assert metrics["resumeTextCoverage"] == 1.0
+
+
+def test_scenic_chunks_are_expanded_and_metadata_complete():
+    chunks = TourAIOrchestrator().data.chunks
+    required = {"spotId", "topic", "audience", "routeIds", "source"}
+    assert 80 <= len(chunks) <= 150
+    for chunk in chunks:
+        assert required <= set(chunk), chunk["chunkId"]
+        assert chunk["spotId"]
+        assert chunk["topic"]
+        assert chunk["audience"]
+        assert isinstance(chunk["routeIds"], list)
+        assert chunk["source"]
 
 
 def test_low_asr_confidence_asks_for_clarification():

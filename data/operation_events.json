@@ -1,0 +1,38 @@
+[
+  {
+    "eventId": "event_001",
+    "scenicId": "demo_scenic",
+    "eventType": "weather_alert",
+    "title": "雨天钟楼台阶提醒",
+    "content": "受降雨影响，钟楼台阶湿滑，团队应减少台阶停留时间，并听从团长和工作人员指引。",
+    "severity": "warning",
+    "affectedSpotIds": ["bell_tower"],
+    "affectedRouteIds": ["classic", "history"],
+    "source": "景区公告",
+    "status": "active"
+  },
+  {
+    "eventId": "event_002",
+    "scenicId": "demo_scenic",
+    "eventType": "crowd_warning",
+    "title": "中心庭院人流较集中",
+    "content": "中心庭院当前人流较集中，团队建议靠右侧短暂停留，避免堵塞主通道。",
+    "severity": "info",
+    "affectedSpotIds": ["courtyard"],
+    "affectedRouteIds": ["classic"],
+    "source": "运营大屏",
+    "status": "active"
+  },
+  {
+    "eventId": "event_003",
+    "scenicId": "demo_scenic",
+    "eventType": "route_closed",
+    "title": "石刻长廊临时维护",
+    "content": "石刻长廊局部维护，历史深读线需要由团长确认后调整。",
+    "severity": "critical",
+    "affectedSpotIds": ["stone_gallery"],
+    "affectedRouteIds": ["history"],
+    "source": "景区管理后台",
+    "status": "active"
+  }
+]

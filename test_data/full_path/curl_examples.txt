@@ -1,0 +1,14 @@
+# Start service first:
+# uvicorn ai_algorithm_service.api:app --app-dir src --reload
+
+# Text RAG
+curl -X POST http://127.0.0.1:8000/v1/orchestrate -H "Content-Type: application/json" -d "{\"channel\":\"public\",\"text\":\"主展厅是什么时候建的？\"}"
+
+# Image recognition + RAG explanation
+curl -X POST http://127.0.0.1:8000/v1/orchestrate -H "Content-Type: application/json" -d "{\"channel\":\"public\",\"text\":\"介绍这张图\",\"imageUrl\":\"test_data/full_path/images/bell_tower_01.png\",\"inputMode\":\"image\"}"
+
+# Voice ASR -> decision/RAG/private assistant -> TTS
+curl -X POST http://127.0.0.1:8000/v1/voice/orchestrate -H "Content-Type: application/json" -d "{\"channel\":\"public\",\"audioFormat\":\"wav\",\"audioPath\":\"test_data/full_path/audio/toilet_demo.wav\"}"
+
+# Route recommendation
+curl -X POST http://127.0.0.1:8000/v1/routes/recommend -H "Content-Type: application/json" -d "{\"channel\":\"private\",\"text\":\"推荐路线\",\"profile\":{\"memoryTags\":{\"stamina\":\"low\",\"companions\":[\"elderly\"]}}}"

@@ -1,0 +1,9 @@
+[
+  {"nodeId": "node_main_hall", "spotId": "main_hall", "nodeName": "主展厅", "nodeType": "spot", "accessibilityLevel": "normal"},
+  {"nodeId": "node_courtyard", "spotId": "courtyard", "nodeName": "中心庭院", "nodeType": "spot", "accessibilityLevel": "normal"},
+  {"nodeId": "node_bell_tower", "spotId": "bell_tower", "nodeName": "钟楼", "nodeType": "spot", "accessibilityLevel": "stairs"},
+  {"nodeId": "node_service_center", "spotId": "service_center", "nodeName": "游客服务中心", "nodeType": "facility", "facilityType": "service_center", "accessibilityLevel": "accessible"},
+  {"nodeId": "node_rest_main", "spotId": "main_hall", "nodeName": "主展厅右侧休息区", "nodeType": "rest_area", "facilityType": "rest_area", "accessibilityLevel": "accessible"},
+  {"nodeId": "node_toilet_service", "spotId": "service_center", "nodeName": "服务中心东侧卫生间", "nodeType": "facility", "facilityType": "toilet", "accessibilityLevel": "accessible"},
+  {"nodeId": "node_east_gate", "spotId": "east_gate", "nodeName": "东门出口", "nodeType": "gate", "accessibilityLevel": "accessible"}
+]

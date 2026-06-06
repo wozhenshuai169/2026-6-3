@@ -1,0 +1,101 @@
+[
+  {
+    "caseId": "img_bell_tower",
+    "file": "bell_tower_web.jpg",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Xi%27an_bell_tower.jpg",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Xi%27an_bell_tower.jpg?width=1280",
+    "license": "Public domain",
+    "attribution": "David Castor / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/images/bell_tower_web.jpg"
+  },
+  {
+    "caseId": "img_drum_tower",
+    "file": "drum_tower_web.jpg",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Drum_tower_in_Xi%27an.jpg",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Drum_tower_in_Xi%27an.jpg?width=1280",
+    "license": "Public domain",
+    "attribution": "David Castor / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/images/drum_tower_web.jpg"
+  },
+  {
+    "caseId": "img_main_hall",
+    "file": "main_hall_web.jpg",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Dacheng_Hall.JPG",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Dacheng_Hall.JPG?width=1280",
+    "license": "CC BY 3.0",
+    "attribution": "Gisling / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/images/main_hall_web.jpg"
+  },
+  {
+    "caseId": "img_stone_gallery",
+    "file": "stone_gallery_web.jpg",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Northern_Wei_Stone_Inscription_01.jpg",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Northern_Wei_Stone_Inscription_01.jpg?width=1280",
+    "license": "CC0",
+    "attribution": "Wikimedia Commons",
+    "localPath": "test_data/full_path_web/images/stone_gallery_web.jpg"
+  },
+  {
+    "caseId": "img_courtyard",
+    "file": "courtyard_web.jpg",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Small_courtyard_(6243064129).jpg",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Small_courtyard_(6243064129).jpg?width=1280",
+    "license": "CC BY 2.0",
+    "attribution": "Wikimedia Commons / Flickr source listed on file page",
+    "localPath": "test_data/full_path_web/images/courtyard_web.jpg"
+  },
+  {
+    "caseId": "voice_private_toilet",
+    "file": "toilet_demo.wav",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:LL-Q9192_(cmn)-CanonNi-%E5%8E%95%E6%89%80.wav",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/LL-Q9192_(cmn)-CanonNi-%E5%8E%95%E6%89%80.wav",
+    "license": "CC0",
+    "attribution": "CanonNi / Lingua Libre / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/audio/toilet_demo.wav"
+  },
+  {
+    "caseId": "voice_lost_emergency",
+    "file": "lost_demo.wav",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:LL-Q9192_(cmn)-CanonNi-%E5%95%A5.wav",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/LL-Q9192_(cmn)-CanonNi-%E5%95%A5.wav",
+    "license": "CC0",
+    "attribution": "CanonNi / Lingua Libre / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/audio/lost_demo.wav"
+  },
+  {
+    "caseId": "voice_tired_route_need",
+    "file": "tired_elderly_demo.wav",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:LL-Q9192_(cmn)-CanonNi-%E5%90%88%E5%BD%B1.wav",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/LL-Q9192_(cmn)-CanonNi-%E5%90%88%E5%BD%B1.wav",
+    "license": "CC0",
+    "attribution": "CanonNi / Lingua Libre / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/audio/tired_elderly_demo.wav"
+  },
+  {
+    "caseId": "voice_bell_question",
+    "file": "bell_zhonglou_demo.wav",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:LL-Q9192_(cmn)-CanonNi-%E5%BC%80%E5%BF%83.wav",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/LL-Q9192_(cmn)-CanonNi-%E5%BC%80%E5%BF%83.wav",
+    "license": "CC0",
+    "attribution": "CanonNi / Lingua Libre / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/audio/bell_zhonglou_demo.wav"
+  },
+  {
+    "caseId": "voice_route_short",
+    "file": "route_short_demo.wav",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:LL-Q9192_(cmn)-CanonNi-%E5%A4%9A%E5%85%83%E5%8C%96.wav",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/LL-Q9192_(cmn)-CanonNi-%E5%A4%9A%E5%85%83%E5%8C%96.wav",
+    "license": "CC0",
+    "attribution": "CanonNi / Lingua Libre / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/audio/route_short_demo.wav"
+  },
+  {
+    "caseId": "voice_unclear",
+    "file": "unclear_demo.wav",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:LL-Q9192_(cmn)-CanonNi-%E4%BB%BD.wav",
+    "downloadUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/LL-Q9192_(cmn)-CanonNi-%E4%BB%BD.wav",
+    "license": "CC0",
+    "attribution": "CanonNi / Lingua Libre / Wikimedia Commons",
+    "localPath": "test_data/full_path_web/audio/unclear_demo.wav"
+  }
+]

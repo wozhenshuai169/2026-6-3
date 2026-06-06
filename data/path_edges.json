@@ -1,0 +1,8 @@
+[
+  {"edgeId": "edge_001", "fromNodeId": "node_main_hall", "toNodeId": "node_rest_main", "distanceMeters": 120, "walkingMinutes": 2, "difficulty": "low", "isAccessible": true, "status": "open", "tags": ["less_walking"]},
+  {"edgeId": "edge_002", "fromNodeId": "node_main_hall", "toNodeId": "node_courtyard", "distanceMeters": 180, "walkingMinutes": 3, "difficulty": "low", "isAccessible": true, "status": "open", "tags": ["less_walking"]},
+  {"edgeId": "edge_003", "fromNodeId": "node_courtyard", "toNodeId": "node_bell_tower", "distanceMeters": 220, "walkingMinutes": 4, "difficulty": "medium", "isAccessible": false, "status": "open", "tags": ["stairs"]},
+  {"edgeId": "edge_004", "fromNodeId": "node_courtyard", "toNodeId": "node_service_center", "distanceMeters": 200, "walkingMinutes": 3, "difficulty": "low", "isAccessible": true, "status": "open", "tags": ["less_walking"]},
+  {"edgeId": "edge_005", "fromNodeId": "node_service_center", "toNodeId": "node_toilet_service", "distanceMeters": 40, "walkingMinutes": 1, "difficulty": "low", "isAccessible": true, "status": "open", "tags": ["facility"]},
+  {"edgeId": "edge_006", "fromNodeId": "node_service_center", "toNodeId": "node_east_gate", "distanceMeters": 160, "walkingMinutes": 3, "difficulty": "low", "isAccessible": true, "status": "open", "tags": ["exit", "less_walking"]}
+]

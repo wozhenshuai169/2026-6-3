@@ -1,0 +1,282 @@
+{
+  "version": 1,
+  "name": "AI Algorithm Service full-path demo dataset",
+  "description": "Covers text, image, voice ASR, voice orchestrate, TTS metadata, route recommendation, and fallback behavior.",
+  "baseUrl": "http://127.0.0.1:8000",
+  "generatedAssets": {
+    "images": 6,
+    "voiceInputs": 6
+  },
+  "testGroups": {
+    "text": [
+      {
+        "id": "text_public_rag_main_hall",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "主展厅是什么时候建的？"
+        },
+        "expected": {
+          "expectedDecision": "interrupt_and_answer",
+          "expectedCitation": "chunk_001"
+        }
+      },
+      {
+        "id": "text_private_facility",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "厕所在哪里？"
+        },
+        "expected": {
+          "expectedDecision": "private_reply"
+        }
+      },
+      {
+        "id": "text_unknown_rag",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "这里有没有恐龙化石？"
+        },
+        "expected": {
+          "expectedDecision": "public_reply",
+          "expectedNoFabrication": true
+        }
+      }
+    ],
+    "image": [
+      {
+        "id": "img_bell_tower",
+        "asset": "images/bell_tower_01.png",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path/images/bell_tower_01.png",
+          "inputMode": "image"
+        },
+        "expected": {
+          "decision": "public_reply",
+          "needInterrupt": true,
+          "spotId": "bell_tower",
+          "recognizedObject": "钟楼"
+        }
+      },
+      {
+        "id": "img_drum_tower",
+        "asset": "images/drum_tower_01.png",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path/images/drum_tower_01.png",
+          "inputMode": "image"
+        },
+        "expected": {
+          "decision": "public_reply",
+          "needInterrupt": true,
+          "spotId": "drum_tower",
+          "recognizedObject": "鼓楼"
+        }
+      },
+      {
+        "id": "img_main_hall",
+        "asset": "images/main_hall_01.png",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path/images/main_hall_01.png",
+          "inputMode": "image"
+        },
+        "expected": {
+          "decision": "public_reply",
+          "needInterrupt": true,
+          "spotId": "main_hall",
+          "recognizedObject": "主展厅"
+        }
+      },
+      {
+        "id": "img_stone_gallery",
+        "asset": "images/stone_gallery_01.png",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path/images/stone_gallery_01.png",
+          "inputMode": "image"
+        },
+        "expected": {
+          "decision": "public_reply",
+          "needInterrupt": true,
+          "spotId": "stone_gallery",
+          "recognizedObject": "石刻长廊"
+        }
+      },
+      {
+        "id": "img_courtyard",
+        "asset": "images/courtyard_01.png",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path/images/courtyard_01.png",
+          "inputMode": "image"
+        },
+        "expected": {
+          "decision": "public_reply",
+          "needInterrupt": true,
+          "spotId": "courtyard",
+          "recognizedObject": "中心庭院"
+        }
+      },
+      {
+        "id": "img_unknown",
+        "asset": "images/unknown_arch_detail.png",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path/images/unknown_arch_detail.png",
+          "inputMode": "image"
+        },
+        "expected": {
+          "decision": "public_reply",
+          "needInterrupt": true,
+          "spotId": null,
+          "recognizedObject": null
+        }
+      }
+    ],
+    "voice": [
+      {
+        "id": "voice_private_toilet",
+        "asset": "audio/toilet_demo.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "public",
+          "audioFormat": "wav",
+          "audioPath": "test_data/full_path/audio/toilet_demo.wav"
+        },
+        "expected": {
+          "asrText": "我想去厕所",
+          "decision": "private_reply",
+          "ttsSuccess": true
+        }
+      },
+      {
+        "id": "voice_lost_emergency",
+        "asset": "audio/lost_demo.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "private",
+          "audioFormat": "wav",
+          "audioPath": "test_data/full_path/audio/lost_demo.wav"
+        },
+        "expected": {
+          "asrText": "我找不到队伍了",
+          "decision": "emergency_alert",
+          "ttsSuccess": true
+        }
+      },
+      {
+        "id": "voice_tired_route_need",
+        "asset": "audio/tired_elderly_demo.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "private",
+          "audioFormat": "wav",
+          "audioPath": "test_data/full_path/audio/tired_elderly_demo.wav"
+        },
+        "expected": {
+          "asrText": "老人走不动了，附近能休息吗",
+          "decision": "private_reply",
+          "ttsSuccess": true
+        }
+      },
+      {
+        "id": "voice_bell_question",
+        "asset": "audio/bell_zhonglou_demo.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "public",
+          "audioFormat": "wav",
+          "audioPath": "test_data/full_path/audio/bell_zhonglou_demo.wav"
+        },
+        "expected": {
+          "asrText": "这张图是不是钟楼",
+          "decision": "public_reply",
+          "ttsSuccess": true
+        }
+      },
+      {
+        "id": "voice_route_short",
+        "asset": "audio/route_short_demo.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "private",
+          "audioFormat": "wav",
+          "audioPath": "test_data/full_path/audio/route_short_demo.wav"
+        },
+        "expected": {
+          "asrText": "我想换一条少走路的路线",
+          "decision": "private_reply",
+          "ttsSuccess": true
+        }
+      },
+      {
+        "id": "voice_unclear",
+        "asset": "audio/unclear_demo.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "public",
+          "audioFormat": "wav",
+          "audioPath": "test_data/full_path/audio/unclear_demo.wav"
+        },
+        "expected": {
+          "asrText": "",
+          "decision": "ask_clarification",
+          "ttsSuccess": true
+        }
+      }
+    ],
+    "route": [
+      {
+        "id": "route_elderly_less_walking",
+        "endpoint": "/v1/routes/recommend",
+        "request": {
+          "channel": "private",
+          "text": "推荐路线",
+          "profile": {
+            "memoryTags": {
+              "stamina": "low",
+              "companions": [
+                "elderly"
+              ]
+            }
+          }
+        },
+        "expectedTopRoute": "short"
+      },
+      {
+        "id": "route_history_interest",
+        "endpoint": "/v1/routes/recommend",
+        "request": {
+          "channel": "private",
+          "text": "我想多了解历史建筑",
+          "profile": {
+            "interests": [
+              "history",
+              "architecture"
+            ]
+          }
+        },
+        "expectedTopRouteAnyOf": [
+          "classic",
+          "history"
+        ]
+      }
+    ]
+  }
+}

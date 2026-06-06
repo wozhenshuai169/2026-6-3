@@ -15,7 +15,7 @@ class PrivateAssistant:
         text = request.text
         tags = self.memory.extract(text)
 
-        if contains_any(text, ["走失", "迷路", "找不到队伍", "晕", "胸闷", "摔倒", "受伤", "中暑"]):
+        if contains_any(text, ["走失", "走丢", "迷路", "找不到队伍", "队伍找不着", "晕", "头晕", "胸闷", "摔倒", "受伤", "中暑"]):
             return PrivateAssistantResult(
                 answer="请先停在安全、显眼的位置，不要独自继续走动。我会把高风险情况通知团长，请同时联系附近工作人员。",
                 needAskAuthorization=False,
@@ -42,7 +42,7 @@ class PrivateAssistant:
                 memoryTags=tags,
             )
 
-        if contains_any(text, ["没听懂", "重复", "再讲", "慢一点"]):
+        if contains_any(text, ["没听懂", "重复", "再讲", "慢一点", "慢点"]):
             return PrivateAssistantResult(
                 answer="可以，我会用更慢、更直接的方式补充说明，并尽量不影响公共讲解节奏。",
                 memoryTags={**tags, "explanationPreference": ["slower", "simpler"]},

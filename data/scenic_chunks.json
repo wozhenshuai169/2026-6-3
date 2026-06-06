@@ -1,24 +1,1485 @@
 [
-  {"chunkId":"chunk_001","spotId":"main_hall","title":"主展厅历史介绍","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","history"],"content":"主展厅始建于明代，清代曾进行修缮，是景区保存较完整的礼制建筑。"},
-  {"chunkId":"chunk_002","spotId":"main_hall","title":"主展厅屋顶装饰","type":"spot","source":"灵境古苑建筑资料","updatedAt":"2026-05-01","routeIds":["classic","architecture"],"content":"主展厅屋顶采用灰瓦和脊兽装饰，体现本地传统木作与瓦作工艺。"},
-  {"chunkId":"chunk_003","spotId":"main_hall","title":"主展厅参观动线","type":"route","source":"景区路线说明","updatedAt":"2026-05-01","routeIds":["classic"],"content":"主展厅参观后可从右侧廊道前往钟楼，步行约三分钟。"},
-  {"chunkId":"chunk_004","spotId":"main_hall","title":"主展厅右侧休息区","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["classic"],"content":"最近的休息区在主展厅右侧出口附近，步行约120米，旁边有饮水点。"},
-  {"chunkId":"chunk_005","spotId":"bell_tower","title":"钟楼介绍","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","history"],"content":"钟楼位于中轴线北侧，曾用于报时和礼仪活动，是景区内保存较完整的传统建筑之一。"},
-  {"chunkId":"chunk_006","spotId":"bell_tower","title":"钟楼建筑结构","type":"spot","source":"灵境古苑建筑资料","updatedAt":"2026-05-01","routeIds":["architecture"],"content":"钟楼采用重檐结构，木构件连接处保留榫卯做法，适合观察传统建筑受力方式。"},
-  {"chunkId":"chunk_007","spotId":"bell_tower","title":"钟楼安全提示","type":"notice","source":"景区公告","updatedAt":"2026-05-01","routeIds":["classic"],"content":"钟楼台阶较窄，雨天或人流密集时应听从工作人员指引，不建议逆行。"},
-  {"chunkId":"chunk_008","spotId":"drum_tower","title":"鼓楼介绍","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","history"],"content":"鼓楼与钟楼相对，承担仪式提示和空间标识功能，形成一钟一鼓的传统格局。"},
-  {"chunkId":"chunk_009","spotId":"drum_tower","title":"鼓楼展陈","type":"spot","source":"展陈说明","updatedAt":"2026-05-01","routeIds":["history"],"content":"鼓楼内展示传统报时器具复制件，可帮助游客理解古代城市生活节奏。"},
-  {"chunkId":"chunk_010","spotId":"courtyard","title":"中心庭院","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","family"],"content":"中心庭院连接主展厅、钟楼和鼓楼，视野开阔，适合团队短暂停留和合影。"},
-  {"chunkId":"chunk_011","spotId":"courtyard","title":"庭院植被","type":"spot","source":"园林资料","updatedAt":"2026-05-01","routeIds":["family"],"content":"庭院种植银杏和海棠，春季看花，秋季看叶，是路线中节奏较舒缓的一段。"},
-  {"chunkId":"chunk_012","spotId":"stone_gallery","title":"石刻长廊","type":"spot","source":"文物资料","updatedAt":"2026-05-01","routeIds":["history","architecture"],"content":"石刻长廊保存多件碑刻复制件，内容涉及地方修建记录、捐资名单和诗文题记。"},
-  {"chunkId":"chunk_013","spotId":"stone_gallery","title":"石刻观赏方式","type":"spot","source":"讲解员手册","updatedAt":"2026-05-01","routeIds":["history"],"content":"观看石刻时可先看题额，再看正文布局，最后观察刻痕深浅和书体差异。"},
-  {"chunkId":"chunk_014","spotId":"service_center","title":"游客服务中心","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["classic","family"],"content":"游客服务中心提供咨询、失物登记、简易急救包和轮椅借用服务。"},
-  {"chunkId":"chunk_015","spotId":"service_center","title":"卫生间位置","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["classic","family"],"content":"卫生间位于游客服务中心东侧和主展厅右侧出口，两处均有清晰指示牌。"},
-  {"chunkId":"chunk_016","spotId":"east_gate","title":"东门出口","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["short"],"content":"东门出口靠近停车区，适合作为行动不便游客的提前集合点，但离队需团长确认。"},
-  {"chunkId":"chunk_017","spotId":"main_hall","title":"开放时间","type":"notice","source":"景区公告","updatedAt":"2026-05-01","routeIds":["classic","short","history"],"content":"景区常规开放时间为9:00至17:30，重大节假日以当日公告为准。"},
-  {"chunkId":"chunk_018","spotId":"courtyard","title":"人流提醒","type":"notice","source":"景区公告","updatedAt":"2026-05-01","routeIds":["classic"],"content":"中心庭院在上午10点至11点人流较集中，团队应靠右侧停留，避免堵塞主通道。"},
-  {"chunkId":"chunk_019","spotId":"bell_tower","title":"雨天路线提醒","type":"notice","source":"景区公告","updatedAt":"2026-05-01","routeIds":["short"],"content":"雨天可减少钟楼台阶停留时间，优先选择主展厅、庭院和服务中心的短线游览。"},
-  {"chunkId":"chunk_020","spotId":"main_hall","title":"儿童友好提示","type":"facility","source":"游客服务信息","updatedAt":"2026-05-01","routeIds":["family"],"content":"带儿童游客可在主展厅右侧领取亲子任务卡，路线以庭院和服务中心为主要停留点。"},
-  {"chunkId":"chunk_021","spotId":"bell_tower","title":"钟楼与鼓楼关系","type":"spot","source":"灵境古苑讲解手册","updatedAt":"2026-05-01","routeIds":["classic","history"],"content":"钟楼和鼓楼共同构成景区礼仪空间的节奏中心，一个偏报时，一个偏仪式提示。"}
+  {
+    "chunkId": "chunk_001",
+    "spotId": "main_hall",
+    "title": "主展厅历史介绍",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "灵境古苑讲解手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "主展厅始建于明代，清代曾进行修缮，是景区保存较完整的礼制建筑。"
+  },
+  {
+    "chunkId": "chunk_002",
+    "spotId": "main_hall",
+    "title": "主展厅屋顶装饰",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "灵境古苑建筑资料",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "architecture"
+    ],
+    "content": "主展厅屋顶采用灰瓦和脊兽装饰，体现本地传统木作与瓦作工艺。"
+  },
+  {
+    "chunkId": "chunk_003",
+    "spotId": "main_hall",
+    "title": "主展厅参观动线",
+    "topic": "route",
+    "audience": "团队游客",
+    "type": "route",
+    "source": "景区路线说明",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic"
+    ],
+    "content": "主展厅参观后可从右侧廊道前往钟楼，步行约三分钟。"
+  },
+  {
+    "chunkId": "chunk_004",
+    "spotId": "main_hall",
+    "title": "主展厅右侧休息区",
+    "topic": "facility",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic"
+    ],
+    "content": "最近的休息区在主展厅右侧出口附近，步行约120米，旁边有饮水点。"
+  },
+  {
+    "chunkId": "chunk_005",
+    "spotId": "bell_tower",
+    "title": "钟楼介绍",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "灵境古苑讲解手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "钟楼位于中轴线北侧，曾用于报时和礼仪活动，是景区内保存较完整的传统建筑之一。"
+  },
+  {
+    "chunkId": "chunk_006",
+    "spotId": "bell_tower",
+    "title": "钟楼建筑结构",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "灵境古苑建筑资料",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "architecture"
+    ],
+    "content": "钟楼采用重檐结构，木构件连接处保留榫卯做法，适合观察传统建筑受力方式。"
+  },
+  {
+    "chunkId": "chunk_007",
+    "spotId": "bell_tower",
+    "title": "钟楼安全提示",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic"
+    ],
+    "content": "钟楼台阶较窄，雨天或人流密集时应听从工作人员指引，不建议逆行。"
+  },
+  {
+    "chunkId": "chunk_008",
+    "spotId": "drum_tower",
+    "title": "鼓楼介绍",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "灵境古苑讲解手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼与钟楼相对，承担仪式提示和空间标识功能，形成一钟一鼓的传统格局。"
+  },
+  {
+    "chunkId": "chunk_009",
+    "spotId": "drum_tower",
+    "title": "鼓楼展陈",
+    "topic": "exhibition",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "展陈说明",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history"
+    ],
+    "content": "鼓楼内展示传统报时器具复制件，可帮助游客理解古代城市生活节奏。"
+  },
+  {
+    "chunkId": "chunk_010",
+    "spotId": "courtyard",
+    "title": "中心庭院",
+    "topic": "landscape",
+    "audience": "团队游客",
+    "type": "spot",
+    "source": "灵境古苑讲解手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family"
+    ],
+    "content": "中心庭院连接主展厅、钟楼和鼓楼，视野开阔，适合团队短暂停留和合影。"
+  },
+  {
+    "chunkId": "chunk_011",
+    "spotId": "courtyard",
+    "title": "庭院植被",
+    "topic": "landscape",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "园林资料",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "family"
+    ],
+    "content": "庭院种植银杏和海棠，春季看花，秋季看叶，是路线中节奏较舒缓的一段。"
+  },
+  {
+    "chunkId": "chunk_012",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊",
+    "topic": "history",
+    "audience": "文化爱好者",
+    "type": "spot",
+    "source": "文物资料",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊保存多件碑刻复制件，内容涉及地方修建记录、捐资名单和诗文题记。"
+  },
+  {
+    "chunkId": "chunk_013",
+    "spotId": "stone_gallery",
+    "title": "石刻观赏方式",
+    "topic": "education",
+    "audience": "研学游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history"
+    ],
+    "content": "观看石刻时可先看题额，再看正文布局，最后观察刻痕深浅和书体差异。"
+  },
+  {
+    "chunkId": "chunk_014",
+    "spotId": "service_center",
+    "title": "游客服务中心",
+    "topic": "facility",
+    "audience": "所有游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family"
+    ],
+    "content": "游客服务中心提供咨询、失物登记、简易急救包和轮椅借用服务。"
+  },
+  {
+    "chunkId": "chunk_015",
+    "spotId": "service_center",
+    "title": "卫生间位置",
+    "topic": "facility",
+    "audience": "所有游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family"
+    ],
+    "content": "卫生间位于游客服务中心东侧和主展厅右侧出口，两处均有清晰指示牌。"
+  },
+  {
+    "chunkId": "chunk_016",
+    "spotId": "east_gate",
+    "title": "东门出口",
+    "topic": "facility",
+    "audience": "行动不便游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "东门出口靠近停车区，适合作为行动不便游客的提前集合点，但离队需团长确认。"
+  },
+  {
+    "chunkId": "chunk_017",
+    "spotId": "main_hall",
+    "title": "开放时间",
+    "topic": "notice",
+    "audience": "所有游客",
+    "type": "notice",
+    "source": "景区公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "short",
+      "history"
+    ],
+    "content": "景区常规开放时间为9:00至17:30，重大节假日以当日公告为准。"
+  },
+  {
+    "chunkId": "chunk_018",
+    "spotId": "courtyard",
+    "title": "人流提醒",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic"
+    ],
+    "content": "中心庭院在上午10点至11点人流较集中，团队应靠右侧停留，避免堵塞主通道。"
+  },
+  {
+    "chunkId": "chunk_019",
+    "spotId": "bell_tower",
+    "title": "雨天路线提醒",
+    "topic": "safety",
+    "audience": "老人儿童",
+    "type": "notice",
+    "source": "景区公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "雨天可减少钟楼台阶停留时间，优先选择主展厅、庭院和服务中心的短线游览。"
+  },
+  {
+    "chunkId": "chunk_020",
+    "spotId": "main_hall",
+    "title": "儿童友好提示",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "family"
+    ],
+    "content": "带儿童游客可在主展厅右侧领取亲子任务卡，路线以庭院和服务中心为主要停留点。"
+  },
+  {
+    "chunkId": "chunk_021",
+    "spotId": "bell_tower",
+    "title": "钟楼与鼓楼关系",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "灵境古苑讲解手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "钟楼和鼓楼共同构成景区礼仪空间的节奏中心，一个偏报时，一个偏仪式提示。"
+  },
+  {
+    "chunkId": "chunk_022",
+    "spotId": "main_hall",
+    "title": "主展厅历史沿革",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "主展厅的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
+  },
+  {
+    "chunkId": "chunk_023",
+    "spotId": "main_hall",
+    "title": "主展厅建筑看点",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "建筑资料卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "主展厅适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
+  },
+  {
+    "chunkId": "chunk_024",
+    "spotId": "main_hall",
+    "title": "主展厅游览动线",
+    "topic": "route",
+    "audience": "团队游客",
+    "type": "route",
+    "source": "路线运营手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "从主展厅出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+  },
+  {
+    "chunkId": "chunk_025",
+    "spotId": "main_hall",
+    "title": "主展厅安全提醒",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区安全提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "主展厅人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
+  },
+  {
+    "chunkId": "chunk_026",
+    "spotId": "main_hall",
+    "title": "主展厅附近设施",
+    "topic": "facility",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "主展厅附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
+  },
+  {
+    "chunkId": "chunk_027",
+    "spotId": "main_hall",
+    "title": "主展厅亲子讲解",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "亲子导览卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "带儿童参观主展厅时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
+  },
+  {
+    "chunkId": "chunk_028",
+    "spotId": "main_hall",
+    "title": "主展厅拍照建议",
+    "topic": "photo",
+    "audience": "拍照游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "主展厅拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
+  },
+  {
+    "chunkId": "chunk_029",
+    "spotId": "main_hall",
+    "title": "主展厅文化寓意",
+    "topic": "culture",
+    "audience": "文化爱好者",
+    "type": "spot",
+    "source": "文史资料摘编",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "主展厅的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
+  },
+  {
+    "chunkId": "chunk_030",
+    "spotId": "main_hall",
+    "title": "主展厅无障碍提示",
+    "topic": "accessibility",
+    "audience": "行动不便游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "主展厅附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
+  },
+  {
+    "chunkId": "chunk_031",
+    "spotId": "main_hall",
+    "title": "主展厅运营公告",
+    "topic": "operation",
+    "audience": "团长",
+    "type": "notice",
+    "source": "景区运营公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture",
+      "family"
+    ],
+    "content": "主展厅相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
+  },
+  {
+    "chunkId": "chunk_032",
+    "spotId": "bell_tower",
+    "title": "钟楼历史沿革",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "钟楼的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
+  },
+  {
+    "chunkId": "chunk_033",
+    "spotId": "bell_tower",
+    "title": "钟楼建筑看点",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "建筑资料卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "钟楼适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
+  },
+  {
+    "chunkId": "chunk_034",
+    "spotId": "bell_tower",
+    "title": "钟楼游览动线",
+    "topic": "route",
+    "audience": "团队游客",
+    "type": "route",
+    "source": "路线运营手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "从钟楼出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+  },
+  {
+    "chunkId": "chunk_035",
+    "spotId": "bell_tower",
+    "title": "钟楼安全提醒",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区安全提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "钟楼人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
+  },
+  {
+    "chunkId": "chunk_036",
+    "spotId": "bell_tower",
+    "title": "钟楼附近设施",
+    "topic": "facility",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "钟楼附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
+  },
+  {
+    "chunkId": "chunk_037",
+    "spotId": "bell_tower",
+    "title": "钟楼亲子讲解",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "亲子导览卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "带儿童参观钟楼时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
+  },
+  {
+    "chunkId": "chunk_038",
+    "spotId": "bell_tower",
+    "title": "钟楼拍照建议",
+    "topic": "photo",
+    "audience": "拍照游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "钟楼拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
+  },
+  {
+    "chunkId": "chunk_039",
+    "spotId": "bell_tower",
+    "title": "钟楼文化寓意",
+    "topic": "culture",
+    "audience": "文化爱好者",
+    "type": "spot",
+    "source": "文史资料摘编",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "钟楼的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
+  },
+  {
+    "chunkId": "chunk_040",
+    "spotId": "bell_tower",
+    "title": "钟楼无障碍提示",
+    "topic": "accessibility",
+    "audience": "行动不便游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "钟楼附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
+  },
+  {
+    "chunkId": "chunk_041",
+    "spotId": "bell_tower",
+    "title": "钟楼运营公告",
+    "topic": "operation",
+    "audience": "团长",
+    "type": "notice",
+    "source": "景区运营公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history",
+      "architecture"
+    ],
+    "content": "钟楼相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
+  },
+  {
+    "chunkId": "chunk_042",
+    "spotId": "drum_tower",
+    "title": "鼓楼历史沿革",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
+  },
+  {
+    "chunkId": "chunk_043",
+    "spotId": "drum_tower",
+    "title": "鼓楼建筑看点",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "建筑资料卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
+  },
+  {
+    "chunkId": "chunk_044",
+    "spotId": "drum_tower",
+    "title": "鼓楼游览动线",
+    "topic": "route",
+    "audience": "团队游客",
+    "type": "route",
+    "source": "路线运营手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "从鼓楼出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+  },
+  {
+    "chunkId": "chunk_045",
+    "spotId": "drum_tower",
+    "title": "鼓楼安全提醒",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区安全提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
+  },
+  {
+    "chunkId": "chunk_046",
+    "spotId": "drum_tower",
+    "title": "鼓楼附近设施",
+    "topic": "facility",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
+  },
+  {
+    "chunkId": "chunk_047",
+    "spotId": "drum_tower",
+    "title": "鼓楼亲子讲解",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "亲子导览卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "带儿童参观鼓楼时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
+  },
+  {
+    "chunkId": "chunk_048",
+    "spotId": "drum_tower",
+    "title": "鼓楼拍照建议",
+    "topic": "photo",
+    "audience": "拍照游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
+  },
+  {
+    "chunkId": "chunk_049",
+    "spotId": "drum_tower",
+    "title": "鼓楼文化寓意",
+    "topic": "culture",
+    "audience": "文化爱好者",
+    "type": "spot",
+    "source": "文史资料摘编",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
+  },
+  {
+    "chunkId": "chunk_050",
+    "spotId": "drum_tower",
+    "title": "鼓楼无障碍提示",
+    "topic": "accessibility",
+    "audience": "行动不便游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
+  },
+  {
+    "chunkId": "chunk_051",
+    "spotId": "drum_tower",
+    "title": "鼓楼运营公告",
+    "topic": "operation",
+    "audience": "团长",
+    "type": "notice",
+    "source": "景区运营公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "history"
+    ],
+    "content": "鼓楼相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
+  },
+  {
+    "chunkId": "chunk_052",
+    "spotId": "courtyard",
+    "title": "中心庭院历史沿革",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "中心庭院的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
+  },
+  {
+    "chunkId": "chunk_053",
+    "spotId": "courtyard",
+    "title": "中心庭院建筑看点",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "建筑资料卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "中心庭院适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
+  },
+  {
+    "chunkId": "chunk_054",
+    "spotId": "courtyard",
+    "title": "中心庭院游览动线",
+    "topic": "route",
+    "audience": "团队游客",
+    "type": "route",
+    "source": "路线运营手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "从中心庭院出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+  },
+  {
+    "chunkId": "chunk_055",
+    "spotId": "courtyard",
+    "title": "中心庭院安全提醒",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区安全提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "中心庭院人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
+  },
+  {
+    "chunkId": "chunk_056",
+    "spotId": "courtyard",
+    "title": "中心庭院附近设施",
+    "topic": "facility",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "中心庭院附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
+  },
+  {
+    "chunkId": "chunk_057",
+    "spotId": "courtyard",
+    "title": "中心庭院亲子讲解",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "亲子导览卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "带儿童参观中心庭院时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
+  },
+  {
+    "chunkId": "chunk_058",
+    "spotId": "courtyard",
+    "title": "中心庭院拍照建议",
+    "topic": "photo",
+    "audience": "拍照游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "中心庭院拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
+  },
+  {
+    "chunkId": "chunk_059",
+    "spotId": "courtyard",
+    "title": "中心庭院文化寓意",
+    "topic": "culture",
+    "audience": "文化爱好者",
+    "type": "spot",
+    "source": "文史资料摘编",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "中心庭院的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
+  },
+  {
+    "chunkId": "chunk_060",
+    "spotId": "courtyard",
+    "title": "中心庭院无障碍提示",
+    "topic": "accessibility",
+    "audience": "行动不便游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "中心庭院附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
+  },
+  {
+    "chunkId": "chunk_061",
+    "spotId": "courtyard",
+    "title": "中心庭院运营公告",
+    "topic": "operation",
+    "audience": "团长",
+    "type": "notice",
+    "source": "景区运营公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "中心庭院相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
+  },
+  {
+    "chunkId": "chunk_062",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊历史沿革",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
+  },
+  {
+    "chunkId": "chunk_063",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊建筑看点",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "建筑资料卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
+  },
+  {
+    "chunkId": "chunk_064",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊游览动线",
+    "topic": "route",
+    "audience": "团队游客",
+    "type": "route",
+    "source": "路线运营手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "从石刻长廊出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+  },
+  {
+    "chunkId": "chunk_065",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊安全提醒",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区安全提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
+  },
+  {
+    "chunkId": "chunk_066",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊附近设施",
+    "topic": "facility",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
+  },
+  {
+    "chunkId": "chunk_067",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊亲子讲解",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "亲子导览卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "带儿童参观石刻长廊时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
+  },
+  {
+    "chunkId": "chunk_068",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊拍照建议",
+    "topic": "photo",
+    "audience": "拍照游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
+  },
+  {
+    "chunkId": "chunk_069",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊文化寓意",
+    "topic": "culture",
+    "audience": "文化爱好者",
+    "type": "spot",
+    "source": "文史资料摘编",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
+  },
+  {
+    "chunkId": "chunk_070",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊无障碍提示",
+    "topic": "accessibility",
+    "audience": "行动不便游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
+  },
+  {
+    "chunkId": "chunk_071",
+    "spotId": "stone_gallery",
+    "title": "石刻长廊运营公告",
+    "topic": "operation",
+    "audience": "团长",
+    "type": "notice",
+    "source": "景区运营公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "architecture"
+    ],
+    "content": "石刻长廊相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
+  },
+  {
+    "chunkId": "chunk_072",
+    "spotId": "service_center",
+    "title": "游客服务中心历史沿革",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "游客服务中心的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
+  },
+  {
+    "chunkId": "chunk_073",
+    "spotId": "service_center",
+    "title": "游客服务中心建筑看点",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "建筑资料卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "游客服务中心适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
+  },
+  {
+    "chunkId": "chunk_074",
+    "spotId": "service_center",
+    "title": "游客服务中心游览动线",
+    "topic": "route",
+    "audience": "团队游客",
+    "type": "route",
+    "source": "路线运营手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "从游客服务中心出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+  },
+  {
+    "chunkId": "chunk_075",
+    "spotId": "service_center",
+    "title": "游客服务中心安全提醒",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区安全提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "游客服务中心人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
+  },
+  {
+    "chunkId": "chunk_076",
+    "spotId": "service_center",
+    "title": "游客服务中心附近设施",
+    "topic": "facility",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "游客服务中心附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
+  },
+  {
+    "chunkId": "chunk_077",
+    "spotId": "service_center",
+    "title": "游客服务中心亲子讲解",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "亲子导览卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "带儿童参观游客服务中心时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
+  },
+  {
+    "chunkId": "chunk_078",
+    "spotId": "service_center",
+    "title": "游客服务中心无障碍提示",
+    "topic": "accessibility",
+    "audience": "行动不便游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "游客服务中心附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
+  },
+  {
+    "chunkId": "chunk_079",
+    "spotId": "service_center",
+    "title": "游客服务中心运营公告",
+    "topic": "operation",
+    "audience": "团长",
+    "type": "notice",
+    "source": "景区运营公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "游客服务中心相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
+  },
+  {
+    "chunkId": "chunk_080",
+    "spotId": "east_gate",
+    "title": "东门出口历史沿革",
+    "topic": "history",
+    "audience": "大众游客",
+    "type": "spot",
+    "source": "讲解员手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "东门出口的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
+  },
+  {
+    "chunkId": "chunk_081",
+    "spotId": "east_gate",
+    "title": "东门出口建筑看点",
+    "topic": "architecture",
+    "audience": "建筑爱好者",
+    "type": "spot",
+    "source": "建筑资料卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "东门出口适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
+  },
+  {
+    "chunkId": "chunk_082",
+    "spotId": "east_gate",
+    "title": "东门出口游览动线",
+    "topic": "route",
+    "audience": "团队游客",
+    "type": "route",
+    "source": "路线运营手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "从东门出口出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+  },
+  {
+    "chunkId": "chunk_083",
+    "spotId": "east_gate",
+    "title": "东门出口安全提醒",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区安全提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "东门出口人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
+  },
+  {
+    "chunkId": "chunk_084",
+    "spotId": "east_gate",
+    "title": "东门出口附近设施",
+    "topic": "facility",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "东门出口附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
+  },
+  {
+    "chunkId": "chunk_085",
+    "spotId": "east_gate",
+    "title": "东门出口亲子讲解",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "亲子导览卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "带儿童参观东门出口时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
+  },
+  {
+    "chunkId": "chunk_086",
+    "spotId": "east_gate",
+    "title": "东门出口无障碍提示",
+    "topic": "accessibility",
+    "audience": "行动不便游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "东门出口附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
+  },
+  {
+    "chunkId": "chunk_087",
+    "spotId": "east_gate",
+    "title": "东门出口运营公告",
+    "topic": "operation",
+    "audience": "团长",
+    "type": "notice",
+    "source": "景区运营公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "东门出口相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
+  },
+  {
+    "chunkId": "chunk_088",
+    "spotId": "service_center",
+    "title": "服务中心失物登记",
+    "topic": "facility",
+    "audience": "所有游客",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "游客遗失物品可到游客服务中心登记，登记时需说明遗失位置、时间和物品特征。"
+  },
+  {
+    "chunkId": "chunk_089",
+    "spotId": "service_center",
+    "title": "服务中心急救包",
+    "topic": "safety",
+    "audience": "老人儿童",
+    "type": "facility",
+    "source": "游客服务信息",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family",
+      "short"
+    ],
+    "content": "游客服务中心备有简易急救包，严重不适仍应联系景区工作人员或拨打急救电话。"
+  },
+  {
+    "chunkId": "chunk_090",
+    "spotId": "courtyard",
+    "title": "庭院团队集合点",
+    "topic": "route",
+    "audience": "团长",
+    "type": "route",
+    "source": "团队游览手册",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "family"
+    ],
+    "content": "中心庭院适合作为阶段性集合点，团长应选择靠边区域点名，避免阻塞主通道。"
+  },
+  {
+    "chunkId": "chunk_091",
+    "spotId": "main_hall",
+    "title": "主展厅研学提示",
+    "topic": "education",
+    "audience": "研学游客",
+    "type": "spot",
+    "source": "研学任务卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history",
+      "family"
+    ],
+    "content": "研学团队可围绕主展厅年代、屋顶构件和参观动线设置三个观察问题。"
+  },
+  {
+    "chunkId": "chunk_092",
+    "spotId": "bell_tower",
+    "title": "钟楼拍摄秩序",
+    "topic": "photo",
+    "audience": "拍照游客",
+    "type": "notice",
+    "source": "景区公告",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic"
+    ],
+    "content": "钟楼前拍照请避开台阶口和通行线，团队合影不宜长时间占用入口。"
+  },
+  {
+    "chunkId": "chunk_093",
+    "spotId": "drum_tower",
+    "title": "鼓楼亲子观察",
+    "topic": "family",
+    "audience": "亲子游客",
+    "type": "spot",
+    "source": "亲子导览卡",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "family",
+      "history"
+    ],
+    "content": "儿童可观察鼓楼中鼓形展陈和对称布局，理解声音与城市时间管理的关系。"
+  },
+  {
+    "chunkId": "chunk_094",
+    "spotId": "stone_gallery",
+    "title": "石刻保护提示",
+    "topic": "safety",
+    "audience": "所有游客",
+    "type": "notice",
+    "source": "文物保护提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "history"
+    ],
+    "content": "参观石刻长廊时不要触摸拓片和碑面，不要使用强光贴近照射。"
+  },
+  {
+    "chunkId": "chunk_095",
+    "spotId": "east_gate",
+    "title": "东门离队确认",
+    "topic": "safety",
+    "audience": "团长",
+    "type": "notice",
+    "source": "团队安全规范",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "short"
+    ],
+    "content": "东门靠近停车区，但游客提前离队必须由团长确认，AI 助手不能单独批准。"
+  },
+  {
+    "chunkId": "chunk_096",
+    "spotId": "courtyard",
+    "title": "庭院天气变化",
+    "topic": "safety",
+    "audience": "团队游客",
+    "type": "notice",
+    "source": "景区安全提示",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic",
+      "short"
+    ],
+    "content": "庭院开阔，遇到雷电、暴雨或大风时应减少停留并转入室内区域。"
+  },
+  {
+    "chunkId": "chunk_097",
+    "spotId": "main_hall",
+    "title": "主展厅无依据问题处理",
+    "topic": "qa_policy",
+    "audience": "讲解员",
+    "type": "notice",
+    "source": "AI回答规范",
+    "updatedAt": "2026-05-01",
+    "routeIds": [
+      "classic"
+    ],
+    "content": "资料未覆盖的问题应明确说明没有查到可靠信息，不应编造年代、人物或文物细节。"
+  }
 ]
-

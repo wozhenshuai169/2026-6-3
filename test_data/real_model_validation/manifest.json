@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "name": "Real model validation cases",
+  "description": "Content-driven validation for real ASR/TTS/vision providers. Voice files must contain the listed Chinese sentences, not filename-triggered mock tones.",
+  "baseUrl": "http://127.0.0.1:8000",
+  "thresholds": {
+    "minAsrConfidence": 0.6,
+    "minVisionConfidence": 0.55
+  },
+  "testGroups": {
+    "image": [
+      {
+        "id": "real_img_bell_tower",
+        "asset": "test_data/full_path_web/images/bell_tower_web.jpg",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path_web/images/bell_tower_web.jpg",
+          "inputMode": "image"
+        },
+        "expected": {
+          "recognizedObjectAnyOf": ["钟楼", "bell tower", "Bell Tower"],
+          "decision": "public_reply"
+        }
+      },
+      {
+        "id": "real_img_drum_tower",
+        "asset": "test_data/full_path_web/images/drum_tower_web.jpg",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path_web/images/drum_tower_web.jpg",
+          "inputMode": "image"
+        },
+        "expected": {
+          "recognizedObjectAnyOf": ["鼓楼", "drum tower", "Drum Tower"],
+          "decision": "public_reply"
+        }
+      },
+      {
+        "id": "real_img_main_hall",
+        "asset": "test_data/full_path_web/images/main_hall_web.jpg",
+        "endpoint": "/v1/orchestrate",
+        "request": {
+          "channel": "public",
+          "text": "介绍这张图",
+          "imageUrl": "test_data/full_path_web/images/main_hall_web.jpg",
+          "inputMode": "image"
+        },
+        "expected": {
+          "recognizedObjectAnyOf": ["主展厅", "大成殿", "hall", "Hall"],
+          "decision": "public_reply"
+        }
+      }
+    ],
+    "voice": [
+      {
+        "id": "real_voice_private_toilet",
+        "recordingText": "我想去厕所",
+        "asset": "test_data/real_model_validation/audio/toilet_sentence.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "public",
+          "audioFormat": "wav",
+          "audioPath": "test_data/real_model_validation/audio/toilet_sentence.wav"
+        },
+        "expected": {
+          "asrContainsAnyOf": ["厕所", "洗手间"],
+          "decision": "private_reply",
+          "ttsSuccess": true
+        }
+      },
+      {
+        "id": "real_voice_lost_emergency",
+        "recordingText": "我找不到队伍了",
+        "asset": "test_data/real_model_validation/audio/lost_sentence.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "private",
+          "audioFormat": "wav",
+          "audioPath": "test_data/real_model_validation/audio/lost_sentence.wav"
+        },
+        "expected": {
+          "asrContainsAnyOf": ["找不到队伍", "走失", "迷路"],
+          "decision": "emergency_alert",
+          "ttsSuccess": true
+        }
+      },
+      {
+        "id": "real_voice_route_short",
+        "recordingText": "我想换一条少走路的路线",
+        "asset": "test_data/real_model_validation/audio/route_short_sentence.wav",
+        "endpoint": "/v1/voice/orchestrate",
+        "request": {
+          "channel": "private",
+          "audioFormat": "wav",
+          "audioPath": "test_data/real_model_validation/audio/route_short_sentence.wav"
+        },
+        "expected": {
+          "asrContainsAnyOf": ["少走路", "路线"],
+          "decision": "private_reply",
+          "ttsSuccess": true
+        }
+      }
+    ],
+    "tts": [
+      {
+        "id": "real_tts_answer",
+        "endpoint": "/v1/voice/tts",
+        "request": {
+          "text": "前方右侧就是游客服务中心，那里可以咨询、休息，也可以借用轮椅。"
+        },
+        "expected": {
+          "success": true,
+          "audioUrlRequired": true
+        }
+      }
+    ]
+  }
+}

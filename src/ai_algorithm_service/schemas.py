@@ -6,16 +6,16 @@ from pydantic import BaseModel, Field
 
 
 Channel = Literal["public", "private", "leader", "system"]
-InputMode = Literal["text", "voice", "image"]
+InputMode = Literal["text", "voice", "image", "multimodal"]
 DecisionType = Literal[
     "ignore",
+    "ask_clarification",
     "public_reply",
     "private_reply",
     "interrupt_and_answer",
     "notify_leader",
     "emergency_alert",
     "summarize_discussion",
-    "ask_clarification",
 ]
 RiskLevel = Literal["none", "low", "medium", "high"]
 
@@ -88,6 +88,8 @@ class QAResult(BaseModel):
     citations: list[Citation] = Field(default_factory=list)
     confidence: float = 0.0
     stateUpdate: dict[str, Any] = Field(default_factory=dict)
+    retrievedChunkIds: list[str] = Field(default_factory=list)
+    retrievalScores: dict[str, Any] = Field(default_factory=dict)
 
 
 class PrivateAssistantResult(BaseModel):
