@@ -1,15 +1,28 @@
 from pydantic import BaseModel
 
 
+class AvatarStateSchema(BaseModel):
+    status: str
+    emotion: str = "friendly"
+    action: str = "answer"
+    mouthOpen: bool = False
+
+
 class PublicQuestionRequest(BaseModel):
     roomId: str
     userId: str
     question: str
+    needAudio: bool = True
 
 
 class PublicQuestionResponse(BaseModel):
     roomId: str
     answer: str
+    audioUrl: str | None = None
+    duration: float = 0.0
+    sources: list["SourceSchema"] = []
+    avatarState: AvatarStateSchema
+    warning: str | None = None
 
 
 class SourceSchema(BaseModel):
@@ -30,8 +43,12 @@ class VoiceQuestionResponse(BaseModel):
     asrText: str
     decision: str
     answer: str
-    audioUrl: str
+    audioUrl: str | None = None
+    duration: float = 0.0
     resumeText: str
-    resumeAudioUrl: str
+    resumeAudioUrl: str | None = None
+    resumeDuration: float = 0.0
     sources: list[SourceSchema] = []
+    avatarState: AvatarStateSchema
+    warning: str | None = None
     events: list[dict] = []

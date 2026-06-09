@@ -28,7 +28,8 @@ def join_room(room_id: str, token: str) -> tuple[dict | None, str | None, str | 
     user = get_user_by_token(token)
     if user is None:
         return room, None, None
-    room["members"].append({"userId": user["userId"], "userName": user["userName"]})
+    if not any(member["userId"] == user["userId"] for member in room["members"]):
+        room["members"].append({"userId": user["userId"], "userName": user["userName"]})
     return room, user["userId"], user["userName"]
 
 
@@ -41,7 +42,6 @@ def update_current_spot(room_id: str, spot_id: str) -> dict | None:
 
 
 def get_avatar_state(room_id: str) -> dict | None:
-    """根据房间状态推导数字人的 aiStatus / emotion / action"""
     room = rooms.get(room_id)
     if room is None:
         return None
@@ -50,38 +50,34 @@ def get_avatar_state(room_id: str) -> dict | None:
     current_spot = room.get("currentSpot", "")
     member_count = len(room.get("members", []))
 
-    # 默认状态
-    ai_status = "idle"
-    emotion = "friendly"
-    action = "idle"
-    text = "大家好！我是您的智能导游，随时为您解答问题。"
-    audio_url = ""
-
     if status != "active":
-        ai_status = "paused"
-        emotion = "neutral"
-        action = "paused"
-        text = "导览已暂停。"
-    elif member_count == 0:
-        ai_status = "idle"
-        emotion = "neutral"
-        action = "idle"
-        text = "等待游客加入房间..."
-    elif current_spot:
-        ai_status = "speaking"
-        emotion = "friendly"
-        action = "speaking"
-        text = f"欢迎来到{current_spot}！让我为您介绍这里的历史和文化。"
-    else:
-        ai_status = "idle"
-        emotion = "friendly"
-        action = "idle"
-        text = "大家好！我是您的智能导游，随时为您解答问题。"
-
+        return {
+            "aiStatus": "paused",
+            "emotion": "neutral",
+            "action": "paused",
+            "text": "导览已暂停。",
+            "audioUrl": "",
+        }
+    if member_count == 0:
+        return {
+            "aiStatus": "idle",
+            "emotion": "neutral",
+            "action": "idle",
+            "text": "等待游客加入房间。",
+            "audioUrl": "",
+        }
+    if current_spot:
+        return {
+            "aiStatus": "speaking",
+            "emotion": "friendly",
+            "action": "speaking",
+            "text": f"欢迎来到{current_spot}，让我为大家介绍这里的历史和文化。",
+            "audioUrl": "",
+        }
     return {
-        "aiStatus": ai_status,
-        "emotion": emotion,
-        "action": action,
-        "text": text,
-        "audioUrl": audio_url,
+        "aiStatus": "idle",
+        "emotion": "friendly",
+        "action": "idle",
+        "text": "大家好，我是您的智能导游，随时为您解答问题。",
+        "audioUrl": "",
     }

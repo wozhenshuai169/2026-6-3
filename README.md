@@ -1,36 +1,64 @@
-# AI Algorithm Service
+# A5 智能导游系统
 
-面向团队旅游场景的算法编排服务，实现 `SPEC.md` 第 2 周要求：介入决策、公共 RAG 问答、私人助理、自然续讲、固定图库识景 V0.1、可解释路线推荐、Mock ASR/TTS 语音链路、记忆标签抽取、评测入口，以及 HTTP / WebSocket 联调接口。
+## 主后端启动方式
 
-## 运行
-
-```bash
-uvicorn ai_algorithm_service.api:app --app-dir src --reload
-```
-
-默认接口前缀为 `/v1`，健康检查：
+前端只访问主后端 `/api/...`，不要直接访问算法服务。
 
 ```bash
-curl http://127.0.0.1:8000/health
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-## 主要接口
+常用地址：
 
-- `POST /v1/orchestrate`：文本/图片统一编排入口。
-- `POST /v1/voice/asr`：Mock ASR，支持 `wav` / `mp3`。
-- `POST /v1/voice/tts`：Mock TTS，返回导游音色音频元数据。
-- `POST /v1/voice/orchestrate`：ASR -> 算法编排 -> TTS 语音问答链路。
-- `POST /v1/vision/recognize`：固定图库识景，返回景点、视觉特征和 RAG 讲解。
-- `POST /v1/routes/recommend`：路线推荐，返回可解释 `scoreBreakdown`。
-- `POST /v1/evaluation/run`：运行演示评测集。
+- API 服务：`http://127.0.0.1:8000`
+- Swagger 文档：`http://127.0.0.1:8000/docs`
+- OpenAPI：`http://127.0.0.1:8000/openapi.json`
+- 静态文件：`http://127.0.0.1:8000/uploads/`
 
-## 架构位置
+## 联调架构
 
 ```text
-游客端 / 团长端
-    -> 主后端 Backend
-        -> AI Algorithm Service
-            -> ModelProvider / ScenicDataAdapter / Local RAG Index
+frontend-v2
+  -> /api/...
+app.main
+  -> app/services + providers
+  -> algorithm_service or model providers
+LLM / RAG / ASR / TTS / Vision / Route
 ```
 
-主后端维护房间、频道、导览状态和 WebSocket 连接；算法服务消费状态，返回结构化决策、自然语言回答和状态更新建议。
+前端唯一入口：`/api/...`
+
+算法服务内部调试入口：`/v1/...`
+
+`/v1` 只保留给主后端内部调用或算法同学本地调试，不作为前端联调路径。
+
+## 主后端接口
+
+- `POST /api/auth/register`
+- `POST /api/rooms`
+- `POST /api/rooms/{roomId}/join`
+- `GET /api/rooms/{roomId}`
+- `GET /api/rooms/{roomId}/avatar-state`
+- `POST /api/ai/public-question`
+- `POST /api/ai/public-voice-question`
+- `POST /api/audio/asr`
+- `POST /api/audio/tts`
+- `POST /api/vision/recognize`
+- `GET /api/spots/{spotId}`
+- `GET /api/spots/{spotId}/nearby`
+- `POST /api/recommend/route`
+- `GET /api/routes`
+- `GET /api/routes/{routeId}`
+- `POST /api/kb/upload`
+- `GET /api/kb/docs`
+- `POST /api/kb/rebuild`
+- `POST /api/kb/test-query`
+- `GET /api/dashboard/overview`
+- `GET /api/dashboard/hot-questions`
+- `GET /api/dashboard/hot-spots`
+- `GET /api/dashboard/satisfaction`
+- `GET /api/dashboard/system-metrics`
+
+## 算法服务内部调试
+
+算法服务可继续保留 `/v1` 前缀作为内部接口，例如 `/v1/orchestrate`、`/v1/vision/recognize`、`/v1/routes/recommend`。前端和产品联调文档不应使用这些路径。

@@ -1,58 +1,45 @@
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api.rooms import router as rooms_router
 from app.api.ai import router as ai_router
-from app.api.users import router as users_router
 from app.api.audio import router as audio_router
-from app.api.vision import router as vision_router
+from app.api.dashboard import router as dashboard_router
+from app.api.kb import router as kb_router
 from app.api.recommend import router as recommend_router
+from app.api.rooms import router as rooms_router
+from app.api.routes import router as routes_router
+from app.api.spots import router as spots_router
+from app.api.users import router as users_router
+from app.api.vision import router as vision_router
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.middleware.logging import RequestLoggingMiddleware
 
-# ── 初始化日志 ──────────────────────────────────
+for directory in ["uploads", "uploads/tts", "uploads/kb", "data"]:
+    Path(directory).mkdir(parents=True, exist_ok=True)
+
 setup_logging(settings.log_level)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="A5 智能导游系统", version="1.0.0")
-
-# ── 中间件 ─────────────────────────────────────
+app = FastAPI(title="A5 Intelligent Tour Guide System", version="1.0.0")
 app.add_middleware(RequestLoggingMiddleware)
 
-# ── 路由 ───────────────────────────────────────
 app.include_router(rooms_router)
 app.include_router(ai_router)
 app.include_router(users_router)
 app.include_router(audio_router)
 app.include_router(vision_router)
 app.include_router(recommend_router)
+app.include_router(spots_router)
+app.include_router(routes_router)
+app.include_router(kb_router)
+app.include_router(dashboard_router)
 
-# ── 静态文件 ───────────────────────────────────
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-
-# ═══════════════════════════════════════════════════
-# 全局异常兜底
-# ═══════════════════════════════════════════════════
-
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """兜底异常处理 —— 记录日志并返回统一错误格式。"""
-    logger.exception(
-        "Unhandled exception at %s %s: %s",
-        request.method, request.url.path, exc,
-    )
-    return JSONResponse(
-        status_code=500,
-        content={
-            "detail": "服务器内部错误，请稍后重试。",
-            "errorCode": "INTERNAL_ERROR",
-        },
-    )
 
 
 @app.exception_handler(ValueError)
@@ -69,20 +56,27 @@ async def timeout_error_handler(request: Request, exc: TimeoutError):
     logger.warning("Timeout at %s %s: %s", request.method, request.url.path, exc)
     return JSONResponse(
         status_code=504,
-        content={"detail": "请求超时，请重试。", "errorCode": "TIMEOUT"},
+        content={"detail": "Request timed out, please retry.", "errorCode": "TIMEOUT"},
     )
 
 
-# ═══════════════════════════════════════════════════
-# 根路径
-# ═══════════════════════════════════════════════════
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled exception at %s %s: %s", request.method, request.url.path, exc)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error, please retry later.", "errorCode": "INTERNAL_ERROR"},
+    )
+
 
 @app.get("/")
 async def root():
     return {
-        "service": "A5 智能导游系统",
+        "service": "A5 Intelligent Tour Guide System",
         "version": "1.0.0",
         "status": "running",
+        "frontendApiPrefix": "/api",
+        "algorithmInternalPrefix": "/v1",
         "features": {
             "asr": settings.enable_asr,
             "tts": settings.enable_tts,

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
+from app.schemas.avatar import AvatarStateResponse
 from app.schemas.rooms import (
     CreateRoomRequest,
     CreateRoomResponse,
@@ -9,14 +10,8 @@ from app.schemas.rooms import (
     UpdateSpotRequest,
     UpdateSpotResponse,
 )
-from app.schemas.avatar import AvatarStateResponse
-from app.services.rooms import (
-    create_room,
-    get_room,
-    join_room,
-    update_current_spot,
-    get_avatar_state,
-)
+from app.services.rooms import create_room, get_avatar_state, get_room, join_room, update_current_spot
+from app.services.stats import record_event
 from app.services.users import get_user_by_token
 
 router = APIRouter(prefix="/api")
@@ -26,8 +21,10 @@ router = APIRouter(prefix="/api")
 async def create(req: CreateRoomRequest):
     user = get_user_by_token(req.token)
     if user is None:
-        raise HTTPException(status_code=401, detail="无效的认证令牌")
+        record_event("create_room", success=False, payload={"error": "invalid_token"})
+        raise HTTPException(status_code=401, detail="Invalid token")
     room = create_room(user["userId"])
+    record_event("create_room", success=True, payload={"roomId": room["roomId"], "leaderId": user["userId"]})
     return CreateRoomResponse(roomId=room["roomId"], status="created")
 
 
@@ -35,7 +32,7 @@ async def create(req: CreateRoomRequest):
 async def get_status(roomId: str):
     room = get_room(roomId)
     if room is None:
-        raise HTTPException(status_code=404, detail="房间不存在")
+        raise HTTPException(status_code=404, detail="Room not found")
     return RoomStatusResponse(
         roomId=room["roomId"],
         members=room["members"],
@@ -48,9 +45,12 @@ async def get_status(roomId: str):
 async def join(roomId: str, req: JoinRoomRequest):
     room, user_id, _ = join_room(roomId, req.token)
     if room is None:
-        raise HTTPException(status_code=404, detail="房间不存在")
+        record_event("join_room", success=False, payload={"roomId": roomId, "error": "room_not_found"})
+        raise HTTPException(status_code=404, detail="Room not found")
     if user_id is None:
-        raise HTTPException(status_code=401, detail="无效的认证令牌")
+        record_event("join_room", success=False, payload={"roomId": roomId, "error": "invalid_token"})
+        raise HTTPException(status_code=401, detail="Invalid token")
+    record_event("join_room", success=True, payload={"roomId": roomId, "userId": user_id})
     return JoinRoomResponse(roomId=roomId, userId=user_id, status="joined")
 
 
@@ -58,18 +58,14 @@ async def join(roomId: str, req: JoinRoomRequest):
 async def update_spot(roomId: str, req: UpdateSpotRequest):
     room = update_current_spot(roomId, req.spotId)
     if room is None:
-        raise HTTPException(status_code=404, detail="房间不存在")
-    return UpdateSpotResponse(
-        roomId=roomId,
-        currentSpot=req.spotId,
-        status="updated",
-    )
+        raise HTTPException(status_code=404, detail="Room not found")
+    record_event("update_spot", success=True, payload={"roomId": roomId, "spotId": req.spotId})
+    return UpdateSpotResponse(roomId=roomId, currentSpot=req.spotId, status="updated")
 
 
 @router.get("/rooms/{roomId}/avatar-state", response_model=AvatarStateResponse)
 async def avatar_state(roomId: str):
-    """数字人状态：返回当前 AI 导游的 aiStatus / emotion / action"""
     state = get_avatar_state(roomId)
     if state is None:
-        raise HTTPException(status_code=404, detail="房间不存在")
+        raise HTTPException(status_code=404, detail="Room not found")
     return AvatarStateResponse(**state)

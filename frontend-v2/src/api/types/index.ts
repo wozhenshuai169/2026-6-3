@@ -63,14 +63,26 @@ export interface PublicQuestionRequest {
   roomId: string
   userId: string
   question: string
+  needAudio?: boolean
 }
 export interface PublicQuestionResponse {
   roomId: string
   answer: string
+  audioUrl?: string | null
+  duration: number
+  sources: SourceSchema[]
+  avatarState: PublicAvatarState
+  warning?: string | null
 }
 export interface SourceSchema {
   title: string
   chunkId: string
+}
+export interface PublicAvatarState {
+  status: string
+  emotion: string
+  action: string
+  mouthOpen: boolean
 }
 export interface VoiceQuestionRequest {
   roomId: string
@@ -84,10 +96,14 @@ export interface VoiceQuestionResponse {
   asrText: string
   decision: string
   answer: string
-  audioUrl: string
+  audioUrl?: string | null
+  duration: number
   resumeText: string
-  resumeAudioUrl: string
+  resumeAudioUrl?: string | null
+  resumeDuration: number
   sources: SourceSchema[]
+  avatarState: PublicAvatarState
+  warning?: string | null
   events: Record<string, unknown>[]
 }
 
@@ -159,7 +175,9 @@ export interface RouteSpot {
   stayMinutes: number
 }
 export interface RouteRecommendResponse {
+  routeId: string
   routeName: string
+  score: number
   estimatedTime: number
   spots: RouteSpot[]
   reason: string

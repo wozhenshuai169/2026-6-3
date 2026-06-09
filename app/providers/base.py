@@ -33,7 +33,7 @@ class RouteResult:
     distance: float = 0.0        # 公里，Mock 为 0
     difficulty: str = ""         # low / medium / high
     matched_preferences: list[str] = field(default_factory=list)
-    score_breakdown: dict[str, int] = field(default_factory=dict)
+    score_breakdown: dict[str, float] = field(default_factory=dict)
 
 
 # ── 抽象 Provider ───────────────────────────────────────

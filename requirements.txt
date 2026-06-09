@@ -10,6 +10,7 @@ python-dotenv>=1.0
 
 # ── HTTP 客户端 ──
 httpx>=0.28.0
+python-multipart>=0.0.20
 
 # ── TTS (Microsoft Edge 免费引擎) ──
 edge-tts>=7.0
