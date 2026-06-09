@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AvatarStateSchema(BaseModel):
@@ -20,7 +20,7 @@ class PublicQuestionResponse(BaseModel):
     answer: str
     audioUrl: str | None = None
     duration: float = 0.0
-    sources: list["SourceSchema"] = []
+    sources: list["SourceSchema"] = Field(default_factory=list)
     avatarState: AvatarStateSchema
     warning: str | None = None
 
@@ -48,7 +48,7 @@ class VoiceQuestionResponse(BaseModel):
     resumeText: str
     resumeAudioUrl: str | None = None
     resumeDuration: float = 0.0
-    sources: list[SourceSchema] = []
+    sources: list[SourceSchema] = Field(default_factory=list)
     avatarState: AvatarStateSchema
     warning: str | None = None
-    events: list[dict] = []
+    events: list[dict] = Field(default_factory=list)

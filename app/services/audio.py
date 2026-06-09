@@ -1,6 +1,9 @@
 """Audio services with provider fallback and stable /uploads URLs."""
 
 import logging
+import math
+import struct
+import wave
 from pathlib import Path
 from time import time
 from uuid import uuid4
@@ -33,11 +36,27 @@ def _tts_filename(room_id: str | None, audio_format: str) -> str:
     return f"tts_{_safe_room_part(room_id)}_{int(time())}_{uuid4().hex[:4]}.{audio_format}"
 
 
-def _ensure_demo_audio_file(path: Path) -> None:
-    # Mock/demo mode needs a reachable URL even when no real engine writes a file.
+def _write_demo_wav(path: Path, duration: float = 0.9) -> None:
+    # Mock/demo mode needs a real playable file, not an empty placeholder.
     path.parent.mkdir(parents=True, exist_ok=True)
-    if not path.exists():
-        path.write_bytes(b"")
+    sample_rate = 16000
+    frame_count = max(1, int(sample_rate * duration))
+    amplitude = 1200
+    frequency = 440.0
+    with wave.open(str(path), "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(sample_rate)
+        for index in range(frame_count):
+            value = int(amplitude * math.sin(2 * math.pi * frequency * index / sample_rate))
+            wav.writeframesraw(struct.pack("<h", value))
+
+
+def _uploaded_file_from_url(audio_url: str) -> Path | None:
+    prefix = "/uploads/tts/"
+    if not audio_url.startswith(prefix):
+        return None
+    return UPLOADS_TTS_DIR / audio_url.removeprefix(prefix)
 
 
 async def asr_transcribe(
@@ -148,10 +167,17 @@ async def tts_synthesize(
             }
 
     if result.get("success", True):
-        filename = _tts_filename(room_id, fmt)
-        path = UPLOADS_TTS_DIR / filename
-        _ensure_demo_audio_file(path)
-        result["audioUrl"] = f"/uploads/tts/{filename}"
-        result["format"] = fmt
+        provider_url = result.get("audioUrl", "")
+        provider_path = _uploaded_file_from_url(provider_url) if provider_url else None
+        if provider_path and provider_path.exists() and provider_path.stat().st_size > 0:
+            result["audioUrl"] = provider_url
+        else:
+            filename = _tts_filename(room_id, "wav")
+            path = UPLOADS_TTS_DIR / filename
+            duration = float(result.get("duration", 0.9) or 0.9)
+            _write_demo_wav(path, duration=min(max(duration, 0.5), 3.0))
+            result["audioUrl"] = f"/uploads/tts/{filename}"
+            result["duration"] = duration
+            result["format"] = "wav"
 
     return result

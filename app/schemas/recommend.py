@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class RoutePreferences(BaseModel):
-    interest: list[str] = []
+    interest: list[str] = Field(default_factory=list)
     timeLimit: int = 60
     physicalStrength: str = "medium"
     withChildren: bool = False
@@ -31,5 +31,5 @@ class RouteRecommendResponse(BaseModel):
     reason: str
     distance: float = 0.0
     difficulty: str = ""
-    matchedPreferences: list[str] = []
-    scoreBreakdown: dict[str, float] = {}
+    matchedPreferences: list[str] = Field(default_factory=list)
+    scoreBreakdown: dict[str, float] = Field(default_factory=dict)

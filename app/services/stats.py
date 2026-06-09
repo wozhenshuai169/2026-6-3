@@ -43,7 +43,7 @@ def record_event(
 
 
 def get_overview(active_rooms: int = 0, visitor_count: int = 0) -> dict[str, Any]:
-    real = {
+    increments = {
         "todayVisitors": visitor_count,
         "activeRooms": active_rooms,
         "questionCount": _success["public_question"] + _failure["public_question"],
@@ -51,7 +51,7 @@ def get_overview(active_rooms: int = 0, visitor_count: int = 0) -> dict[str, Any
         "visionRecognizeCount": _success["vision_recognize"] + _failure["vision_recognize"],
         "routeRecommendCount": _success["route_recommend"] + _failure["route_recommend"],
     }
-    return {key: value or _DEFAULT_OVERVIEW[key] for key, value in real.items()}
+    return {key: _DEFAULT_OVERVIEW[key] + value for key, value in increments.items()}
 
 
 def get_hot_questions() -> list[dict[str, Any]]:
