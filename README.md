@@ -62,3 +62,9 @@ LLM / RAG / ASR / TTS / Vision / Route
 ## 算法服务内部调试
 
 算法服务可继续保留 `/v1` 前缀作为内部接口，例如 `/v1/orchestrate`、`/v1/vision/recognize`、`/v1/routes/recommend`。前端和产品联调文档不应使用这些路径。
+
+## 测试集覆盖度
+
+真实外部 API 验证使用 `test_data/real_model_validation/manifest.json` 和 `tools/run_real_model_validation.py`。
+
+测试集覆盖度建议见 [TEST_DATA_RECOMMENDATIONS.md](TEST_DATA_RECOMMENDATIONS.md)。

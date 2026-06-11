@@ -28,6 +28,15 @@ Do not use the old generated tone files for real ASR validation.
 
 ## Run
 
+如果要验证真实外部 Provider，先按当前环境配置对应 Key / endpoint。主后端已有 ProviderFactory，会在配置齐全时走真实实现，否则自动降级 mock。
+
+常见配置示例：
+
+```bash
+set DASHSCOPE_API_KEY=your-dashscope-key
+set DEEPSEEK_API_KEY=your-deepseek-key
+```
+
 Start the backend first:
 
 ```bash
