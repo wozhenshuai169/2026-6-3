@@ -49,3 +49,7 @@ CMakeLists.txt
 src/
 !frontend-v2/src/
 rmdb_client/
+.chrome-qa/
+.edge-qa/
+.pw-profile/
+.pw-temp/

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>AI 私人助手</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans+SC:wght@400;500&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: { extend: {
+            colors: {
+                "tertiary-container":"#1a1c1b","primary":"#000000","on-secondary-fixed":"#331200","on-primary":"#ffffff",
+                "surface-container-low":"#f5f3f3","secondary":"#9a4605","on-secondary-fixed-variant":"#763300",
+                "on-background":"#1b1c1c","primary-fixed":"#e4e2e4","inverse-surface":"#303031","on-secondary":"#ffffff",
+                "on-primary-fixed-variant":"#474649","surface":"#fbf9f9","surface-tint":"#5f5e60","error-container":"#ffdad6",
+                "secondary-fixed-dim":"#ffb68e","on-tertiary-fixed-variant":"#454746","surface-container-highest":"#e4e2e2",
+                "primary-container":"#1b1b1d","on-error-container":"#93000a","error":"#ba1a1a","outline-variant":"#c7c6ca",
+                "on-tertiary":"#ffffff","surface-bright":"#fbf9f9","on-error":"#ffffff","inverse-on-surface":"#f2f0f0",
+                "on-surface":"#1b1c1c","surface-dim":"#dbdad9","on-surface-variant":"#46464a","on-secondary-container":"#6e2f00",
+                "tertiary":"#000000","on-primary-container":"#858386","tertiary-fixed":"#e2e3e1","surface-variant":"#e4e2e2",
+                "surface-container":"#efeded","surface-container-lowest":"#ffffff","secondary-container":"#fe9251",
+                "tertiary-fixed-dim":"#c6c7c5","secondary-fixed":"#ffdbca","on-primary-fixed":"#1b1b1d",
+                "on-tertiary-container":"#838483","on-tertiary-fixed":"#1a1c1b","background":"#fbf9f9",
+                "surface-container-high":"#e9e8e7","inverse-primary":"#c8c6c8","primary-fixed-dim":"#c8c6c8","outline":"#77767b",
+                "chat-bg":"#FAFAF7","chat-border":"#E8E8E4","chat-accent":"#E07B3C","chat-accent-bg":"#FDF6F1",
+                "chat-text-dark":"#1C1C1A","chat-text-muted":"#A0A09A","chat-bubble-gray":"#F5F5F2"
+            },
+            borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+            spacing:{"2xl":"48px","3xl":"64px","xs":"4px","gutter":"24px","margin-mobile":"16px","sm":"8px","margin-desktop":"64px","xl":"32px","lg":"24px","md":"16px"},
+            fontFamily:{"body-md":["Noto Sans SC","sans-serif"],"display-lg-mobile":["Noto Serif SC","serif"],"body-lg":["Noto Sans SC","sans-serif"],"label-xs":["Inter","sans-serif"],"label-sm":["Inter","sans-serif"],"display-lg":["Noto Serif SC","serif"],"headline-md":["Noto Serif SC","serif"]},
+            fontSize:{"body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],"display-lg-mobile":["32px",{"lineHeight":"40px","fontWeight":"500"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"label-xs":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"label-sm":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"500"}],"display-lg":["48px",{"lineHeight":"60px","letterSpacing":"-0.02em","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"500"}]}
+        }}
+    }
+</script>
+<style>
+    ::-webkit-scrollbar{display:none}
+    *{-ms-overflow-style:none;scrollbar-width:none}
+    body{min-height:max(884px,100dvh)}
+    @keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .msg-animate{animation:fadeIn 0.3s ease-out}
+    @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.3}}
+    .recording-dot{animation:pulse-dot 0.8s ease-in-out infinite}
+    .loading-spinner{width:20px;height:20px;border:2px solid #E07B3C;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+</style>
+<link rel="stylesheet" href="../../assets/css/studio-command.css"/>
+</head>
+<body class="bg-chat-bg text-chat-text-dark font-body-md h-screen w-screen overflow-hidden flex flex-col antialiased">
+
+<!-- Navbar -->
+<header class="h-[52px] min-h-[52px] bg-white border-b border-chat-border flex items-center justify-between px-4 z-10 shrink-0">
+    <button id="btn-back" class="w-8 h-8 flex items-center justify-center text-chat-text-dark opacity-80 hover:opacity-100 transition-opacity">
+        <span class="material-symbols-outlined" style="font-size:20px">close</span>
+    </button>
+    <h1 class="font-headline-md text-[16px] font-medium tracking-wide">AI私人助手</h1>
+    <button id="btn-more" class="w-8 h-8 flex items-center justify-center text-chat-text-dark opacity-80 hover:opacity-100 transition-opacity">
+        <span class="material-symbols-outlined" style="font-size:20px">more_horiz</span>
+    </button>
+</header>
+
+<!-- Privacy Notice -->
+<div class="h-[28px] min-h-[28px] bg-chat-accent-bg flex items-center justify-center shrink-0">
+    <p class="text-[11px] text-chat-accent font-medium flex items-center gap-1">
+        <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL'1">lock</span>
+        私密对话 · 仅你和AI可见
+    </p>
+</div>
+
+<!-- Chat Content -->
+<main id="chat-container" class="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-4">
+    <!-- Dynamically populated -->
+</main>
+
+<!-- Quick Actions -->
+<div class="shrink-0 bg-white border-t border-chat-border flex flex-col">
+    <div class="w-full overflow-x-auto py-3 px-4 flex gap-2 border-b border-chat-border/50 bg-chat-bg/50">
+        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="最近的洗手间在哪里？"><span class="material-symbols-outlined text-[17px]">wc</span>洗手间在哪</button>
+        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="我累了，附近有可以休息的地方吗？"><span class="material-symbols-outlined text-[17px]">chair</span>附近休息区</button>
+        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="有没有不用爬太多台阶的路线？"><span class="material-symbols-outlined text-[17px]">directions_walk</span>不想爬太多台阶</button>
+        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="这个景点最佳拍照位置在哪里？">📸 最佳拍照点</button>
+    </div>
+
+    <!-- Input Bar -->
+    <div class="h-[72px] flex items-center px-4 gap-3 bg-white pb-safe">
+        <button id="btn-mic" class="w-10 h-10 rounded-full bg-chat-bubble-gray flex items-center justify-center text-chat-text-dark hover:bg-chat-border transition-colors shrink-0">
+            <span class="material-symbols-outlined" style="font-size:22px">mic</span>
+        </button>
+        <div class="flex-1 h-10 bg-chat-bubble-gray rounded-full px-4 flex items-center border border-transparent focus-within:border-chat-accent focus-within:bg-white transition-all">
+            <input id="chat-input" class="w-full bg-transparent border-none focus:ring-0 text-[15px] p-0 placeholder:text-chat-text-muted text-chat-text-dark" placeholder="想问什么？" type="text"/>
+        </div>
+        <button id="btn-send" class="w-10 h-10 rounded-full bg-chat-accent flex items-center justify-center text-white hover:opacity-90 transition-opacity shrink-0 shadow-sm">
+            <span class="material-symbols-outlined" style="font-size:20px;transform:translateX(1px);font-variation-settings:'FILL'1">send</span>
+        </button>
+    </div>
+</div>
+
+<script src="../../assets/js/config.js"></script>
+<script src="../../assets/js/state.js"></script>
+<script src="../../assets/js/api-client.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/ui.js"></script>
+<script src="../../assets/js/router.js"></script>
+<script src="../../assets/js/components.js"></script>
+<script src="../../assets/js/pages/ai-assistant.js"></script>
+<script src="../../assets/js/studio-command.js"></script>
+</body></html>
