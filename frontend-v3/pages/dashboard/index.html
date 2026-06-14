@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>数据大屏 · 智慧导览</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: { extend: {
+            colors: {
+                "primary-container":"#1b1b1d","on-surface":"#1b1c1c","primary-fixed-dim":"#c8c6c8","outline":"#77767b",
+                "tertiary-fixed-dim":"#c6c7c5","surface-variant":"#e4e2e2","surface-container-high":"#e9e8e7",
+                "surface-tint":"#5f5e60","on-tertiary-fixed":"#1a1c1b","inverse-primary":"#c8c6c8",
+                "error-container":"#ffdad6","tertiary":"#000000","on-primary-fixed-variant":"#474649",
+                "on-primary-fixed":"#1b1b1d","on-secondary-container":"#6e2f00","primary-fixed":"#e4e2e4",
+                "tertiary-container":"#1a1c1b","on-secondary-fixed":"#331200","surface-bright":"#fbf9f9",
+                "error":"#ba1a1a","surface":"#1C1C1E","outline-variant":"#2E2E30","secondary-fixed":"#ffdbca",
+                "tertiary-fixed":"#e2e3e1","secondary":"#E07B3C","on-surface-variant":"#8E8E90",
+                "on-background":"#ECECED","surface-dim":"#dbdad9","surface-container-lowest":"#1C1C1E",
+                "secondary-container":"#fe9251","on-tertiary-container":"#838483","primary":"#E07B3C",
+                "inverse-surface":"#303031","secondary-fixed-dim":"#ffb68e","background":"#1C1C1E",
+                "on-tertiary":"#ffffff","surface-container":"#242426","on-primary":"#ffffff",
+                "on-secondary-fixed-variant":"#763300","on-error":"#ffffff","on-error-container":"#93000a",
+                "surface-container-low":"#f5f3f3","inverse-on-surface":"#f2f0f0","on-secondary":"#ffffff",
+                "surface-container-highest":"#e4e2e2","on-primary-container":"#858386","on-tertiary-fixed-variant":"#454746"
+            },
+            borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+            spacing:{"sm":"8px","xs":"4px","md":"16px","margin-mobile":"16px","lg":"24px","margin-desktop":"64px","xl":"32px","2xl":"48px","3xl":"64px","gutter":"24px"},
+            fontFamily:{"body-md":["Inter","sans-serif"],"label-xs":["Inter","sans-serif"],"label-sm":["Inter","sans-serif"],"headline-md":["Noto Serif SC","serif"],"display-lg":["Noto Serif SC","serif"],"display-lg-mobile":["Noto Serif SC","serif"],"body-lg":["Inter","sans-serif"]},
+            fontSize:{"body-md":["16px",{"lineHeight":"24px"}],"label-xs":["11px",{"lineHeight":"16px","letterSpacing":"0.05em"}],"label-sm":["14px",{"lineHeight":"20px","letterSpacing":"0.01em"}],"headline-md":["24px",{"lineHeight":"32px"}],"display-lg":["48px",{"lineHeight":"60px"}],"display-lg-mobile":["32px",{"lineHeight":"40px"}],"body-lg":["18px",{"lineHeight":"28px"}]}
+        }}
+    }
+</script>
+<style>
+    body{background:#1C1C1E;color:#ECECED;font-family:Inter,sans-serif}
+    .material-symbols-outlined{font-variation-settings:'FILL'0,'wght'300,'GRAD'0,'opsz'24}
+    .card{border-radius:12px;padding:20px;background:#242426;border:1px solid #2E2E30}
+    .tabular-nums{font-variant-numeric:tabular-nums}
+    .custom-scrollbar::-webkit-scrollbar{width:4px}.custom-scrollbar::-webkit-scrollbar-track{background:transparent}.custom-scrollbar::-webkit-scrollbar-thumb{background:#2E2E30;border-radius:10px}
+    .skeleton{background:linear-gradient(90deg,#2E2E30 25%,#3A3A3C 50%,#2E2E30 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    @keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .loading-spinner{width:20px;height:20px;border:2px solid #E07B3C;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+</style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+<!-- Top Status Bar -->
+<header class="h-[56px] min-h-[56px] bg-background border-b border-outline-variant flex items-center justify-between px-6 shrink-0">
+    <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#E07B3C] text-[20px]">landscape</span>
+        <span class="font-headline-md text-[18px] text-on-background">智慧导览 · 数据大屏</span>
+    </div>
+    <div class="flex items-center gap-4">
+        <span id="clock" class="tabular-nums text-sm text-on-surface-variant"></span>
+        <span class="text-xs text-on-surface-variant">数据每30秒刷新</span>
+        <button id="btn-refresh" class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-on-background transition-colors">
+            <span class="material-symbols-outlined text-[18px]">refresh</span>
+        </button>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto custom-scrollbar p-6 flex flex-col gap-4">
+
+    <!-- Row 1: KPI Cards -->
+    <div class="grid grid-cols-4 gap-4" id="kpi-row">
+        <div class="card" id="kpi-1"><div class="loading-spinner mx-auto"></div></div>
+        <div class="card" id="kpi-2"><div class="loading-spinner mx-auto"></div></div>
+        <div class="card" id="kpi-3"><div class="loading-spinner mx-auto"></div></div>
+        <div class="card" id="kpi-4"><div class="loading-spinner mx-auto"></div></div>
+    </div>
+
+    <!-- Row 2: Chart + Hot Questions -->
+    <div class="grid grid-cols-[3fr_2fr] gap-4" style="height:280px;">
+        <div class="card flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-sm font-medium text-on-background">问答趋势 · 今日</span>
+                <div class="flex items-center gap-4 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#E07B3C]"></span> 公共问题</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#8E8E90]"></span> 私人问题</span>
+                </div>
+            </div>
+            <canvas id="trend-chart" class="flex-1 w-full"></canvas>
+        </div>
+        <div class="card flex flex-col">
+            <span class="text-sm font-medium text-on-background mb-4">热门问题 Top 5</span>
+            <ol id="hot-questions-list" class="flex flex-col gap-3 flex-1 overflow-y-auto custom-scrollbar text-sm"></ol>
+        </div>
+    </div>
+
+    <!-- Row 3: Secondary Cards -->
+    <div class="grid grid-cols-3 gap-4" style="height:220px;">
+        <!-- Active Rooms -->
+        <div class="card flex flex-col" id="rooms-card">
+            <span class="text-xs text-on-surface-variant uppercase tracking-wider mb-2">活跃房间</span>
+            <div id="rooms-content"><div class="loading-spinner mx-auto mt-4"></div></div>
+        </div>
+        <!-- Sentiment -->
+        <div class="card flex flex-col text-center justify-center" id="sentiment-card">
+            <span class="text-xs text-on-surface-variant uppercase tracking-wider mb-2">满意度</span>
+            <div id="sentiment-content"><div class="loading-spinner mx-auto"></div></div>
+        </div>
+        <!-- Recent Q&A Log -->
+        <div class="card flex flex-col overflow-hidden" id="log-card">
+            <span class="text-xs text-on-surface-variant uppercase tracking-wider mb-2">最近问答日志</span>
+            <div id="log-content" class="flex-1 overflow-y-auto custom-scrollbar text-xs"></div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Bottom Status Bar -->
+<footer class="h-[32px] min-h-[32px] bg-[#1E1E20] flex items-center justify-center shrink-0">
+    <span id="footer-status" class="text-xs text-on-surface-variant">系统运行中 · 加载中...</span>
+</footer>
+
+<script src="../../assets/js/config.js"></script>
+<script src="../../assets/js/state.js"></script>
+<script src="../../assets/js/api-client.js"></script>
+<script src="../../assets/js/ui.js"></script>
+<script src="../../assets/js/components.js"></script>
+<script src="../../assets/js/pages/dashboard.js"></script>
+</body></html>

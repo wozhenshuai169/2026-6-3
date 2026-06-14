@@ -25,6 +25,11 @@ for directory in ["uploads", "uploads/tts", "uploads/kb", "data"]:
 setup_logging(settings.log_level)
 logger = logging.getLogger(__name__)
 
+# Ensure frontend-v3 directory exists
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend-v3"
+if not FRONTEND_DIR.exists():
+    logger.warning("frontend-v3 directory not found at %s", FRONTEND_DIR)
+
 app = FastAPI(title="A5 Intelligent Tour Guide System", version="1.0.0")
 app.add_middleware(RequestLoggingMiddleware)
 
@@ -40,6 +45,11 @@ app.include_router(kb_router)
 app.include_router(dashboard_router)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# Mount frontend-v3 at root — serves index.html and all pages
+# Must be mounted AFTER all API routes so they take priority
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
 
 @app.exception_handler(ValueError)

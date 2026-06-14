@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>导览控制台</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Han+Sans:wght@400;500&amp;family=Source+Han+Serif:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: { extend: {
+            colors: {
+                "secondary-fixed-dim":"#ffb68e","on-error-container":"#93000a","background":"#FAFAF7",
+                "surface-container-lowest":"#ffffff","on-tertiary-fixed-variant":"#454746","secondary":"#E07B3C",
+                "tertiary-fixed-dim":"#c6c7c5","on-primary-fixed-variant":"#474649","on-primary":"#ffffff",
+                "on-error":"#ffffff","primary-fixed-dim":"#c8c6c8","error":"#C84040","inverse-primary":"#c8c6c8",
+                "on-secondary-container":"#6e2f00","secondary-container":"#fe9251","on-surface-variant":"#A0A09A",
+                "on-primary-container":"#858386","primary-fixed":"#e4e2e4","primary":"#1C1C1A",
+                "surface-variant":"#E8E8E4","surface-tint":"#5f5e60","tertiary":"#000000",
+                "inverse-surface":"#303031","surface-bright":"#fbf9f9","primary-container":"#1b1b1d",
+                "tertiary-fixed":"#e2e3e1","surface":"#ffffff","on-secondary-fixed-variant":"#763300",
+                "surface-container-high":"#e9e8e7","secondary-fixed":"#ffdbca","on-secondary":"#ffffff",
+                "on-tertiary":"#ffffff","surface-dim":"#dbdad9","on-tertiary-container":"#838483",
+                "surface-container-low":"#f5f3f3","on-tertiary-fixed":"#1a1c1b","surface-container-highest":"#e4e2e2",
+                "on-background":"#1C1C1A","surface-container":"#efeded","on-primary-fixed":"#1b1b1d",
+                "error-container":"#ffdad6","outline":"#E8E8E4","on-secondary-fixed":"#331200",
+                "on-surface":"#1C1C1A","inverse-on-surface":"#f2f0f0","outline-variant":"#E8E8E4",
+                "tertiary-container":"#1a1c1b","success":"#34C759"
+            },
+            fontFamily: { "label-sm":["Inter","sans-serif"], "display-lg":["Source Han Serif","serif"], "body-lg":["Source Han Sans","sans-serif"], "label-xs":["Inter","sans-serif"], "display-lg-mobile":["Source Han Serif","serif"], "headline-md":["Source Han Serif","serif"], "body-md":["Source Han Sans","sans-serif"] },
+            spacing: { "xs":"4px","sm":"8px","md":"16px","lg":"24px","xl":"32px","2xl":"48px","3xl":"64px","margin-mobile":"16px","margin-desktop":"64px","gutter":"24px" },
+            borderRadius: { "DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px" }
+        }}
+    }
+</script>
+<style>
+    .material-symbols-outlined { font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:20px;display:inline-block;line-height:1;text-transform:none;letter-spacing:normal;word-wrap:normal;white-space:nowrap;direction:ltr; }
+    .skeleton { background: linear-gradient(90deg,#e8e8e6 25%,#f5f5f3 50%,#e8e8e6 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    @keyframes spin { to{transform:rotate(360deg)} } .animate-spin{animation:spin 1s linear infinite}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}} @keyframes scaleIn{from{opacity:0;transform:scale(0.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .animate-modal-in{animation:scaleIn 0.25s ease-out}
+    .loading-spinner{width:20px;height:20px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md w-full max-w-[1024px] mx-auto overflow-x-hidden antialiased flex flex-col">
+
+<!-- Top Navigation Bar -->
+<nav class="h-[56px] bg-surface flex items-center justify-between px-md md:px-lg border-b border-surface-variant sticky top-0 z-50">
+    <div class="flex items-center gap-sm">
+        <button id="btn-back" aria-label="Go back" class="text-on-surface hover:text-on-surface-variant transition-colors flex items-center justify-center p-xs">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="font-headline-md text-on-surface text-[20px] font-medium leading-none">导览控制台</h1>
+    </div>
+    <button id="btn-share" aria-label="Share room" class="text-secondary hover:text-on-secondary-container transition-colors flex items-center gap-xs text-[14px] font-medium font-label-sm">
+        <span class="material-symbols-outlined text-[18px]">ios_share</span> 分享房间
+    </button>
+</nav>
+
+<!-- Main Canvas -->
+<main class="flex-1 p-lg flex flex-col gap-lg">
+    <!-- Status Overview Card -->
+    <section class="bg-surface border border-outline rounded-xl p-lg flex flex-col gap-md">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-md md:gap-lg">
+            <div class="flex flex-col gap-sm">
+                <div class="flex items-center gap-xs text-[14px] text-on-surface font-label-sm">
+                    <span class="text-on-surface-variant">房间号:</span>
+                    <span id="room-id-display" class="font-medium">—</span>
+                    <button id="btn-copy-room" aria-label="Copy room number" class="text-secondary hover:text-on-secondary-container transition-colors ml-xs flex items-center">
+                        <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-xs text-[14px] text-on-surface font-label-sm">
+                    <span class="text-on-surface-variant">当前路线:</span>
+                    <span id="route-name-display" class="font-medium">—</span>
+                </div>
+            </div>
+            <div class="flex flex-col gap-sm">
+                <div class="flex items-center gap-xs text-[14px] text-on-surface font-label-sm">
+                    <span class="text-on-surface-variant">在线游客:</span>
+                    <span id="member-count" class="font-medium">0人</span>
+                    <div id="member-status-dot" aria-hidden="true" class="w-2 h-2 rounded-full bg-success hidden"></div>
+                </div>
+                <div class="flex items-center gap-xs text-[14px] text-on-surface font-label-sm">
+                    <span class="text-on-surface-variant">当前景点:</span>
+                    <span class="material-symbols-outlined text-[16px] text-secondary">location_on</span>
+                    <span id="current-spot-display" class="font-medium text-secondary">—</span>
+                </div>
+            </div>
+            <div class="flex flex-col gap-sm">
+                <div class="flex items-center gap-xs text-[14px] text-on-surface font-label-sm">
+                    <span class="text-on-surface-variant">当前景区:</span>
+                    <span id="scenic-area-display" class="font-medium">—</span>
+                </div>
+                <div class="flex items-center gap-xs text-[14px] text-on-surface font-label-sm">
+                    <span class="text-on-surface-variant">讲解进度:</span>
+                    <span id="progress-display" class="font-medium">—</span>
+                </div>
+            </div>
+        </div>
+        <hr class="border-outline border-t w-full my-xs"/>
+        <div class="flex items-center justify-between">
+            <div id="pending-requests-row" class="flex items-center gap-sm hidden">
+                <div aria-hidden="true" class="w-2 h-2 rounded-full bg-error"></div>
+                <span id="pending-requests-text" class="text-[13px] text-error font-medium font-label-sm"></span>
+            </div>
+            <button id="btn-view-requests" aria-label="View pending requests" class="hidden text-secondary hover:text-on-secondary-container transition-colors flex items-center gap-xs text-[13px] font-medium font-label-sm group">
+                查看 <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Control Panel Split Layout -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-md">
+        <div class="flex flex-col gap-sm">
+            <h2 class="text-[12px] text-on-surface-variant font-medium font-label-sm uppercase tracking-wider mb-xs">导览控制</h2>
+            <button id="btn-start" aria-label="Start narration" class="h-2xl w-full bg-secondary hover:bg-[#C96E36] active:bg-[#B36230] text-on-primary rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm shadow-sm">
+                <span class="material-symbols-outlined">play_arrow</span> 开始讲解
+            </button>
+            <button id="btn-skip" aria-label="Skip current attraction" class="h-2xl w-full bg-transparent border border-outline hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm">
+                <span class="material-symbols-outlined">skip_next</span> 跳过当前景点
+            </button>
+            <button id="btn-collect" aria-label="Publish assembly reminder" class="h-2xl w-full bg-transparent border border-outline hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm">
+                <span class="material-symbols-outlined">notifications_active</span> 发布集合提醒
+            </button>
+        </div>
+        <div class="flex flex-col gap-sm">
+            <h2 class="text-[12px] text-on-surface-variant font-medium font-label-sm uppercase tracking-wider mb-xs">景点管理</h2>
+            <div class="relative">
+                <button id="spot-selector-btn" aria-expanded="false" aria-haspopup="listbox" class="h-2xl w-full bg-surface border border-outline hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-between px-md font-medium transition-colors font-label-sm text-left">
+                    <div class="flex items-center gap-sm">
+                        <span class="material-symbols-outlined text-on-surface-variant">location_on</span>
+                        <span id="spot-selector-label">选择景点</span>
+                    </div>
+                    <span class="material-symbols-outlined text-on-surface-variant">arrow_drop_down</span>
+                </button>
+                <div id="spot-dropdown" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-outline rounded-lg shadow-sm z-40 max-h-48 overflow-y-auto"></div>
+            </div>
+            <button id="btn-pause" aria-label="Pause narration" class="h-2xl w-full bg-transparent border border-outline hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm">
+                <span class="material-symbols-outlined">pause</span> 暂停讲解
+            </button>
+            <button id="btn-view-requests2" aria-label="View private requests" class="h-2xl w-full bg-transparent border border-secondary text-secondary hover:bg-secondary-fixed hover:text-on-secondary-fixed rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm relative">
+                <span class="material-symbols-outlined">assignment</span> 查看私人请求
+                <span id="requests-badge" class="hidden absolute right-md top-1/2 -translate-y-1/2 bg-secondary text-on-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">0</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Online Visitors List -->
+    <section class="bg-surface border border-outline rounded-xl flex flex-col mt-sm">
+        <div class="flex items-center justify-between px-lg py-md border-b border-outline">
+            <h3 id="member-list-title" class="font-headline-md text-[16px] text-on-surface font-medium m-0">在线游客 (0)</h3>
+            <div class="flex items-center gap-md text-[13px] font-label-sm">
+                <button id="tab-all" aria-current="page" class="text-secondary font-medium border-b-2 border-secondary pb-xs">全部</button>
+                <button id="tab-requests" class="text-on-surface-variant hover:text-on-surface transition-colors pb-xs border-b-2 border-transparent hover:border-outline">有请求</button>
+            </div>
+        </div>
+        <ul id="member-list" aria-label="Online visitors list" class="flex flex-col py-sm" role="list">
+            <!-- Dynamically populated -->
+        </ul>
+    </section>
+</main>
+
+<!-- Route Selection Modal (shown before creating room) -->
+<div id="route-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(26,26,28,0.2);backdrop-filter:blur(8px);">
+    <div class="animate-modal-in bg-white border border-[#E8E8E4] rounded-2xl p-8 mx-4 w-full max-w-md shadow-sm">
+        <h3 class="text-lg font-medium mb-4" style="font-family:'Source Han Serif',serif;">选择导览路线</h3>
+        <div id="route-list" class="flex flex-col gap-3 mb-6"></div>
+        <div class="flex gap-3">
+            <button id="route-cancel" class="flex-1 py-3 border border-[#E8E8E4] rounded-lg text-sm">取消</button>
+            <button id="route-confirm" class="flex-1 py-3 bg-[#E07B3C] text-white rounded-lg text-sm font-medium disabled:opacity-50" disabled>确认并创建房间</button>
+        </div>
+    </div>
+</div>
+
+<script src="../../assets/js/config.js"></script>
+<script src="../../assets/js/state.js"></script>
+<script src="../../assets/js/api-client.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/ui.js"></script>
+<script src="../../assets/js/router.js"></script>
+<script src="../../assets/js/components.js"></script>
+<script src="../../assets/js/pages/guide-panel.js"></script>
+</body></html>

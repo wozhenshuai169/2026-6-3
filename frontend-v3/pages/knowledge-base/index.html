@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>知识库管理 · 智慧导览</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans+SC:wght@400;500&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: { extend: {
+            colors: {
+                "on-tertiary-fixed-variant":"#454746","on-primary-fixed":"#1b1b1d","inverse-surface":"#303031",
+                "on-tertiary":"#ffffff","on-surface-variant":"#46464a","surface-container":"#efeded","primary":"#E07B3C",
+                "surface-dim":"#dbdad9","surface-container-high":"#e9e8e7","inverse-on-surface":"#f2f0f0",
+                "on-primary":"#ffffff","surface-tint":"#5f5e60","secondary-container":"#fe9251",
+                "on-primary-fixed-variant":"#474649","primary-fixed":"#e4e2e4","surface-bright":"#fbf9f9",
+                "surface-container-low":"#f5f3f3","primary-container":"#1b1b1d","on-surface":"#1A1A1C",
+                "primary-fixed-dim":"#c8c6c8","on-secondary-fixed-variant":"#763300","on-secondary-fixed":"#331200",
+                "on-secondary-container":"#6e2f00","on-primary-container":"#858386","surface":"#FAFAF7",
+                "secondary":"#9a4605","error-container":"#ffdad6","inverse-primary":"#c8c6c8",
+                "tertiary-container":"#1a1c1b","surface-variant":"#e4e2e2","on-background":"#1A1A1C",
+                "background":"#FAFAF7","on-tertiary-container":"#838483","error":"#ba1a1a",
+                "on-error":"#ffffff","secondary-fixed-dim":"#ffb68e","outline":"#E8E8E6","tertiary-fixed-dim":"#c6c7c5",
+                "secondary-fixed":"#ffdbca","surface-container-highest":"#e4e2e2","tertiary-fixed":"#e2e3e1",
+                "surface-container-lowest":"#ffffff","outline-variant":"#E8E8E6","on-tertiary-fixed":"#1a1c1b",
+                "on-secondary":"#ffffff","tertiary":"#000000","on-error-container":"#93000a"
+            },
+            borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+            spacing:{"3xl":"64px","margin-desktop":"64px","xl":"32px","2xl":"48px","md":"16px","margin-mobile":"16px","lg":"24px","xs":"4px","gutter":"24px","sm":"8px"},
+            fontFamily:{"body-md":["Noto Sans SC","sans-serif"],"label-xs":["Inter","sans-serif"],"body-lg":["Noto Sans SC","sans-serif"],"headline-md":["Noto Serif SC","serif"],"display-lg-mobile":["Noto Serif SC","serif"],"display-lg":["Noto Serif SC","serif"],"label-sm":["Inter","sans-serif"]},
+            fontSize:{"body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],"label-xs":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"500"}],"display-lg-mobile":["32px",{"lineHeight":"40px","fontWeight":"500"}],"display-lg":["48px",{"lineHeight":"60px","letterSpacing":"-0.02em","fontWeight":"500"}],"label-sm":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"500"}]}
+        }}
+    }
+</script>
+<style>
+    body{background:#FAFAF7;color:#1A1A1C;font-family:"Noto Sans SC",sans-serif}
+    .material-symbols-outlined{font-variation-settings:'FILL'0,'wght'300,'GRAD'0,'opsz'24}
+    .custom-scrollbar::-webkit-scrollbar{width:6px}.custom-scrollbar::-webkit-scrollbar-track{background:transparent}.custom-scrollbar::-webkit-scrollbar-thumb{background:#E8E8E6;border-radius:10px}
+    .skeleton{background:linear-gradient(90deg,#e8e8e6 25%,#f5f5f3 50%,#e8e8e6 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    @keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+    .animate-modal-in{animation:scaleIn 0.25s ease-out}
+    .loading-spinner{width:20px;height:20px;border:2px solid #E07B3C;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+    .table-row:hover .row-actions{opacity:1}
+</style>
+</head>
+<body class="h-screen overflow-hidden flex">
+
+<!-- Sidebar -->
+<aside class="w-[220px] bg-white border-r border-outline flex flex-col shrink-0 h-full">
+    <div class="p-lg flex items-center gap-2 border-b border-outline">
+        <span class="material-symbols-outlined text-primary text-[24px]">landscape</span>
+        <span class="font-headline-md text-[16px] font-medium">智慧导览</span>
+    </div>
+    <nav class="flex-1 py-md">
+        <a href="../dashboard/index.html" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[18px]">dashboard</span> 数据大屏</a>
+        <a class="flex items-center gap-3 px-lg py-3 text-sm text-primary font-medium bg-primary/5 border-r-2 border-primary"><span class="material-symbols-outlined text-[18px]">menu_book</span> 知识库管理</a>
+        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[18px]">person</span> 数字人形象</a>
+        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[18px]">feedback</span> 游客反馈</a>
+        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[18px]">settings</span> 系统设置</a>
+    </nav>
+    <div class="p-lg border-t border-outline flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">A</div>
+        <div><div class="text-sm font-medium">Admin</div><div class="text-xs text-on-surface-variant">管理员</div></div>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="h-[64px] bg-white border-b border-outline flex items-center justify-between px-lg shrink-0">
+        <h1 class="font-headline-md text-[20px] font-medium">知识库管理</h1>
+        <div class="flex items-center gap-4">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                <input id="search-input" type="text" placeholder="搜索文档..." class="pl-10 pr-4 py-2 w-[240px] border border-outline rounded-lg text-sm outline-none focus:border-primary bg-background">
+            </div>
+            <button id="btn-upload" class="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:opacity-85 transition-opacity flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">cloud_upload</span> 上传文档
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Pills -->
+    <div id="filter-bar" class="flex items-center gap-2 px-lg py-3 bg-white border-b border-outline shrink-0 overflow-x-auto">
+        <!-- Dynamically populated -->
+    </div>
+
+    <!-- Table -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar px-lg py-4">
+        <div class="bg-white border border-outline rounded-xl overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="bg-surface-container-low border-b border-outline text-left">
+                    <tr>
+                        <th class="w-10 px-4 py-3"><input type="checkbox" id="select-all"></th>
+                        <th class="px-4 py-3 font-medium text-on-surface-variant">文档名称</th>
+                        <th class="px-4 py-3 font-medium text-on-surface-variant">大小</th>
+                        <th class="px-4 py-3 font-medium text-on-surface-variant">更新时间</th>
+                        <th class="px-4 py-3 font-medium text-on-surface-variant">状态</th>
+                        <th class="px-4 py-3 font-medium text-on-surface-variant w-[120px]">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="docs-table-body">
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-4 text-sm">
+            <span id="pagination-info" class="text-on-surface-variant">共 0 条记录</span>
+            <div id="pagination-controls" class="flex items-center gap-2"></div>
+        </div>
+    </div>
+</main>
+
+<!-- Upload Modal -->
+<div id="upload-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(26,26,28,0.2);backdrop-filter:blur(8px)">
+    <div class="animate-modal-in bg-white border border-outline rounded-2xl p-8 mx-4 w-full max-w-lg">
+        <h3 class="font-headline-md text-lg font-medium mb-6">上传文档</h3>
+        <!-- Drop Zone -->
+        <div id="drop-zone" class="border-2 border-dashed border-outline rounded-xl p-8 text-center mb-6 hover:border-primary transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[40px] text-on-surface-variant mb-2">cloud_upload</span>
+            <p class="text-sm text-on-surface-variant mb-1">点击或拖拽文件至此区域</p>
+            <p class="text-xs text-on-surface-variant">支持 .txt, .md, .json, .pdf · 最大 20MB</p>
+            <input id="file-input" type="file" accept=".txt,.md,.json,.pdf" class="hidden">
+        </div>
+        <div id="file-selected" class="hidden text-sm text-primary mb-4 p-3 bg-primary/5 rounded-lg"></div>
+        <div id="upload-error" class="hidden text-xs text-error mb-3"></div>
+        <div class="flex gap-3 justify-end">
+            <button id="upload-cancel" class="px-6 py-2.5 border border-outline rounded-lg text-sm">取消</button>
+            <button id="upload-confirm" class="px-6 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-medium disabled:opacity-50" disabled>确认上传</button>
+        </div>
+    </div>
+</div>
+
+<script src="../../assets/js/config.js"></script>
+<script src="../../assets/js/state.js"></script>
+<script src="../../assets/js/api-client.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/ui.js"></script>
+<script src="../../assets/js/router.js"></script>
+<script src="../../assets/js/components.js"></script>
+<script src="../../assets/js/pages/knowledge-base.js"></script>
+</body></html>
