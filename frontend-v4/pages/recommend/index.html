@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>路线推荐 · 智慧导览</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: { extend: {
+            colors: { primary:"#E07B3C",surface:"#FFFFFF",background:"#FAFAF7","bg-alt":"#FAFAF7",border:"#E8E8E6","text-primary":"#1A1A1C","text-secondary":"#6F6F6F","text-tertiary":"#A0A0A0",success:"#4ADE80",danger:"#F87171","orange-soft":"#FDF6F1" },
+            fontFamily:{ serif:["Noto Serif SC","serif"],sans:["Noto Sans SC","sans-serif"],mono:["Inter","sans-serif"] },
+            borderRadius:{ DEFAULT:"0.25rem",lg:"0.5rem",xl:"12px",full:"9999px" },
+            spacing:{ xs:"4px",sm:"8px",md:"16px",lg:"24px",xl:"32px",gutter:"24px" }
+        }}
+    }
+</script>
+<style>
+    body{background:#FAFAF7;color:#1A1A1C;font-family:"Noto Sans SC",sans-serif}
+    .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24}
+    .serif{font-family:"Noto Serif SC",serif}
+    @keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .fade-in{animation:fadeIn .3s ease-out}
+    .loading-spinner{width:24px;height:24px;border:2px solid #E07B3C;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+    input[type="checkbox"]:checked, input[type="radio"]:checked{accent-color:#E07B3C}
+    .tag-active{background:#FDF6F1!important;border-color:#E07B3C!important;color:#E07B3C!important}
+</style>
+</head>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto w-full">
+
+<!-- Header -->
+<header class="h-[56px] bg-white border-b border-border flex items-center justify-between px-4 sticky top-0 z-10">
+    <a href="../user-portal/index.html" class="w-8 h-8 flex items-center justify-center text-text-primary hover:opacity-70 transition-opacity">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h1 class="text-base font-medium serif">路线推荐</h1>
+    <div class="w-8"></div>
+</header>
+
+<!-- Main -->
+<main class="flex-1 p-4 flex flex-col gap-4">
+    <!-- Preference Form Card -->
+    <div class="bg-white border border-border rounded-xl p-lg">
+        <h2 class="text-sm font-medium serif mb-4">选择你的偏好</h2>
+
+        <!-- Interests -->
+        <div class="mb-4">
+            <label class="text-xs text-text-secondary mb-2 block">兴趣标签</label>
+            <div class="flex flex-wrap gap-2" id="interest-tags">
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="history">🏛 历史</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="architecture">🏗 建筑</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="photography">📷 摄影</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="family">👨‍👩‍👧 亲子</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="culture">🎨 文创</button>
+            </div>
+        </div>
+
+        <!-- Time -->
+        <div class="mb-4">
+            <label class="text-xs text-text-secondary mb-2 block">游览时间</label>
+            <div class="flex gap-2" id="time-options">
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="30">30 分钟</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors tag-active" data-val="60">1 小时</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="180">半日</button>
+            </div>
+        </div>
+
+        <!-- Stamina -->
+        <div class="mb-4">
+            <label class="text-xs text-text-secondary mb-2 block">体力水平</label>
+            <div class="flex gap-2" id="stamina-options">
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="low">🪑 低（少走路）</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors tag-active" data-val="medium">🚶 中等</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="high">🏃 高</button>
+            </div>
+        </div>
+
+        <!-- Companions -->
+        <div>
+            <label class="text-xs text-text-secondary mb-2 block">同行人员</label>
+            <div class="flex gap-2" id="companion-tags">
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="elderly">🧓 老人</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="children">👶 儿童</button>
+                <button class="tag-btn px-3 py-1.5 border border-border rounded-full text-xs hover:border-primary transition-colors" data-val="crowd">🚫 避开人流</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Button -->
+    <button id="btn-generate" class="w-full py-4 bg-primary text-white rounded-xl text-sm font-medium hover:opacity-85 transition-opacity flex items-center justify-center gap-2 shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">route</span> 生成推荐路线
+    </button>
+
+    <!-- Loading -->
+    <div id="loading-area" class="hidden text-center py-8">
+        <div class="loading-spinner mb-3"></div>
+        <p class="text-sm text-text-secondary">AI 正在分析最佳路线...</p>
+    </div>
+
+    <!-- Result Card -->
+    <div id="result-area" class="hidden bg-white border border-border rounded-xl p-lg fade-in flex flex-col gap-4">
+        <div class="flex items-start gap-3">
+            <span class="w-12 h-12 rounded-full bg-orange-soft text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[28px]">explore</span>
+            </span>
+            <div>
+                <h2 id="result-route-name" class="text-lg font-medium serif"></h2>
+                <div class="flex items-center gap-3 mt-1 text-xs text-text-secondary">
+                    <span id="result-time" class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span></span>
+                    <span id="result-difficulty"></span>
+                    <span id="result-score" class="text-primary font-medium"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline of spots -->
+        <div id="result-spots" class="relative pl-5 border-l-2 border-orange-soft flex flex-col gap-3"></div>
+
+        <!-- Reason -->
+        <div id="result-reason" class="bg-orange-soft border border-primary/10 rounded-lg p-4 text-sm text-text-secondary leading-relaxed"></div>
+
+        <!-- Matched preferences -->
+        <div id="result-matched" class="flex flex-wrap gap-1"></div>
+    </div>
+</main>
+
+<script src="../../assets/js/config.js"></script>
+<script src="../../assets/js/state.js"></script>
+<script src="../../assets/js/api-client.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/ui.js"></script>
+<script src="../../assets/js/pages/recommend.js"></script>
+</body></html>

@@ -2,14 +2,14 @@
 <html class="light" lang="zh-CN"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Aurelian Guide - Tour Interface</title>
+<title>Aurelian Guide - 公共导览</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Han+Sans:wght@400;500;700&amp;family=Source+Han+Serif:wght@500;700&amp;family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Han+Sans:wght@400;500;700&family=Source+Han+Serif:wght@500;700&family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
         theme: { extend: {
-            "colors": {
+            colors: {
                 "tertiary-fixed-dim":"#c6c7c5","tertiary-container":"#1a1c1b","tertiary":"#000000","error-container":"#ffdad6",
                 "inverse-primary":"#c8c6c8","primary-fixed":"#e4e2e4","surface-dim":"#dbdad9","tertiary-fixed":"#e2e3e1",
                 "surface-container":"#efeded","surface-tint":"#5f5e60","on-tertiary-container":"#838483","on-tertiary-fixed":"#1a1c1b",
@@ -24,49 +24,116 @@
                 "surface-container-highest":"#e4e2e2","surface-container-lowest":"#ffffff","on-secondary":"#ffffff",
                 "surface-container-high":"#e9e8e7","brand-accent":"#E07B3C","brand-border":"#E8E8E4"
             },
-            "borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
-            "spacing":{"md":"16px","sm":"8px","xs":"4px","lg":"24px","margin-desktop":"64px","3xl":"64px","margin-mobile":"16px","xl":"32px","2xl":"48px","gutter":"24px"},
-            "fontFamily":{"label-xs":["Inter"],"display-lg-mobile":["Source Han Serif"],"label-sm":["Inter"],"headline-md":["Source Han Serif"],"body-md":["Source Han Sans"],"display-lg":["Source Han Serif"],"body-lg":["Source Han Sans"]}
+            borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+            spacing:{"md":"16px","sm":"8px","xs":"4px","lg":"24px","margin-desktop":"64px","3xl":"64px","margin-mobile":"16px","xl":"32px","2xl":"48px","gutter":"24px"},
+            fontFamily:{"label-xs":["Inter"],"display-lg-mobile":["Source Han Serif"],"label-sm":["Inter"],"headline-md":["Source Han Serif"],"body-md":["Source Han Sans"],"display-lg":["Source Han Serif"],"body-lg":["Source Han Sans"]}
         }}
     }
 </script>
 <style>
-    body { background-color:#FAFAF7;color:#1A1A1C;font-family:"Source Han Sans",sans-serif;overflow:hidden; }
-    .serif-font{font-family:"Source Han Serif",serif}
+    body{background:#FAFAF7;color:#1A1A1C;font-family:"Source Han Sans",sans-serif;overflow:hidden}
+    .serif{font-family:"Source Han Serif",serif}
     .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
     .ai-status-pulse{animation:breathe 3s ease-in-out infinite}
     @keyframes breathe{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.2)}}
+    @keyframes speakPulse{0%,100%{box-shadow:0 0 0 0 rgba(224,123,60,.4)}50%{box-shadow:0 0 0 12px rgba(224,123,60,0)}}
+    .speaking-ring{animation:speakPulse 1.5s ease-in-out infinite}
     .custom-scrollbar::-webkit-scrollbar{width:4px}
     .custom-scrollbar::-webkit-scrollbar-track{background:transparent}
     .custom-scrollbar::-webkit-scrollbar-thumb{background:#E8E8E4;border-radius:10px}
-    .glass-header{backdrop-filter:blur(8px);background:rgba(251,249,249,0.8)}
     .skeleton{background:linear-gradient(90deg,#e8e8e6 25%,#f5f5f3 50%,#e8e8e6 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
     @keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .loading-spinner{width:20px;height:20px;border:2px solid #E07B3C;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .msg-in{animation:fadeIn .3s ease-out}
+    @keyframes dotPulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .dot-anim span{animation:dotPulse 1.4s infinite;display:inline-block}
+    .dot-anim span:nth-child(2){animation-delay:.2s}
+    .dot-anim span:nth-child(3){animation-delay:.4s}
+    @keyframes recordingPulse{0%,100%{opacity:1}50%{opacity:.5}}
+    .recording-indicator{animation:recordingPulse .8s ease-in-out infinite}
+    .state-idle .status-ring{border-color:#A0A0A0!important}
+    .state-listening .status-ring{border-color:#4ADE80!important;animation:speakPulse 2s ease-in-out infinite}
+    .state-speaking .status-ring{border-color:#E07B3C!important;animation:speakPulse 1s ease-in-out infinite}
+    .state-thinking .status-ring{border-color:#E07B3C!important;animation:speakPulse 2.5s ease-in-out infinite}
 </style>
 <link rel="stylesheet" href="../../assets/css/studio-command.css"/>
 </head>
-<body class="w-[884px] h-[396px] border border-brand-border mx-auto relative flex overflow-hidden bg-background">
+<body class="w-[884px] h-[396px] border border-brand-border mx-auto relative flex overflow-hidden bg-background" id="page-body">
 
-<!-- Left Panel: Digital Human Area -->
-<div class="w-[50%] h-full relative border-r border-brand-border overflow-hidden">
-    <img alt="Digital Human Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLsWJsqcSDXCSyRIIYVI4yCQHf92CGh_9suIRkNfuGmbT5GyldOT0R6V1blLLflKYt06WzX4IZnHFhP2ZFJWDtwJuU3dGa6QtMAXkoiklcaUHE2BXFkJh2AeQaZ9-K0GFABXMitqGQE0IrQ9zXVoaiC7Nu7z8qMhBIG_24QjJeaphzvyNjLVYCSZnl5CJDgzn6Z0GCzq8JM7UvbkEwmi6YHX4T5KQeV5seqVy9QqNzDiEDlpgbDSE9oAjDf1"/>
-    <div class="absolute top-4 left-4 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 flex items-center gap-2">
-        <div id="avatar-status-dot" class="size-2 bg-brand-accent rounded-full ai-status-pulse"></div>
-        <span id="avatar-status-label" class="text-label-xs text-white uppercase tracking-widest font-bold">就绪</span>
+<!-- LEFT PANEL: Avatar / Text Broadcast -->
+<div class="w-[50%] h-full relative border-r border-brand-border overflow-hidden flex flex-col bg-black">
+
+    <div id="avatar-mode" class="absolute inset-0 flex flex-col">
+        <img alt="Digital Human" class="flex-1 w-full object-cover" id="avatar-img"
+            src="https://lh3.googleusercontent.com/aida/AP1WRLsWJsqcSDXCSyRIIYVI4yCQHf92CGh_9suIRkNfuGmbT5GyldOT0R6V1blLLflKYt06WzX4IZnHFhP2ZFJWDtwJuU3dGa6QtMAXkoiklcaUHE2BXFkJh2AeQaZ9-K0GFABXMitqGQE0IrQ9zXVoaiC7Nu7z8qMhBIG_24QjJeaphzvyNjLVYCSZnl5CJDgzn6Z0GCzq8JM7UvbkEwmi6YHX4T5KQeV5seqVy9QqNzDiEDlpgbDSE9oAjDf1"/>
+
+        <!-- Status badge -->
+        <div class="absolute top-3 left-3 bg-black/45 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 flex items-center gap-2 status-ring">
+            <div id="avatar-status-dot" class="size-2 bg-brand-accent rounded-full ai-status-pulse"></div>
+            <span id="avatar-status-label" class="text-label-xs text-white uppercase tracking-widest font-bold">就绪</span>
+        </div>
+
+        <!-- Current spot chip -->
+        <div id="spot-chip" class="hidden absolute top-3 right-3 bg-black/45 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 text-white text-[10px]">
+            <span class="material-symbols-outlined text-[12px] align-text-bottom">location_on</span>
+            <span id="spot-chip-name">—</span>
+        </div>
+
+        <!-- Bottom bar: toggles -->
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+            <button id="btn-switch-text" class="px-3 py-1.5 bg-white/15 backdrop-blur-sm border border-white/25 rounded-full text-white text-[11px] flex items-center gap-1 hover:bg-white/25 transition-colors">
+                <span class="material-symbols-outlined text-[14px]">forum</span> 文字聊天
+            </button>
+            <a href="../vision/index.html" class="px-3 py-1.5 bg-white/15 backdrop-blur-sm border border-white/25 rounded-full text-white text-[11px] flex items-center gap-1 hover:bg-white/25 transition-colors no-underline">
+                <span class="material-symbols-outlined text-[14px]">image_search</span> 识景
+            </a>
+            <a href="../recommend/index.html" class="px-3 py-1.5 bg-white/15 backdrop-blur-sm border border-white/25 rounded-full text-white text-[11px] flex items-center gap-1 hover:bg-white/25 transition-colors no-underline">
+                <span class="material-symbols-outlined text-[14px]">explore</span> 路线
+            </a>
+        </div>
     </div>
 
-    <!-- Room Join Overlay (shown when no room) -->
+    <!-- Text mode -->
+    <div id="text-mode" class="hidden absolute inset-0 flex flex-col bg-[#FAFAF7]">
+        <div class="flex items-center justify-between px-3 py-2 bg-white border-b border-brand-border shrink-0">
+            <span class="text-xs font-medium flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-brand-accent">campaign</span> 公共频道
+            </span>
+            <button id="btn-switch-avatar" class="px-3 py-1 border border-brand-border rounded-full text-xs text-text-secondary hover:text-brand-accent transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">person</span> 返回
+            </button>
+        </div>
+        <div id="public-chat-area" class="flex-1 overflow-y-auto custom-scrollbar px-3 py-2 flex flex-col gap-2 text-sm">
+            <div id="narration-banner" class="bg-[#FDF6F1] border border-[#E07B3C]/15 rounded-lg p-3 text-xs leading-relaxed">
+                <div class="flex items-center gap-1.5 text-brand-accent font-medium mb-1">
+                    <span class="material-symbols-outlined text-[14px]">volume_up</span> AI 正在讲解
+                </div>
+                <p id="narration-text">等待 AI 开始讲解...</p>
+            </div>
+        </div>
+        <!-- Input row -->
+        <div class="px-3 py-2 bg-white border-t border-brand-border shrink-0 flex gap-2 items-center">
+            <button id="btn-voice" class="w-8 h-8 rounded-full bg-[#F5F5F2] flex items-center justify-center hover:bg-[#E8E8E4] transition-colors shrink-0">
+                <span class="material-symbols-outlined text-[16px]">mic</span>
+            </button>
+            <input id="public-chat-input" type="text" placeholder="在公共频道提问..." autocomplete="off"
+                class="flex-1 px-3 py-1.5 border border-brand-border rounded-full text-xs outline-none focus:border-brand-accent bg-[#FAFAF7]">
+            <button id="public-chat-send" class="w-8 h-8 bg-brand-accent text-white rounded-full flex items-center justify-center hover:opacity-85 transition-opacity shrink-0">
+                <span class="material-symbols-outlined text-[16px]">send</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Join overlay -->
     <div id="room-join-overlay" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-30">
         <div class="bg-white rounded-xl p-6 mx-4 w-full max-w-xs">
-            <h3 class="serif-font text-lg font-medium mb-3 text-center">加入导览</h3>
+            <h3 class="serif text-lg font-medium mb-3 text-center">加入导览</h3>
             <p class="text-xs text-[#6F6F6F] mb-4 text-center">输入团长分享的房间号</p>
             <input id="room-code-input" type="text" placeholder="房间号" autocomplete="off"
                 class="w-full px-4 py-2.5 border border-brand-border rounded-lg text-sm outline-none focus:border-brand-accent bg-[#FAFAF7] mb-3">
             <button id="room-join-btn"
-                class="w-full py-2.5 bg-brand-accent text-white rounded-lg text-sm font-medium hover:opacity-85 transition-opacity disabled:opacity-50">
+                class="w-full py-2.5 bg-brand-accent text-white rounded-lg text-sm font-medium hover:opacity-85 disabled:opacity-50">
                 加入房间
             </button>
             <p id="room-join-error" class="text-xs text-[#F87171] mt-2 text-center hidden"></p>
@@ -74,60 +141,70 @@
     </div>
 </div>
 
-<!-- Right Panel: Function Area -->
+<!-- RIGHT PANEL -->
 <div class="w-[50%] h-full flex flex-col relative bg-background">
-    <div class="p-md flex-1 overflow-y-auto custom-scrollbar">
-        <h3 class="serif-font text-headline-md mb-md">房间成员</h3>
-        <div id="member-list-container" class="space-y-sm">
-            <!-- Dynamically populated -->
+    <div class="p-md flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3">
+        <!-- Route Progress -->
+        <div id="route-progress-bar" class="hidden bg-white border border-brand-border rounded-xl p-3">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium serif">游览路线</span>
+                <span id="route-progress-text" class="text-[10px] text-text-secondary">—</span>
+            </div>
+            <div class="h-1.5 bg-[#F5F5F2] rounded-full overflow-hidden">
+                <div id="route-progress-fill" class="h-full bg-brand-accent rounded-full transition-all duration-500" style="width:0%"></div>
+            </div>
+            <div id="route-spots-pills" class="flex gap-1 mt-2 flex-wrap"></div>
         </div>
+        <!-- Current Spot Card -->
+        <div id="spot-info-card" class="hidden bg-white border border-brand-border rounded-xl p-3">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-brand-accent text-[18px]">location_on</span>
+                <div>
+                    <div id="spot-info-name" class="text-sm font-medium serif">—</div>
+                    <div id="spot-info-desc" class="text-[10px] text-text-secondary mt-0.5 line-clamp-2">加入房间后显示</div>
+                </div>
+            </div>
+        </div>
+        <h3 class="serif text-headline-md mt-1">房间成员</h3>
+        <div id="member-list-container" class="space-y-sm"></div>
     </div>
     <div class="p-md shrink-0 bg-white border-t border-brand-border z-10">
         <button class="w-full py-3 border border-brand-border rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors text-brand-accent group" id="menu-toggle">
-            <span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">widgets</span>
+            <span class="material-symbols-outlined text-[20px]">widgets</span>
             <span class="text-sm font-bold tracking-wide font-label-sm uppercase">功能菜单</span>
         </button>
     </div>
-
-    <!-- Function Overlay -->
+    <!-- Function overlay -->
     <div class="absolute inset-0 bg-background/95 backdrop-blur-sm z-20 flex flex-col hidden" id="function-overlay">
         <div class="p-md flex justify-between items-center border-b border-brand-border bg-white shrink-0">
-            <h3 class="serif-font text-headline-md">功能</h3>
+            <h3 class="serif text-headline-md">功能</h3>
             <button class="p-1.5 text-on-surface-variant hover:text-primary transition-colors" id="menu-close">
                 <span class="material-symbols-outlined text-[24px]">close</span>
             </button>
         </div>
         <div class="p-md grid grid-cols-2 gap-md flex-1 content-start">
             <button id="fn-knowledge" class="flex flex-col items-start gap-3 p-4 border border-brand-border bg-white rounded-xl hover:border-outline transition-colors text-left group">
-                <span class="material-symbols-outlined text-[24px] text-outline group-hover:text-primary transition-colors">menu_book</span>
-                <span class="font-body-md text-sm font-medium">知识库</span>
+                <span class="material-symbols-outlined text-[24px]">menu_book</span>
+                <span class="text-sm font-medium">知识库</span>
             </button>
             <button id="fn-audio" class="flex flex-col items-start gap-3 p-4 border border-brand-border bg-white rounded-xl hover:border-outline transition-colors text-left group">
-                <span class="material-symbols-outlined text-[24px] text-outline group-hover:text-primary transition-colors">headphones</span>
-                <span class="font-body-md text-sm font-medium">音频导览</span>
+                <span class="material-symbols-outlined text-[24px]">headphones</span>
+                <span class="text-sm font-medium">音频导览</span>
             </button>
             <button id="fn-map" class="flex flex-col items-start gap-3 p-4 border border-brand-border bg-white rounded-xl hover:border-outline transition-colors text-left group">
-                <span class="material-symbols-outlined text-[24px] text-outline group-hover:text-primary transition-colors">map</span>
-                <span class="font-body-md text-sm font-medium">附近景点</span>
+                <span class="material-symbols-outlined text-[24px]">map</span>
+                <span class="text-sm font-medium">附近景点</span>
             </button>
-            <button id="fn-report" class="flex flex-col items-start gap-3 p-4 border border-brand-border bg-white rounded-xl hover:border-outline transition-colors text-left group">
-                <span class="material-symbols-outlined text-[24px] text-outline group-hover:text-primary transition-colors">report</span>
-                <span class="font-body-md text-sm font-medium">AI 助手</span>
+            <button id="fn-ai" class="flex flex-col items-start gap-3 p-4 border border-brand-border bg-white rounded-xl hover:border-outline transition-colors text-left group">
+                <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+                <span class="text-sm font-medium">私人AI助手</span>
             </button>
         </div>
     </div>
 </div>
 
-<!-- Function Result Modal -->
-<div id="fn-result-modal" class="hidden absolute inset-0 z-30 bg-background/95 backdrop-blur-sm flex flex-col">
-    <div class="p-md flex justify-between items-center border-b border-brand-border bg-white shrink-0">
-        <h3 id="fn-result-title" class="serif-font text-headline-md text-base">详情</h3>
-        <button id="fn-result-close" class="p-1.5 text-on-surface-variant hover:text-primary transition-colors">
-            <span class="material-symbols-outlined text-[24px]">close</span>
-        </button>
-    </div>
-    <div id="fn-result-body" class="p-md flex-1 overflow-y-auto custom-scrollbar text-sm"></div>
-</div>
+<!-- Hidden audio player -->
+<audio id="tts-player" class="hidden"></audio>
 
 <script src="../../assets/js/config.js"></script>
 <script src="../../assets/js/state.js"></script>

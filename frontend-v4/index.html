@@ -11,109 +11,132 @@
       display: flex;
       flex-direction: column;
     }
+    .container {
+      max-width: 1200px !important;
+      margin: 0 auto !important;
+      padding: 0 32px !important;
+      width: 100% !important;
+    }
     .nav-header {
-      padding: var(--space-lg) 0;
-      border-bottom: 1px solid var(--color-border);
+      padding: 20px 0 !important;
+      border-bottom: 1px solid #E8E8E6 !important;
+      background: #FAFAF8 !important;
+      height: auto !important;
     }
     .nav-header .container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
     }
     .nav-header .brand {
-      font-family: var(--font-serif);
-      font-size: 20px;
-      font-weight: 500;
-      color: var(--color-text-primary);
+      font-family: "Noto Serif SC", "Source Han Serif", Georgia, serif !important;
+      font-size: 20px !important;
+      font-weight: 500 !important;
+      color: #1A1A1C !important;
       letter-spacing: 0.01em;
     }
     .nav-header .version {
-      font-family: var(--font-mono);
-      font-size: var(--fs-label-xs);
-      color: var(--color-text-tertiary);
+      font-family: Inter, sans-serif !important;
+      font-size: 11px !important;
+      color: #A0A0A0 !important;
     }
     .nav-main {
       flex: 1;
       display: flex;
-      align-items: center;
-      padding: var(--space-3xl) 0;
+      align-items: flex-start;
+      padding: 40px 0 20px;
     }
     .page-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-lg);
+      grid-template-columns: repeat(4, minmax(250px, 1fr));
+      gap: 20px;
       width: 100%;
     }
     .page-card {
-      display: block;
+      display: flex !important;
+      flex-direction: column;
       text-decoration: none;
-      color: inherit;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: var(--space-xl);
+      color: #1A1A1C !important;
+      background: #FFFFFF !important;
+      border: 1px solid #E8E8E6 !important;
+      border-radius: 12px !important;
+      padding: 28px 24px !important;
+      min-height: 180px;
       transition: border-color 0.2s ease, transform 0.15s ease;
     }
     .page-card:hover {
-      border-color: var(--color-accent);
+      border-color: #E07B3C !important;
       transform: translateY(-2px);
     }
     .page-card .icon {
-      width: 40px; height: 40px;
+      width: 44px; height: 44px;
       display: flex; align-items: center; justify-content: center;
-      border-radius: var(--radius-md);
+      border-radius: 8px;
       background: rgba(224, 123, 60, 0.08);
-      color: var(--color-accent);
-      font-size: 18px;
-      margin-bottom: var(--space-md);
+      color: #E07B3C;
+      font-size: 22px;
+      margin-bottom: 16px;
+      flex-shrink: 0;
     }
     .page-card h3 {
-      font-family: var(--font-serif);
-      font-size: var(--fs-body-lg);
-      font-weight: 500;
-      margin-bottom: var(--space-sm);
+      font-family: "Noto Serif SC", "Source Han Serif", Georgia, serif !important;
+      font-size: 18px !important;
+      font-weight: 500 !important;
+      margin: 0 0 8px 0 !important;
+      color: #1A1A1C !important;
     }
     .page-card p {
-      font-size: var(--fs-label-sm);
-      color: var(--color-text-secondary);
-      line-height: 1.5;
+      font-size: 13px !important;
+      color: #6F6F6F !important;
+      line-height: 1.5 !important;
+      margin: 0 0 12px 0 !important;
+      flex: 1;
     }
     .page-card .tag {
       display: inline-block;
-      margin-top: var(--space-md);
-      padding: 2px 8px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--color-text-tertiary);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
+      margin-top: auto;
+      padding: 3px 10px;
+      font-family: Inter, sans-serif !important;
+      font-size: 11px !important;
+      color: #A0A0A0 !important;
+      border: 1px solid #E8E8E6 !important;
+      border-radius: 4px !important;
+      width: fit-content;
     }
     .nav-footer {
-      padding: var(--space-lg) 0;
-      border-top: 1px solid var(--color-border);
+      padding: 20px 0;
+      border-top: 1px solid #E8E8E6;
     }
     .nav-footer .container {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .nav-footer,
-    .nav-footer .body-md {
-      font-size: var(--fs-label-xs);
-      color: var(--color-text-tertiary);
+    .nav-footer span {
+      font-size: 11px;
+      color: #A0A0A0;
+      font-family: Inter, sans-serif;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
       .page-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
       }
     }
-    @media (max-width: 640px) {
+    @media (max-width: 900px) {
+      .page-grid {
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+      }
+    }
+    @media (max-width: 600px) {
       .page-grid {
         grid-template-columns: 1fr;
       }
+      .page-card {
+        min-height: auto;
+      }
       .container {
-        padding: 0 var(--space-md);
+        padding: 0 16px;
       }
     }
   </style>
@@ -123,7 +146,7 @@
   <header class="nav-header">
     <div class="container">
       <span class="brand">Aurelian Guide · 智慧导览</span>
-      <span class="version">frontend-v3</span>
+      <span class="version">frontend-v4</span>
     </div>
   </header>
 
@@ -177,6 +200,22 @@
           <p>AI数字人导览对话界面，智能问答、路线推荐、文化讲解。</p>
           <span class="tag">AI Assistant</span>
         </a>
+
+        <!-- 图片识景 → vision -->
+        <a href="pages/vision/index.html" class="page-card">
+          <div class="icon">📷</div>
+          <h3>图片识景</h3>
+          <p>上传景点图片，AI 识别景点并生成讲解，推荐相关景点。</p>
+          <span class="tag">Vision · Week 2</span>
+        </a>
+
+        <!-- 路线推荐 → recommend -->
+        <a href="pages/recommend/index.html" class="page-card">
+          <div class="icon">🗺</div>
+          <h3>路线推荐</h3>
+          <p>根据兴趣偏好、时间、体力，AI 智能推荐个性化游览路线。</p>
+          <span class="tag">Recommend · Week 2</span>
+        </a>
       </div>
     </div>
   </main>
@@ -184,7 +223,11 @@
   <footer class="nav-footer">
     <div class="container">
       <span>Aurelian Guide · AI Digital Human Tour Guide</span>
-      <span>frontend-v4 · Studio Command</span>
+      <span>frontend-v4 · Week 3</span>
+      <span style="font-size:11px;color:#A0A0A0">
+        <a href="pages/landing/index.html?demo=1&role=tour_leader" style="color:#E07B3C">团长Demo</a> ·
+        <a href="pages/landing/index.html?demo=1&role=visitor" style="color:#E07B3C">游客Demo</a>
+      </span>
     </div>
   </footer>
 <script src="assets/js/studio-command.js"></script>

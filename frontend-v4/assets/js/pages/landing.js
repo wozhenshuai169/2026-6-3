@@ -17,6 +17,18 @@
   var chosenRole = null;
 
   function init() {
+    // Demo mode: skip registration with pre-filled credentials
+    if (new URLSearchParams(location.search).get('demo') === '1') {
+      var demoRole = new URLSearchParams(location.search).get('role') || 'tour_leader';
+      state.set('token','demo-token-'+Date.now());
+      state.set('userId','demo-'+demoRole);
+      state.set('userName',demoRole==='visitor'?'游客Demo':'团长Demo');
+      state.set('role',demoRole);
+      state.save();
+      router.go(demoRole==='visitor'?'user-portal':'guide-panel');
+      return;
+    }
+
     // If already logged in, redirect to appropriate page
     if (state.isLoggedIn()) {
       var role = state.get('role');

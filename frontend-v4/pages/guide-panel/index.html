@@ -43,7 +43,7 @@
     .animate-modal-in{animation:scaleIn 0.25s ease-out}
     .loading-spinner{width:20px;height:20px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
 </style>
-<link rel="stylesheet" href="../../assets/css/studio-command.css"/>
+<!-- studio-command removed to prevent conflicts -->
 </head>
 <body class="bg-background text-on-background min-h-screen font-body-md w-full max-w-[1024px] mx-auto overflow-x-hidden antialiased flex flex-col">
 
@@ -100,6 +100,14 @@
                     <span id="progress-display" class="font-medium">—</span>
                 </div>
             </div>
+        </div>
+        <hr class="border-outline border-t w-full my-xs"/>
+        <!-- AI Status Row -->
+        <div id="ai-status-row" class="flex items-center gap-4 py-1">
+            <span class="text-[12px] text-on-surface-variant">AI 状态:</span>
+            <span id="ai-status-badge" class="px-3 py-1 rounded-full text-xs font-medium bg-[#F5F5F2] text-on-surface-variant">—</span>
+            <span class="text-[12px] text-on-surface-variant ml-2">当前动作:</span>
+            <span id="ai-action-display" class="text-[13px] font-medium text-secondary">—</span>
         </div>
         <hr class="border-outline border-t w-full my-xs"/>
         <div class="flex items-center justify-between">
@@ -176,14 +184,6 @@
     </div>
 </div>
 
-<script>
-if (new URLSearchParams(location.search).get('preview') === '1') {
-  sessionStorage.setItem('aurelian_token', 'studio-command-preview');
-  sessionStorage.setItem('aurelian_role', 'tour_leader');
-  sessionStorage.setItem('aurelian_userName', 'Admin');
-  sessionStorage.setItem('aurelian_userId', 'preview-admin');
-}
-</script>
 <script src="../../assets/js/config.js"></script>
 <script src="../../assets/js/state.js"></script>
 <script src="../../assets/js/api-client.js"></script>
@@ -192,5 +192,4 @@ if (new URLSearchParams(location.search).get('preview') === '1') {
 <script src="../../assets/js/router.js"></script>
 <script src="../../assets/js/components.js"></script>
 <script src="../../assets/js/pages/guide-panel.js"></script>
-<script src="../../assets/js/studio-command.js"></script>
 </body></html>

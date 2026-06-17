@@ -1,19 +1,19 @@
-# ── Web 框架 ──
+# Web Framework
 fastapi>=0.115.0
 uvicorn[standard]>=0.34.0
 starlette>=0.44.0
 
-# ── 配置 ──
+# Config
 pydantic>=2.0
 pydantic-settings>=2.0
 python-dotenv>=1.0
 
-# ── HTTP 客户端 ──
+# HTTP Client
 httpx>=0.28.0
 python-multipart>=0.0.20
 
-# ── TTS (Microsoft Edge 免费引擎) ──
+# TTS (Microsoft Edge TTS)
 edge-tts>=7.0
 
-# ── 工具 ──
+# Utils
 certifi>=2025.0

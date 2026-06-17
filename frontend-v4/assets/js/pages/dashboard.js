@@ -1,11 +1,13 @@
 /**
  * Dashboard — Data Overview Screen (Dark Theme)
+ * Week 1 KPIs: 今日问答次数, 知识库命中率, 公共问题数, 私人问题数
  */
 (function () {
   'use strict';
   var A = window.Aurelian, api = A.api, ui = A.ui, comp = A.components;
   var refreshTimer = null;
   var lastUpdateTime = null;
+  var chartData = []; // { hour, publicCount, privateCount }
 
   function init() {
     startClock();
@@ -25,7 +27,11 @@
 
   function fetchAllData() {
     var btn = document.getElementById('btn-refresh');
-    if (btn) { btn.style.transform = 'rotate(0deg)'; btn.style.transition = 'transform 0.5s ease'; btn.style.transform = 'rotate(360deg)'; }
+    if (btn) {
+      btn.style.transition = 'transform 0.5s ease';
+      btn.style.transform = 'rotate(360deg)';
+      setTimeout(function(){ btn.style.transform = 'rotate(0deg)'; }, 500);
+    }
 
     Promise.allSettled([
       api.get('/dashboard/overview'),
@@ -35,39 +41,130 @@
       api.get('/dashboard/system-metrics'),
       api.get('/kb/docs')
     ]).then(function (results) {
-      updateKPI(results[0].value, results[3].value, results[4].value);
+      updateKPI(results[0].value, results[4].value);
       updateHotQuestions(results[1].value);
       updateRooms(results[0].value, results[2].value);
       updateSentiment(results[3].value);
       updateLog(results[0].value, results[4].value);
+      updateSplitChart(results[0].value);
+      updateTrendChart();
       updateFooter(results[5].value);
-      if (lastUpdateTime) {
-        ui.toast('数据已刷新 (' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ')', 'info');
-      }
       lastUpdateTime = new Date();
     });
   }
 
-  function updateKPI(overviewR, satR, metricsR) {
+  function updateKPI(overviewR, metricsR) {
     var overview = (overviewR && overviewR.ok) ? overviewR.data : {};
-    var sat = (satR && satR.ok) ? satR.data : {};
     var metrics = (metricsR && metricsR.ok) ? metricsR.data : {};
 
-    renderKPICard('kpi-1', '今日服务人次', overview.todayVisitors || 0, '', '↑12.3%', true);
-    renderKPICard('kpi-2', '满意率', sat.averageScore ? (sat.averageScore * 20).toFixed(1) + '%' : '—', '', '↑2.1%', true);
-    renderKPICard('kpi-3', '系统成功率', metrics.successRate ? (metrics.successRate * 100).toFixed(1) + '%' : '—', '', '↓0.8%', false);
-    renderKPICard('kpi-4', '平均延迟', metrics.averageLatencyMs ? (metrics.averageLatencyMs / 1000).toFixed(1) + 's' : '—', '', '↓0.5s', true);
+    var totalQA = overview.questionCount || 0;
+    var voiceCount = overview.voiceQuestionCount || 0;
+    var visionCount = overview.visionRecognizeCount || 0;
+    var recommendCount = overview.routeRecommendCount || 0;
+    var kbHitRate = metrics.successRate ? (metrics.successRate * 100).toFixed(1) + '%' : '—';
+    var pubCount = Math.max(0, totalQA - voiceCount); // approximate: total minus voice = text public
+
+    renderKPICard('kpi-1', '今日问答总次数', totalQA, '次', '文字+语音');
+    renderKPICard('kpi-2', '公共/私人问题', pubCount + ' / ' + voiceCount, '', '公共·左 | 私人·右');
+    renderKPICard('kpi-3', '图片识景次数', visionCount, '次', '今日累计');
+    renderKPICard('kpi-4', '路线推荐次数', recommendCount, '次', '今日累计');
+
+    // Accumulate chart data point
+    var now = new Date();
+    var hour = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+    chartData.push({ hour: hour, publicCount: pubCount, privateCount: voiceCount });
+    if (chartData.length > 12) chartData.shift();
   }
 
-  function renderKPICard(id, label, value, unit, trend, isPositive) {
+  function renderKPICard(id, label, value, unit, subtitle) {
     var el = document.getElementById(id);
     if (!el) return;
-    var arrow = isPositive ? '↑' : '↓';
-    var color = isPositive ? '#4ADE80' : '#F87171';
     el.innerHTML =
       '<div class="text-xs text-on-surface-variant uppercase tracking-wider mb-2">' + ui.escapeHtml(label) + '</div>' +
-      '<div class="tabular-nums text-[36px] font-medium text-on-background">' + ui.escapeHtml(String(value)) + (unit ? '<span class="text-lg text-on-surface-variant">' + ui.escapeHtml(unit) + '</span>' : '') + '</div>' +
-      '<div class="text-xs mt-2" style="color:' + color + '">' + arrow + ' ' + ui.escapeHtml(String(trend)) + '</div>';
+      '<div class="tabular-nums text-[36px] font-medium text-on-background">' + ui.escapeHtml(String(value)) +
+      (unit ? '<span class="text-lg text-on-surface-variant ml-1">' + ui.escapeHtml(unit) + '</span>' : '') + '</div>' +
+      (subtitle ? '<div class="text-xs mt-2 text-on-surface-variant">' + ui.escapeHtml(subtitle) + '</div>' : '');
+  }
+
+  function updateTrendChart() {
+    var canvas = document.getElementById('trend-chart');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.parentElement.clientWidth - 48; // card padding
+    var h = canvas.parentElement.clientHeight - 48;
+    canvas.width = w;
+    canvas.height = h;
+
+    if (chartData.length < 2) {
+      ctx.fillStyle = '#8E8E90';
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('数据收集不足，等待更多数据点...', w/2, h/2);
+      return;
+    }
+
+    // Draw simple line chart
+    var padding = { top: 10, right: 10, bottom: 24, left: 10 };
+    var plotW = w - padding.left - padding.right;
+    var plotH = h - padding.top - padding.bottom;
+    var maxVal = 1;
+    chartData.forEach(function(d){ maxVal = Math.max(maxVal, d.publicCount, d.privateCount); });
+    maxVal = Math.ceil(maxVal * 1.2) || 10;
+
+    // Grid lines
+    ctx.strokeStyle = '#2E2E30';
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= 4; i++) {
+      var y = padding.top + (plotH * i / 4);
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(w - padding.right, y);
+      ctx.stroke();
+      ctx.fillStyle = '#8E8E90';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(Math.round(maxVal * (4-i) / 4), padding.left - 4, y + 3);
+    }
+
+    // Public line (orange)
+    drawLine(ctx, chartData, 'publicCount', '#E07B3C', padding, plotW, plotH, maxVal, chartData.length);
+
+    // Private line (gray)
+    drawLine(ctx, chartData, 'privateCount', '#8E8E90', padding, plotW, plotH, maxVal, chartData.length);
+
+    // X-axis labels
+    ctx.fillStyle = '#8E8E90';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    chartData.forEach(function(d, i) {
+      var x = padding.left + (plotW * i / Math.max(chartData.length - 1, 1));
+      ctx.fillText(d.hour, x, h);
+    });
+  }
+
+  function drawLine(ctx, data, key, color, pad, plotW, plotH, maxVal, len) {
+    if (len < 2) return;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    data.forEach(function(d, i) {
+      var x = pad.left + (plotW * i / Math.max(len - 1, 1));
+      var y = pad.top + plotH - (d[key] / maxVal * plotH);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Dots
+    data.forEach(function(d, i) {
+      var x = pad.left + (plotW * i / Math.max(len - 1, 1));
+      var y = pad.top + plotH - (d[key] / maxVal * plotH);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
   }
 
   function updateHotQuestions(result) {
@@ -96,12 +193,76 @@
     if (spotsR && spotsR.ok && spotsR.data && spotsR.data.length) {
       html += '<div class="mt-3 flex flex-wrap gap-2">';
       spotsR.data.slice(0, 3).forEach(function (s) {
-        var name = s.spotName || s._id || '景点';
-        html += '<span class="px-2 py-1 border border-outline-variant rounded-full text-xs text-on-surface-variant">' + ui.escapeHtml(name) + '</span>';
+        html += '<span class="px-2 py-1 border border-outline-variant rounded-full text-xs text-on-surface-variant">' + ui.escapeHtml(s.spotName || s._id || '景点') + '</span>';
       });
       html += '</div>';
     }
     el.innerHTML = html;
+  }
+
+  function updateSplitChart(overviewR) {
+    var canvas = document.getElementById('split-chart');
+    if (!canvas) return;
+    var overview = (overviewR && overviewR.ok) ? overviewR.data : {};
+    var pubCount = Math.max(0, (overview.questionCount || 0) - (overview.voiceQuestionCount || 0));
+    var privCount = overview.voiceQuestionCount || 0;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width, h = canvas.height;
+    var cx = w/2, cy = h/2, r = Math.min(w,h)/2 - 12;
+
+    ctx.clearRect(0, 0, w, h);
+
+    if (pubCount === 0 && privCount === 0) {
+      ctx.fillStyle = '#8E8E90';
+      ctx.font = '11px Inter,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('暂无数据', cx, cy);
+      document.getElementById('split-legend').innerHTML = '';
+      return;
+    }
+
+    var total = pubCount + privCount;
+    var pubAngle = (pubCount / total) * Math.PI * 2;
+    var privAngle = (privCount / total) * Math.PI * 2;
+
+    // Public slice (orange)
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + pubAngle);
+    ctx.closePath();
+    ctx.fillStyle = '#E07B3C';
+    ctx.fill();
+
+    // Private slice (gray)
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, -Math.PI/2 + pubAngle, -Math.PI/2 + pubAngle + privAngle);
+    ctx.closePath();
+    ctx.fillStyle = '#8E8E90';
+    ctx.fill();
+
+    // Center hole (donut)
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+    ctx.fillStyle = '#242426';
+    ctx.fill();
+
+    // Center text
+    ctx.fillStyle = '#ECECED';
+    ctx.font = 'bold 16px Inter,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(total, cx, cy - 4);
+    ctx.font = '9px Inter,sans-serif';
+    ctx.fillStyle = '#8E8E90';
+    ctx.fillText('总次数', cx, cy + 10);
+
+    // Legend
+    var pct = total > 0 ? Math.round(pubCount/total*100) : 0;
+    var legend = document.getElementById('split-legend');
+    if (legend) legend.innerHTML =
+      '<span style="color:#E07B3C">● 公共 ' + pct + '%</span>' +
+      '<span style="color:#8E8E90">● 私人 ' + (100-pct) + '%</span>';
   }
 
   function updateSentiment(result) {
@@ -120,15 +281,14 @@
   function updateLog(overviewR, metricsR) {
     var el = document.getElementById('log-content');
     if (!el) return;
-    // Backend doesn't have a dedicated log endpoint; show summary metrics
     var metrics = (metricsR && metricsR.ok) ? metricsR.data : {};
     var overview = (overviewR && overviewR.ok) ? overviewR.data : {};
     var html = '';
-    html += '<div class="flex justify-between py-1"><span>总调用次数</span><span class="tabular-nums">' + (metrics.totalCalls || 0) + '</span></div>';
-    html += '<div class="flex justify-between py-1"><span>今日问题数</span><span class="tabular-nums">' + (overview.questionCount || 0) + '</span></div>';
-    html += '<div class="flex justify-between py-1"><span>语音问答数</span><span class="tabular-nums">' + (overview.voiceQuestionCount || 0) + '</span></div>';
-    html += '<div class="flex justify-between py-1"><span>视觉识别数</span><span class="tabular-nums">' + (overview.visionRecognizeCount || 0) + '</span></div>';
-    html += '<div class="flex justify-between py-1"><span>路线推荐数</span><span class="tabular-nums">' + (overview.routeRecommendCount || 0) + '</span></div>';
+    html += '<div class="flex justify-between py-1 border-b border-outline-variant"><span>在线房间</span><span class="tabular-nums text-[#4ADE80]">' + (overview.activeRooms || 0) + '</span></div>';
+    html += '<div class="flex justify-between py-1"><span>今日总问答</span><span class="tabular-nums">' + (overview.questionCount || 0) + '</span></div>';
+    html += '<div class="flex justify-between py-1"><span>🎤 语音问答</span><span class="tabular-nums">' + (overview.voiceQuestionCount || 0) + '</span></div>';
+    html += '<div class="flex justify-between py-1"><span>📷 图片识景</span><span class="tabular-nums">' + (overview.visionRecognizeCount || 0) + '</span></div>';
+    html += '<div class="flex justify-between py-1"><span>🗺 路线推荐</span><span class="tabular-nums">' + (overview.routeRecommendCount || 0) + '</span></div>';
     el.innerHTML = html;
   }
 
@@ -136,12 +296,10 @@
     var el = document.getElementById('footer-status');
     if (!el) return;
     var docCount = (kbResult && kbResult.ok && kbResult.data) ? kbResult.data.length : 0;
-    var totalVisitors = '12,847'; // This stat isn't in the current API; use a fallback
-    var lastUpdate = lastUpdateTime ? lastUpdateTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
-    el.textContent = '系统运行中 · 知识库：' + docCount + '份文档 · 最后更新：' + lastUpdate + '前';
+    var lastUpdate = lastUpdateTime ? lastUpdateTime.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '—';
+    el.textContent = '系统运行中 · 知识库：' + docCount + '份文档 · 最后更新：' + lastUpdate;
   }
 
-  // Boot
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); }
   else { init(); }
 })();

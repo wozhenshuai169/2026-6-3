@@ -25,8 +25,8 @@ for directory in ["uploads", "uploads/tts", "uploads/kb", "data"]:
 setup_logging(settings.log_level)
 logger = logging.getLogger(__name__)
 
-# Ensure frontend-v3 directory exists
-FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend-v3"
+# Ensure frontend-v4 directory exists
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend-v4"
 if not FRONTEND_DIR.exists():
     logger.warning("frontend-v3 directory not found at %s", FRONTEND_DIR)
 

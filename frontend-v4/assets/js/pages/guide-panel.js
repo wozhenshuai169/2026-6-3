@@ -175,17 +175,32 @@
   }
 
   function handleCollect() {
-    ui.toast('集合提醒已发布给所有游客', 'info');
+    if (!roomId) { ui.toast('请先创建房间', 'warning'); return; }
+    // Broadcast collect reminder to the room
+    api.post('/ai/public-question', {
+      roomId: roomId,
+      userId: state.get('userId'),
+      question: '【集合提醒】请各位游客注意，即将在当前位置集合，跟随团长继续游览。',
+      needAudio: false
+    }).then(function(r) {
+      if (r.ok) ui.toast('集合提醒已发布给所有游客', 'success');
+      else ui.toast('集合提醒发布失败', 'error');
+    });
   }
 
   function handlePause() {
+    if (!roomId) { ui.toast('请先创建房间', 'warning'); return; }
     isPaused = !isPaused;
     if (els.btnPause) {
       els.btnPause.innerHTML = isPaused
         ? '<span class="material-symbols-outlined">play_arrow</span> 继续讲解'
         : '<span class="material-symbols-outlined">pause</span> 暂停讲解';
     }
-    ui.toast(isPaused ? '讲解已暂停' : '讲解已继续', 'info');
+    // Attempt to update room status
+    if (isPaused) {
+      api.post('/rooms/' + roomId + '/current-spot', { spotId: currentSpotId || 'paused' }).then(function(){});
+    }
+    ui.toast(isPaused ? '讲解已暂停 · AI 将停止播报' : '讲解已继续 · AI 将恢复播报', 'info');
   }
 
   function updateCurrentSpot(spotId) {
@@ -249,12 +264,26 @@
     if (!roomId) return;
     api.get('/rooms/' + roomId + '/avatar-state').then(function(r) {
       if (r.ok && r.data) {
-        // Update status indicator if exists
+        var st=r.data.aiStatus||'idle';
+        var labels={idle:'待命',listening:'聆听中',speaking:'讲解中',thinking:'思考中',paused:'已暂停',resuming:'续讲中'};
+        var colors={idle:'#F5F5F2',listening:'#ECFDF5',speaking:'#FDF6F1',thinking:'#FFFBEB',paused:'#FEF2F2',resuming:'#EFF6FF'};
+        var textColors={idle:'#6B7280',listening:'#059669',speaking:'#E07B3C',thinking:'#D97706',paused:'#DC2626',resuming:'#2563EB'};
+
+        // Update AI status badge
+        var badge=document.getElementById('ai-status-badge');
+        if(badge){badge.textContent=labels[st]||st;badge.style.background=colors[st]||colors.idle;badge.style.color=textColors[st]||textColors.idle;}
+
+        // Update AI action display
+        var action=document.getElementById('ai-action-display');
+        if(action)action.textContent=r.data.action||r.data.text||(labels[st]||st);
+
+        // Update status dot
         var statusDot = document.getElementById('member-status-dot');
         if (statusDot) {
-          if (r.data.aiStatus === 'speaking') statusDot.className = 'w-2 h-2 rounded-full bg-[#E07B3C] animate-pulse';
-          else if (r.data.aiStatus === 'idle') statusDot.className = 'w-2 h-2 rounded-full bg-[#34C759]';
-          else statusDot.className = 'w-2 h-2 rounded-full bg-[#34C759]';
+          if (st === 'speaking'||st==='thinking') statusDot.className = 'w-2 h-2 rounded-full bg-[#E07B3C] animate-pulse';
+          else if (st === 'listening') statusDot.className = 'w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse';
+          else if (st === 'idle') statusDot.className = 'w-2 h-2 rounded-full bg-[#34C759]';
+          else statusDot.className = 'w-2 h-2 rounded-full bg-[#A0A0A0]';
         }
       }
     });
@@ -279,6 +308,15 @@
 
     // Show/hide share/copy buttons
     if (els.btnShare) els.btnShare.style.display = roomId ? '' : 'none';
+
+    // Show/hide pending requests indicator
+    var pendingCount = members.filter(function(m){ return m.hasRequest; }).length;
+    if (pendingCount > 0 && els.pendingRequestsRow && els.pendingRequestsText) {
+      els.pendingRequestsRow.classList.remove('hidden');
+      els.pendingRequestsText.textContent = pendingCount + '条私人请求待处理';
+      if (els.btnViewRequests) els.btnViewRequests.classList.remove('hidden');
+      if (els.requestsBadge) { els.requestsBadge.classList.remove('hidden'); els.requestsBadge.textContent = pendingCount; }
+    }
 
     renderMemberList('all');
   }

@@ -101,10 +101,13 @@
             <span class="text-xs text-on-surface-variant uppercase tracking-wider mb-2">活跃房间</span>
             <div id="rooms-content"><div class="loading-spinner mx-auto mt-4"></div></div>
         </div>
-        <!-- Sentiment -->
-        <div class="card flex flex-col text-center justify-center" id="sentiment-card">
-            <span class="text-xs text-on-surface-variant uppercase tracking-wider mb-2">满意度</span>
-            <div id="sentiment-content"><div class="loading-spinner mx-auto"></div></div>
+        <!-- Public/Private Split Donut -->
+        <div class="card flex flex-col" id="split-card">
+            <span class="text-xs text-on-surface-variant uppercase tracking-wider mb-1">问题分流占比</span>
+            <div class="flex-1 flex items-center justify-center">
+                <canvas id="split-chart" width="150" height="150"></canvas>
+            </div>
+            <div id="split-legend" class="flex justify-center gap-4 text-[10px] mt-1"></div>
         </div>
         <!-- Recent Q&A Log -->
         <div class="card flex flex-col overflow-hidden" id="log-card">

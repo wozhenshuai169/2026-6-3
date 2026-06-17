@@ -89,8 +89,20 @@
   var observer = new MutationObserver(function () {
     var room = document.getElementById('room-id-display');
     var members = document.getElementById('member-count');
-    document.querySelectorAll('[data-sc-room]').forEach(function (el) { if (room && room.textContent.trim()) el.textContent = room.textContent.trim(); });
-    document.querySelectorAll('[data-sc-members]').forEach(function (el) { if (members && members.textContent.trim()) el.textContent = members.textContent.trim(); });
+    var roomText = room ? room.textContent.trim() : '';
+    var membersText = members ? members.textContent.trim() : '';
+    if (!roomText && !membersText) return;
+    // Disconnect during update to prevent infinite loop
+    observer.disconnect();
+    document.querySelectorAll('[data-sc-room]').forEach(function (el) {
+      var current = (el.textContent || '').trim();
+      if (roomText && current !== roomText) el.textContent = roomText;
+    });
+    document.querySelectorAll('[data-sc-members]').forEach(function (el) {
+      var current = (el.textContent || '').trim();
+      if (membersText && current !== membersText) el.textContent = membersText;
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   });
-  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  observer.observe(document.body, { childList: true, subtree: true });
 })();

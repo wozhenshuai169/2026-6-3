@@ -1,13 +1,13 @@
 /**
  * Aurelian Guide — Router
- * Page navigation helpers. All paths relative to frontend-v3 root.
+ * Page navigation helpers. All paths relative to frontend-v4 root.
  */
 window.Aurelian = window.Aurelian || {};
 
 Aurelian.router = (function () {
   'use strict';
 
-  /** Map page names to paths (relative to frontend-v3 index) */
+  /** Map page names to paths (relative to frontend-v4 index) */
   var PAGE_PATHS = {
     'home':            'index.html',
     'landing':         'pages/landing/index.html',
@@ -15,10 +15,12 @@ Aurelian.router = (function () {
     'dashboard':       'pages/dashboard/index.html',
     'user-portal':     'pages/user-portal/index.html',
     'knowledge-base':  'pages/knowledge-base/index.html',
-    'ai-assistant':    'pages/ai-assistant/index.html'
+    'ai-assistant':    'pages/ai-assistant/index.html',
+    'vision':          'pages/vision/index.html',
+    'recommend':       'pages/recommend/index.html'
   };
 
-  /** Get the base path (frontend-v3 root) from current location */
+  /** Get the base path (frontend-v4 root) from current location */
   function getBase() {
     var path = window.location.pathname;
     // Remove any page-specific segments to get to frontend-v3 root
@@ -66,6 +68,8 @@ Aurelian.router = (function () {
     if (path.indexOf('/user-portal/') !== -1) return 'user-portal';
     if (path.indexOf('/knowledge-base/') !== -1) return 'knowledge-base';
     if (path.indexOf('/ai-assistant/') !== -1) return 'ai-assistant';
+    if (path.indexOf('/vision/') !== -1) return 'vision';
+    if (path.indexOf('/recommend/') !== -1) return 'recommend';
     return 'home';
   }
 
