@@ -19,7 +19,17 @@ class RouteRecommender:
             desired_tags.add("family_friendly")
 
         recommendations: list[RouteRecommendation] = []
+        closed_route_ids = {
+            route_id
+            for event in self.data.operation_events
+            if event.get("status", "active") == "active"
+            and event.get("eventType") == "route_closed"
+            and event.get("severity") == "critical"
+            for route_id in event.get("affectedRouteIds", [])
+        }
         for route in self.data.routes:
+            if route["routeId"] in closed_route_ids:
+                continue
             route_tags = set(route.get("tags", []))
             matched = sorted(route_tags & desired_tags)
             breakdown = {

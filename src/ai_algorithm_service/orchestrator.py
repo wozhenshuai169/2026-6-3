@@ -46,7 +46,17 @@ class TourAIOrchestrator:
                 decision=decision,
                 answer="我没有听清，可以再说一遍或改用文字输入吗？",
                 confidence=request.asrConfidence or 0.0,
-                events=events,
+                events=events
+                + [
+                    {
+                        "type": "asr_low_confidence",
+                        "payload": {
+                            "asrConfidence": request.asrConfidence,
+                            "audioFormat": request.audioFormat,
+                            "rawTextStored": False,
+                        },
+                    }
+                ],
             )
 
         if decision.nextAction == "human_takeover":
@@ -73,12 +83,17 @@ class TourAIOrchestrator:
 
         if decision.nextAction == "private_assistant":
             private = self.private_assistant.handle(request)
+            path_hint = None
+            if "休息" in request.text or "走不动" in request.text:
+                path_hint = self.data.find_nearest_facility_path(request.state.currentSpotId, "rest_area")
             return AlgorithmResponse(
                 decision=decision,
-                answer=private.answer,
+                answer=self._append_path_hint(private.answer, path_hint),
                 private=private,
                 memoryTags=private.memoryTags,
-                events=events,
+                events=events
+                + ([{"type": "path_hint", "payload": path_hint}] if path_hint else [])
+                + [{"type": "privacy", "payload": {"action": "tag_only_saved", "rawTextStored": False}}],
             )
 
         if decision.nextAction == "vision_recognize":
@@ -113,7 +128,18 @@ class TourAIOrchestrator:
             citations=qa.citations,
             confidence=qa.confidence,
             stateUpdate=state_update,
-            events=events,
+            events=events
+            + [
+                {
+                    "type": "retrieval",
+                    "payload": {
+                        "retrievedChunkIds": qa.retrievedChunkIds,
+                        "citedChunkIds": [citation.chunkId for citation in qa.citations],
+                        "retrievalScores": qa.retrievalScores,
+                        "fallbackUsed": not bool(qa.citations),
+                    },
+                }
+            ],
         )
 
     def recommend_routes(self, request: AlgorithmRequest) -> AlgorithmResponse:
@@ -128,6 +154,11 @@ class TourAIOrchestrator:
 
     def extract_memory(self, request: AlgorithmRequest) -> dict:
         return self.memory.extract(request.text)
+
+    def _append_path_hint(self, answer: str, path_hint: dict | None) -> str:
+        if not path_hint:
+            return answer
+        return f"{answer} 按当前简化路径图，最近的{path_hint['targetName']}步行约{path_hint['walkingMinutes']}分钟，路线强度较低。"
 
     def handle_voice(self, request: AlgorithmRequest) -> tuple:
         asr = self.voice.asr(

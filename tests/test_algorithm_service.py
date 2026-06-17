@@ -2,7 +2,33 @@ from ai_algorithm_service.evaluation import EvaluationHarness
 from ai_algorithm_service.orchestrator import TourAIOrchestrator
 from ai_algorithm_service.schemas import AlgorithmRequest, TouristProfile
 from ai_algorithm_service.api import app
+from ai_algorithm_service.vision import VisionProvider, VisionRecognizer
 from fastapi.testclient import TestClient
+
+
+class FakeBellTowerVisionProvider(VisionProvider):
+    def recognize(self, request: AlgorithmRequest) -> dict | None:
+        return {
+            "spotId": "bell_tower",
+            "spotName": "钟楼",
+            "confidence": 0.91,
+            "visualFeatures": ["木结构", "重檐"],
+            "relatedSpots": ["鼓楼"],
+        }
+
+
+class StaticVisionProvider(VisionProvider):
+    def __init__(self, spot: dict) -> None:
+        self.spot = spot
+
+    def recognize(self, request: AlgorithmRequest) -> dict | None:
+        return {
+            "spotId": self.spot["spotId"],
+            "spotName": self.spot["spotName"],
+            "confidence": 0.9,
+            "visualFeatures": self.spot["visualFeatures"],
+            "relatedSpots": self.spot.get("relatedSpots", []),
+        }
 
 
 def test_public_question_interrupts_and_returns_citations():
@@ -37,9 +63,9 @@ def test_unknown_rag_does_not_fabricate():
 
 
 def test_vision_uses_rag_when_object_recognized():
-    response = TourAIOrchestrator().handle(
-        AlgorithmRequest(channel="public", text="介绍这张图", imageUrl="bell_tower_photo.jpg")
-    )
+    orchestrator = TourAIOrchestrator()
+    orchestrator.vision = VisionRecognizer(orchestrator.data, orchestrator.rag, provider=FakeBellTowerVisionProvider())
+    response = orchestrator.handle(AlgorithmRequest(channel="public", text="介绍这张图", imageUrl="uploaded_photo.jpg"))
     assert response.vision is not None
     assert response.vision.recognizedObject == "钟楼"
     assert response.citations
@@ -121,7 +147,7 @@ def test_voice_orchestrate_returns_asr_algorithm_and_tts():
     client = TestClient(app)
     response = client.post(
         "/v1/voice/orchestrate",
-        json={"channel": "public", "audioFormat": "wav", "audioPath": "toilet_demo.wav"},
+        json={"channel": "public", "audioFormat": "wav", "audioPath": "uploaded.wav", "text": "我想去厕所"},
     )
     payload = response.json()
     assert response.status_code == 200
@@ -133,7 +159,8 @@ def test_voice_orchestrate_returns_asr_algorithm_and_tts():
 def test_all_demo_vision_spots_return_features_and_rag():
     orchestrator = TourAIOrchestrator()
     for spot in orchestrator.data.vision_spots:
-        response = orchestrator.handle(AlgorithmRequest(channel="public", text="介绍这张图", imageUrl=spot["images"][0]))
+        orchestrator.vision = VisionRecognizer(orchestrator.data, orchestrator.rag, provider=StaticVisionProvider(spot))
+        response = orchestrator.handle(AlgorithmRequest(channel="public", text="介绍这张图", imageUrl="uploaded_photo.jpg"))
         assert response.vision is not None
         assert response.vision.spotName == spot["spotName"]
         assert response.vision.visualFeatures

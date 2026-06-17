@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
+from ai_algorithm_service.api import app
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,15 +18,11 @@ def _manifest() -> dict:
     return json.loads(MANIFEST.read_text(encoding="utf-8"))
 
 
-def _real_audio_configured() -> bool:
-    return bool(os.getenv("DASHSCOPE_API_KEY") or os.getenv("ALIYUN_ISI_ACCESS_KEY_ID"))
+def _real_provider_configured(kind: str) -> bool:
+    return bool(os.getenv(f"AI_{kind.upper()}_ENDPOINT"))
 
 
-def _real_vision_configured() -> bool:
-    return bool(os.getenv("DASHSCOPE_API_KEY") or os.getenv("QWEN_VL_API_KEY"))
-
-
-@pytest.mark.skipif(not _real_vision_configured(), reason="real vision provider is not configured")
+@pytest.mark.skipif(not _real_provider_configured("VISION"), reason="AI_VISION_ENDPOINT is not configured")
 def test_real_vision_cases_from_manifest():
     client = TestClient(app)
     manifest = _manifest()
@@ -45,7 +41,10 @@ def test_real_vision_cases_from_manifest():
         assert vision["confidence"] >= threshold, case["id"]
 
 
-@pytest.mark.skipif(not _real_audio_configured(), reason="real ASR/TTS provider is not configured")
+@pytest.mark.skipif(
+    not (_real_provider_configured("ASR") and _real_provider_configured("TTS")),
+    reason="AI_ASR_ENDPOINT and AI_TTS_ENDPOINT are not configured",
+)
 def test_real_voice_cases_from_manifest():
     client = TestClient(app)
     manifest = _manifest()
@@ -65,7 +64,7 @@ def test_real_voice_cases_from_manifest():
         assert payload["tts"]["audioUrl"], case["id"]
 
 
-@pytest.mark.skipif(not _real_audio_configured(), reason="real TTS provider is not configured")
+@pytest.mark.skipif(not _real_provider_configured("TTS"), reason="AI_TTS_ENDPOINT is not configured")
 def test_real_tts_cases_from_manifest():
     client = TestClient(app)
     manifest = _manifest()
@@ -76,3 +75,4 @@ def test_real_tts_cases_from_manifest():
         assert payload["success"] is case["expected"]["success"], case["id"]
         if case["expected"].get("audioUrlRequired"):
             assert payload["audioUrl"], case["id"]
+
