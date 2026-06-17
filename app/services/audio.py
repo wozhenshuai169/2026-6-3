@@ -16,6 +16,7 @@ from app.services.rooms import get_room
 logger = logging.getLogger(__name__)
 
 SUPPORTED_FORMATS = {"wav", "mp3", "webm", "ogg", "m4a"}
+UPLOADS_AUDIO_DIR = Path("uploads") / "audio"
 UPLOADS_TTS_DIR = Path("uploads") / "tts"
 _audio = get_audio()
 
@@ -34,6 +35,16 @@ def _safe_room_part(room_id: str | None) -> str:
 
 def _tts_filename(room_id: str | None, audio_format: str) -> str:
     return f"tts_{_safe_room_part(room_id)}_{int(time())}_{uuid4().hex[:4]}.{audio_format}"
+
+
+def _audio_filename(room_id: str | None, user_id: str | None, audio_format: str) -> str:
+    return f"rec_{_safe_room_part(room_id)}_{_safe_room_part(user_id)}_{int(time())}_{uuid4().hex[:8]}.{audio_format}"
+
+
+def _format_from_filename(filename: str | None) -> str | None:
+    if not filename or "." not in filename:
+        return None
+    return filename.rsplit(".", 1)[-1].lower()
 
 
 def _write_demo_wav(path: Path, duration: float = 0.9) -> None:
@@ -57,6 +68,34 @@ def _uploaded_file_from_url(audio_url: str) -> Path | None:
     if not audio_url.startswith(prefix):
         return None
     return UPLOADS_TTS_DIR / audio_url.removeprefix(prefix)
+
+
+async def save_uploaded_audio(
+    room_id: str,
+    user_id: str,
+    file,
+    audio_format: str | None = None,
+) -> dict | None:
+    room = get_room(room_id)
+    if room is None:
+        logger.warning("Audio upload: room %s not found", room_id)
+        return None
+
+    fmt = _validate_format(audio_format or _format_from_filename(getattr(file, "filename", "")) or "webm")
+    content = await file.read()
+    if not content:
+        raise ValueError("Uploaded audio file is empty")
+
+    filename = _audio_filename(room_id, user_id, fmt)
+    path = UPLOADS_AUDIO_DIR / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(content)
+    return {
+        "audioUrl": f"/uploads/audio/{filename}",
+        "audioFormat": fmt,
+        "size": len(content),
+        "filename": filename,
+    }
 
 
 async def asr_transcribe(

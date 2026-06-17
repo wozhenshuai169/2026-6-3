@@ -15,6 +15,13 @@ class ASRResponse(BaseModel):
     confidence: float
 
 
+class AudioUploadResponse(BaseModel):
+    audioUrl: str
+    audioFormat: str
+    size: int
+    filename: str
+
+
 class TTSRequest(BaseModel):
     text: str
     voice: str = "guide_female"

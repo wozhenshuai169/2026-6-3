@@ -3,6 +3,7 @@ from time import perf_counter
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.vision import VisionRecognizeRequest, VisionRecognizeResponse
+from app.services.rooms import record_vision_log
 from app.services.stats import record_event
 from app.services.vision import recognize_image
 
@@ -30,6 +31,19 @@ async def vision_recognize(req: VisionRecognizeRequest):
                 "roomId": req.roomId,
                 "spotId": result.get("recognizedSpot", {}).get("spotId"),
                 "currentSpot": req.currentSpotId,
+            },
+        )
+        recognized = result.get("recognizedSpot", {})
+        record_vision_log(
+            req.roomId,
+            {
+                "userId": req.userId,
+                "imageUrl": req.imageUrl,
+                "currentSpotId": req.currentSpotId,
+                "recognizedSpot": recognized,
+                "confidence": recognized.get("confidence", 0.0),
+                "description": result.get("description", ""),
+                "category": result.get("category", "unknown"),
             },
         )
         return VisionRecognizeResponse(**result)

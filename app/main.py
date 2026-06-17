@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.ai import router as ai_router
 from app.api.audio import router as audio_router
 from app.api.dashboard import router as dashboard_router
+from app.api.feedback import router as feedback_router
 from app.api.kb import router as kb_router
 from app.api.recommend import router as recommend_router
 from app.api.rooms import router as rooms_router
@@ -19,7 +20,7 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.middleware.logging import RequestLoggingMiddleware
 
-for directory in ["uploads", "uploads/tts", "uploads/kb", "data"]:
+for directory in ["uploads", "uploads/tts", "uploads/audio", "uploads/kb", "data"]:
     Path(directory).mkdir(parents=True, exist_ok=True)
 
 setup_logging(settings.log_level)
@@ -38,6 +39,7 @@ app.include_router(spots_router)
 app.include_router(routes_router)
 app.include_router(kb_router)
 app.include_router(dashboard_router)
+app.include_router(feedback_router)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
