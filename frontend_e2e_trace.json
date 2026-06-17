@@ -1,0 +1,613 @@
+{
+  "flow": [
+    {
+      "step": 1,
+      "name": "Leader Registration",
+      "method": "POST",
+      "path": "/api/auth/register",
+      "request": {
+        "userName": "张团长",
+        "password": "demo123"
+      },
+      "response": {
+        "userId": "913ec965-b917-4c12-9614-f6d0ac5e10ff",
+        "userName": "张团长",
+        "token": "df7acf3f-bd9f-4a5d-ab43-21822ec59119"
+      }
+    },
+    {
+      "step": 2,
+      "name": "Leader Creates Room",
+      "method": "POST",
+      "path": "/api/rooms",
+      "request": {
+        "token": "df7acf3f-bd9f-4a5d-ab43-21822ec59119",
+        "roomName": "上午研学团",
+        "scenicAreaId": "huangshan",
+        "routeId": "classic"
+      },
+      "response": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "status": "created"
+      }
+    },
+    {
+      "step": 3,
+      "name": "Visitor A Registration",
+      "method": "POST",
+      "path": "/api/auth/register",
+      "request": {
+        "userName": "游客A",
+        "password": "demo123"
+      },
+      "response": {
+        "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a",
+        "userName": "游客A",
+        "token": "41cbae5c-4c0d-4391-892c-4624d8a52f76"
+      }
+    },
+    {
+      "step": 4,
+      "name": "Visitor A Joins Room",
+      "method": "POST",
+      "path": "/api/rooms/f24a250f-4b1b-4ff0-9e1d-46a49e5f5add/join",
+      "request": {
+        "token": "41cbae5c-4c0d-4391-892c-4624d8a52f76"
+      },
+      "response": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a",
+        "status": "joined"
+      }
+    },
+    {
+      "step": 5,
+      "name": "Visitor B Registration",
+      "method": "POST",
+      "path": "/api/auth/register",
+      "request": {
+        "userName": "游客B",
+        "password": "demo123"
+      },
+      "response": {
+        "userId": "a28aaa4e-dfaa-41c9-a2e4-bfea69ce56ed",
+        "userName": "游客B",
+        "token": "fb7048a6-9317-4486-87bf-bfa7e21f750e"
+      }
+    },
+    {
+      "step": 6,
+      "name": "Visitor B Joins Room",
+      "method": "POST",
+      "path": "/api/rooms/f24a250f-4b1b-4ff0-9e1d-46a49e5f5add/join",
+      "request": {
+        "token": "fb7048a6-9317-4486-87bf-bfa7e21f750e"
+      },
+      "response": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "userId": "a28aaa4e-dfaa-41c9-a2e4-bfea69ce56ed",
+        "status": "joined"
+      }
+    },
+    {
+      "step": 7,
+      "name": "Room Status (2 visitors)",
+      "method": "GET",
+      "path": "/api/rooms/f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+      "request": null,
+      "response": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "roomName": "上午研学团",
+        "scenicAreaId": "huangshan",
+        "routeId": "classic",
+        "routeSpotIds": [
+          "main_hall",
+          "courtyard",
+          "bell_tower",
+          "drum_tower"
+        ],
+        "members": [
+          {
+            "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a",
+            "userName": "游客A"
+          },
+          {
+            "userId": "a28aaa4e-dfaa-41c9-a2e4-bfea69ce56ed",
+            "userName": "游客B"
+          }
+        ],
+        "currentSpot": "",
+        "status": "active"
+      }
+    },
+    {
+      "step": 8,
+      "name": "Leader Sets Spot -> main_hall",
+      "method": "POST",
+      "path": "/api/rooms/f24a250f-4b1b-4ff0-9e1d-46a49e5f5add/current-spot",
+      "request": {
+        "spotId": "main_hall"
+      },
+      "response": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "currentSpot": "main_hall",
+        "status": "updated"
+      }
+    },
+    {
+      "step": 9,
+      "name": "AI Avatar State",
+      "method": "GET",
+      "path": "/api/rooms/f24a250f-4b1b-4ff0-9e1d-46a49e5f5add/avatar-state",
+      "request": null,
+      "response": {
+        "aiStatus": "speaking",
+        "emotion": "friendly",
+        "action": "speaking",
+        "text": "欢迎来到main_hall，让我为大家介绍这里的历史和文化。",
+        "audioUrl": ""
+      }
+    },
+    {
+      "step": 10,
+      "name": "Visitor A Public Question",
+      "method": "POST",
+      "path": "/api/ai/public-question",
+      "request": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a",
+        "question": "这个建筑是什么时候建的？",
+        "needAudio": false
+      },
+      "response": {
+        "answer": "关于「这个建筑是什么时候建的？」的解答：当前位于 main_hall，这里是模拟答案，后续将接入真实 AI。",
+        "sources": [
+          {
+            "title": "主展厅历史资料",
+            "chunkId": "chunk_001"
+          }
+        ],
+        "avatarState": {
+          "status": "idle",
+          "emotion": "friendly",
+          "action": "answer",
+          "mouthOpen": false
+        }
+      }
+    },
+    {
+      "step": 11,
+      "name": "Visitor B Private Question",
+      "method": "POST",
+      "path": "/api/ai/public-question",
+      "request": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "userId": "a28aaa4e-dfaa-41c9-a2e4-bfea69ce56ed",
+        "question": "我有点累，附近有休息区吗？",
+        "needAudio": false
+      },
+      "response": {
+        "answer": "关于「我有点累，附近有休息区吗？」的解答：当前位于 main_hall，这里是模拟答案，后续将接入真实 AI。",
+        "warning": null,
+        "sources": [
+          {
+            "title": "主展厅历史资料",
+            "chunkId": "chunk_001"
+          }
+        ],
+        "avatarState": {
+          "status": "idle",
+          "emotion": "friendly",
+          "action": "answer",
+          "mouthOpen": false
+        }
+      }
+    },
+    {
+      "step": 12,
+      "name": "Vision: bell_tower image",
+      "method": "POST",
+      "path": "/api/vision/recognize",
+      "request": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a",
+        "imageUrl": "/uploads/vision/bell_tower.jpg",
+        "currentSpotId": "main_hall"
+      },
+      "response": {
+        "recognizedSpot": {
+          "spotId": "bell_tower",
+          "spotName": "钟楼",
+          "confidence": 0.87
+        },
+        "description": "你拍到的是钟楼。",
+        "relatedSpots": [
+          {
+            "spotId": "鼓楼",
+            "spotName": "鼓楼"
+          },
+          {
+            "spotId": "主展厅",
+            "spotName": "主展厅"
+          }
+        ],
+        "visualFeatures": [
+          "木结构",
+          "重檐",
+          "钟鼓建筑"
+        ],
+        "category": "spot"
+      }
+    },
+    {
+      "step": 13,
+      "name": "Route: elderly + less walking",
+      "method": "POST",
+      "path": "/api/recommend/route",
+      "request": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a",
+        "preferences": {
+          "interest": [
+            "history",
+            "photography"
+          ],
+          "timeLimit": 60,
+          "physicalStrength": "low",
+          "withElderly": true,
+          "withChildren": false,
+          "avoidCrowd": true
+        }
+      },
+      "response": {
+        "routeId": "short",
+        "routeName": "轻松短线",
+        "score": 1.0,
+        "estimatedTime": 35,
+        "spots": [
+          {
+            "spotId": "main_hall",
+            "spotName": "main_hall",
+            "stayMinutes": 10
+          },
+          {
+            "spotId": "courtyard",
+            "spotName": "courtyard",
+            "stayMinutes": 10
+          },
+          {
+            "spotId": "service_center",
+            "spotName": "service_center",
+            "stayMinutes": 10
+          },
+          {
+            "spotId": "east_gate",
+            "spotName": "east_gate",
+            "stayMinutes": 10
+          }
+        ],
+        "reason": "轻松短线步行压力较低，适合当前体力状态；命中分数：interestScore=3、timeScore=2、staminaScore=2、companionScore=2、distanceScore=1。",
+        "distance": 1.2,
+        "difficulty": "low",
+        "matchedPreferences": [
+          "family_friendly",
+          "less_walking"
+        ],
+        "scoreBreakdown": {
+          "interestScore": 3.0,
+          "timeScore": 2.0,
+          "staminaScore": 2.0,
+          "companionScore": 2.0,
+          "distanceScore": 1.0
+        },
+        "suitableFor": [
+          "children",
+          "elderly",
+          "low physical strength"
+        ],
+        "notes": [
+          "Low walking load; suitable for a relaxed pace."
+        ]
+      }
+    },
+    {
+      "step": 14,
+      "name": "Visitor A Feedback 5-star",
+      "method": "POST",
+      "path": "/api/feedback",
+      "request": {
+        "score": 5,
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a",
+        "scene": "public-tour",
+        "comment": "AI讲解很专业"
+      },
+      "response": {
+        "feedbackId": "8cba5df5-bb32-49d0-87c3-f34dd7e1efd5",
+        "status": "created"
+      }
+    },
+    {
+      "step": 15,
+      "name": "Visitor B Feedback 4-star",
+      "method": "POST",
+      "path": "/api/feedback",
+      "request": {
+        "score": 4,
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "userId": "a28aaa4e-dfaa-41c9-a2e4-bfea69ce56ed",
+        "scene": "private-assistant",
+        "comment": "休息区推荐很及时"
+      },
+      "response": {
+        "feedbackId": "738f65dd-3eb7-49c4-a98a-f831e89e24c5",
+        "status": "created"
+      }
+    },
+    {
+      "step": 16,
+      "name": "Dashboard Overview",
+      "method": "GET",
+      "path": "/api/dashboard/overview",
+      "request": null,
+      "response": {
+        "todayVisitors": 44,
+        "activeRooms": 8,
+        "questionCount": 133,
+        "voiceQuestionCount": 42,
+        "visionRecognizeCount": 21,
+        "routeRecommendCount": 13
+      }
+    },
+    {
+      "step": 17,
+      "name": "Dashboard Hot Questions",
+      "method": "GET",
+      "path": "/api/dashboard/hot-questions",
+      "request": null,
+      "response": {
+        "items": [
+          {
+            "question": "This building was built in what dynasty?",
+            "count": 2
+          },
+          {
+            "question": "主展厅是什么时候建的？",
+            "count": 1
+          },
+          {
+            "question": "这个建筑是什么时候建的？",
+            "count": 1
+          },
+          {
+            "question": "我有点累，附近有休息区吗？",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "step": 18,
+      "name": "Dashboard Satisfaction",
+      "method": "GET",
+      "path": "/api/dashboard/satisfaction",
+      "request": null,
+      "response": {
+        "averageScore": 4.83,
+        "feedbackCount": 6,
+        "distribution": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 1,
+          "5": 5
+        },
+        "trend": [
+          {
+            "time": "1",
+            "score": 5
+          },
+          {
+            "time": "2",
+            "score": 5
+          },
+          {
+            "time": "3",
+            "score": 5
+          },
+          {
+            "time": "4",
+            "score": 5
+          },
+          {
+            "time": "5",
+            "score": 5
+          },
+          {
+            "time": "6",
+            "score": 4
+          }
+        ],
+        "items": [
+          {
+            "feedbackId": "738f65dd-3eb7-49c4-a98a-f831e89e24c5",
+            "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+            "userId": "a28aaa4e-dfaa-41c9-a2e4-bfea69ce56ed",
+            "scene": "private-assistant",
+            "score": 4,
+            "comment": "休息区推荐很及时",
+            "timestamp": 1781708807.9032264
+          },
+          {
+            "feedbackId": "8cba5df5-bb32-49d0-87c3-f34dd7e1efd5",
+            "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+            "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a",
+            "scene": "public-tour",
+            "score": 5,
+            "comment": "AI讲解很专业",
+            "timestamp": 1781708807.9019518
+          },
+          {
+            "feedbackId": "b06c7ee2-6bd5-49e0-8353-f0b919791843",
+            "roomId": "07051989-282f-419e-aec0-58d3504fc9fc",
+            "userId": "7be66e8f-2365-4329-9b4c-c0452fd5eff2",
+            "scene": "test",
+            "score": 5,
+            "comment": "",
+            "timestamp": 1781707899.0319104
+          },
+          {
+            "feedbackId": "18dd77bf-6f43-4ca0-ab73-80cc6ae26a7e",
+            "roomId": "f626d8e3-00ba-4112-bbc7-2ac48db23a31",
+            "userId": "31ffc988-73e6-4474-80ea-bb283417a0b4",
+            "scene": "test",
+            "score": 5,
+            "comment": "",
+            "timestamp": 1781707787.2025216
+          },
+          {
+            "feedbackId": "b0b634b9-f122-430b-a946-f7cf35f7fcb7",
+            "roomId": "4b59486e-1857-46fa-8448-079d3755b595",
+            "userId": "3cc1739c-5d54-4ba1-9204-e8e6f52d9cb8",
+            "scene": "test",
+            "score": 5,
+            "comment": "",
+            "timestamp": 1781707766.0226207
+          },
+          {
+            "feedbackId": "3a50d219-24fe-4b59-94c7-e0033ad554ca",
+            "roomId": "",
+            "userId": "",
+            "scene": "",
+            "score": 5,
+            "comment": "",
+            "timestamp": 1781706703.0126247
+          }
+        ],
+        "emotion": {
+          "friendly": 6,
+          "neutral": 0,
+          "thinking": 0,
+          "surprised": 0
+        }
+      }
+    },
+    {
+      "step": 19,
+      "name": "Dashboard System Metrics",
+      "method": "GET",
+      "path": "/api/dashboard/system-metrics",
+      "request": null,
+      "response": {
+        "successRate": 0.9722,
+        "averageLatencyMs": 0.47,
+        "totalCalls": 36,
+        "byEndpoint": [
+          {
+            "eventType": "create_room",
+            "success": 5,
+            "failure": 1,
+            "averageLatencyMs": 0.0
+          },
+          {
+            "eventType": "feedback",
+            "success": 6,
+            "failure": 0,
+            "averageLatencyMs": 0.0
+          },
+          {
+            "eventType": "join_room",
+            "success": 2,
+            "failure": 0,
+            "averageLatencyMs": 0.0
+          },
+          {
+            "eventType": "public_question",
+            "success": 5,
+            "failure": 0,
+            "averageLatencyMs": 0.77
+          },
+          {
+            "eventType": "register",
+            "success": 8,
+            "failure": 0,
+            "averageLatencyMs": 0.0
+          },
+          {
+            "eventType": "route_recommend",
+            "success": 4,
+            "failure": 0,
+            "averageLatencyMs": 1.68
+          },
+          {
+            "eventType": "update_spot",
+            "success": 1,
+            "failure": 0,
+            "averageLatencyMs": 0.0
+          },
+          {
+            "eventType": "vision_recognize",
+            "success": 4,
+            "failure": 0,
+            "averageLatencyMs": 1.57
+          }
+        ]
+      }
+    },
+    {
+      "step": 20,
+      "name": "Room Voice Logs",
+      "method": "GET",
+      "path": "/api/rooms/f24a250f-4b1b-4ff0-9e1d-46a49e5f5add/voice-logs",
+      "request": null,
+      "response": {
+        "roomId": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+        "items": []
+      }
+    }
+  ],
+  "summary": {
+    "test_name": "A5 Full E2E Demo Walkthrough",
+    "room_id": "f24a250f-4b1b-4ff0-9e1d-46a49e5f5add",
+    "participants": [
+      {
+        "name": "张团长",
+        "role": "leader",
+        "userId": "913ec965-b917-4c12-9614-f6d0ac5e10ff"
+      },
+      {
+        "name": "游客A",
+        "role": "visitor",
+        "userId": "dabf1632-6d9a-4de5-bbbc-43c613ef3a9a"
+      },
+      {
+        "name": "游客B",
+        "role": "visitor",
+        "userId": "a28aaa4e-dfaa-41c9-a2e4-bfea69ce56ed"
+      }
+    ],
+    "data_flow": [
+      "Register (x3) → Create Room → Join (x2)",
+      "Set Spot → Avatar State",
+      "Public QA (visitor A) → Private QA (visitor B)",
+      "Vision Recognition → Route Recommendation",
+      "Feedback (x2) → Dashboard Stats"
+    ],
+    "metrics_by_step": {
+      "public_questions": 1,
+      "private_questions": 1,
+      "vision_recognitions": 1,
+      "route_recommendations": 1,
+      "feedback_count": 2
+    },
+    "dashboard_snapshot": {
+      "todayVisitors": 44,
+      "activeRooms": 8,
+      "questionCount": 133,
+      "voiceQuestionCount": 42,
+      "visionRecognizeCount": 21,
+      "routeRecommendCount": 13
+    },
+    "complete": true
+  }
+}
