@@ -33,3 +33,5 @@ class RouteRecommendResponse(BaseModel):
     difficulty: str = ""
     matchedPreferences: list[str] = Field(default_factory=list)
     scoreBreakdown: dict[str, float] = Field(default_factory=dict)
+    suitableFor: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)

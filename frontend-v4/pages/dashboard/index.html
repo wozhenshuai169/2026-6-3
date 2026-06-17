@@ -4,7 +4,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>数据大屏 · 智慧导览</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols from jsDelivr -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
@@ -34,9 +34,10 @@
         }}
     }
 </script>
+<link rel="stylesheet" href="../../assets/css/material-icons.css"/>
 <style>
     body{background:#1C1C1E;color:#ECECED;font-family:Inter,sans-serif}
-    .material-symbols-outlined{font-variation-settings:'FILL'0,'wght'300,'GRAD'0,'opsz'24}
+    
     .card{border-radius:12px;padding:20px;background:#242426;border:1px solid #2E2E30}
     .tabular-nums{font-variant-numeric:tabular-nums}
     .custom-scrollbar::-webkit-scrollbar{width:4px}.custom-scrollbar::-webkit-scrollbar-track{background:transparent}.custom-scrollbar::-webkit-scrollbar-thumb{background:#2E2E30;border-radius:10px}
@@ -46,21 +47,21 @@
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .loading-spinner{width:20px;height:20px;border:2px solid #E07B3C;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
 </style>
-<link rel="stylesheet" href="../../assets/css/studio-command.css"/>
+<!-- studio-command removed -->
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
 <!-- Top Status Bar -->
 <header class="h-[56px] min-h-[56px] bg-background border-b border-outline-variant flex items-center justify-between px-6 shrink-0">
     <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-[#E07B3C] text-[20px]">landscape</span>
+        <span class="material-icons text-[#E07B3C] text-[20px]">landscape</span>
         <span class="font-headline-md text-[18px] text-on-background">智慧导览 · 数据大屏</span>
     </div>
     <div class="flex items-center gap-4">
         <span id="clock" class="tabular-nums text-sm text-on-surface-variant"></span>
         <span class="text-xs text-on-surface-variant">数据每30秒刷新</span>
         <button id="btn-refresh" class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-on-background transition-colors">
-            <span class="material-symbols-outlined text-[18px]">refresh</span>
+            <span class="material-icons text-[18px]">refresh</span>
         </button>
     </div>
 </header>
@@ -129,5 +130,5 @@
 <script src="../../assets/js/ui.js"></script>
 <script src="../../assets/js/components.js"></script>
 <script src="../../assets/js/pages/dashboard.js"></script>
-<script src="../../assets/js/studio-command.js"></script>
+<!-- studio-command.js removed -->
 </body></html>

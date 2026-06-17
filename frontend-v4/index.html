@@ -4,8 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aurelian Guide — 智慧导览系统</title>
+  <script>window.location.replace('pages/landing/index.html');</script>
   <link rel="stylesheet" href="assets/css/common.css">
   <style>
+    body.nav-page {
+      min-height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      font-family: "Noto Sans SC", "Source Han Sans", sans-serif !important;
+      background: #FAFAF8 !important;
+      color: #1A1A1C !important;
+      letter-spacing: normal !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
     .nav-page {
       min-height: 100vh;
       display: flex;
@@ -140,7 +152,7 @@
       }
     }
   </style>
-<link rel="stylesheet" href="assets/css/studio-command.css"/>
+<!-- studio-command removed from nav hub to prevent layout conflicts -->
 </head>
 <body class="nav-page">
   <header class="nav-header">
@@ -230,6 +242,6 @@
       </span>
     </div>
   </footer>
-<script src="assets/js/studio-command.js"></script>
+<!-- studio-command.js removed from nav hub -->
 </body>
 </html>

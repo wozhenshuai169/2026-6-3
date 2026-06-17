@@ -7,25 +7,24 @@
   var preferences={interests:[],timeLimit:60,physicalStrength:'medium',elderly:false,children:false,avoidCrowd:false};
 
   function init(){
-    A.auth.guard();
-
-    // Tag toggle handlers
-    bindTagGroup('interest-tags',function(active){
-      preferences.interests=active;
+    A.auth.guard(function(){
+      // Tag toggle handlers
+      bindTagGroup('interest-tags',function(active){
+        preferences.interests=active;
+      });
+      bindTagGroup('time-options',function(active){
+        preferences.timeLimit=parseInt(active[0])||60;
+      },true);
+      bindTagGroup('stamina-options',function(active){
+        preferences.physicalStrength=active[0]||'medium';
+      },true);
+      bindTagGroup('companion-tags',function(active){
+        preferences.elderly=active.indexOf('elderly')!==-1;
+        preferences.children=active.indexOf('children')!==-1;
+        preferences.avoidCrowd=active.indexOf('crowd')!==-1;
+      });
+      document.getElementById('btn-generate').addEventListener('click',generateRoute);
     });
-    bindTagGroup('time-options',function(active){
-      preferences.timeLimit=parseInt(active[0])||60;
-    },true);
-    bindTagGroup('stamina-options',function(active){
-      preferences.physicalStrength=active[0]||'medium';
-    },true);
-    bindTagGroup('companion-tags',function(active){
-      preferences.elderly=active.indexOf('elderly')!==-1;
-      preferences.children=active.indexOf('children')!==-1;
-      preferences.avoidCrowd=active.indexOf('crowd')!==-1;
-    });
-
-    document.getElementById('btn-generate').addEventListener('click',generateRoute);
   }
 
   function bindTagGroup(containerId,callback,singleSelect){

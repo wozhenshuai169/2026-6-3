@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.ai import router as ai_router
 from app.api.audio import router as audio_router
 from app.api.dashboard import router as dashboard_router
+from app.api.feedback import router as feedback_router
 from app.api.kb import router as kb_router
 from app.api.recommend import router as recommend_router
 from app.api.rooms import router as rooms_router
@@ -19,16 +20,11 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.middleware.logging import RequestLoggingMiddleware
 
-for directory in ["uploads", "uploads/tts", "uploads/kb", "data"]:
+for directory in ["uploads", "uploads/tts", "uploads/audio", "uploads/kb", "data"]:
     Path(directory).mkdir(parents=True, exist_ok=True)
 
 setup_logging(settings.log_level)
 logger = logging.getLogger(__name__)
-
-# Ensure frontend-v4 directory exists
-FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend-v4"
-if not FRONTEND_DIR.exists():
-    logger.warning("frontend-v3 directory not found at %s", FRONTEND_DIR)
 
 app = FastAPI(title="A5 Intelligent Tour Guide System", version="1.0.0")
 app.add_middleware(RequestLoggingMiddleware)
@@ -43,11 +39,12 @@ app.include_router(spots_router)
 app.include_router(routes_router)
 app.include_router(kb_router)
 app.include_router(dashboard_router)
+app.include_router(feedback_router)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# Mount frontend-v3 at root — serves index.html and all pages
-# Must be mounted AFTER all API routes so they take priority
+# Mount frontend-v4 at root
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend-v4"
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 

@@ -4,7 +4,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>图片识景 · 智慧导览</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<!-- Material Symbols from jsDelivr -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
@@ -17,9 +17,10 @@
         }}
     }
 </script>
+<link rel="stylesheet" href="../../assets/css/material-icons.css"/>
 <style>
     body{background:#FAFAF7;color:#1A1A1C;font-family:"Noto Sans SC",sans-serif}
-    .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24}
+    
     @keyframes spin{to{transform:rotate(360deg)}} .animate-spin{animation:spin 1s linear infinite}
     @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     .fade-in{animation:fadeIn .3s ease-out}
@@ -31,7 +32,7 @@
 <!-- Header -->
 <header class="h-[56px] bg-white border-b border-border flex items-center justify-between px-4 sticky top-0 z-10">
     <a href="../user-portal/index.html" class="w-8 h-8 flex items-center justify-center text-text-primary hover:opacity-70 transition-opacity">
-        <span class="material-symbols-outlined">arrow_back</span>
+        <span class="material-icons">arrow_back</span>
     </a>
     <h1 class="text-base font-medium" style="font-family:'Noto Serif SC',serif">图片识景</h1>
     <div class="w-8"></div>
@@ -41,7 +42,7 @@
 <main class="flex-1 p-4 flex flex-col gap-4">
     <!-- Upload Zone -->
     <div id="upload-zone" class="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-colors bg-white">
-        <span class="material-symbols-outlined text-[48px] text-text-tertiary mb-3">image_search</span>
+        <span class="material-icons text-[48px] text-text-tertiary mb-3">image_search</span>
         <p class="text-sm text-text-secondary mb-1">点击上传或拖拽图片</p>
         <p class="text-xs text-text-tertiary">支持 jpg、png、webp · 最大 10MB</p>
         <input id="file-input" type="file" accept="image/*" class="hidden">
@@ -59,7 +60,7 @@
     <div id="result-area" class="hidden bg-white border border-border rounded-xl p-lg fade-in flex flex-col gap-4">
         <div class="flex items-center gap-3">
             <span class="w-12 h-12 rounded-full bg-[#E07B3C]/10 text-primary flex items-center justify-center">
-                <span class="material-symbols-outlined text-[28px]">travel_explore</span>
+                <span class="material-icons text-[28px]">travel_explore</span>
             </span>
             <div>
                 <h2 id="result-spot-name" class="text-lg font-medium" style="font-family:'Noto Serif SC',serif"></h2>
@@ -78,7 +79,7 @@
     </div>
     <!-- Error -->
     <div id="error-area" class="hidden bg-white border border-[#F87171] rounded-xl p-6 text-center">
-        <span class="material-symbols-outlined text-[40px] text-[#F87171] mb-2">error_outline</span>
+        <span class="material-icons text-[40px] text-[#F87171] mb-2">error_outline</span>
         <p id="error-message" class="text-sm text-text-secondary mb-4"></p>
         <button id="retry-btn" class="px-4 py-2 border border-border rounded-lg text-sm hover:border-primary transition-colors">重新上传</button>
     </div>

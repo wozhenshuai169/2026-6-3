@@ -13,9 +13,15 @@
   var chatContainer, chatInput, btnSend, btnMic, btnBack;
 
   function init() {
-    if (!A.auth.guard()) return;
-    roomId = state.get('roomId');
-    userId = state.get('userId');
+    A.auth.guard(function(){
+      roomId = state.get('roomId');
+      userId = state.get('userId');
+      if (!roomId || !userId) { ui.toast('请先加入房间', 'error'); return; }
+      initAfterAuth();
+    });
+    return;
+  }
+  function initAfterAuth() {
     if (!roomId || !userId) { ui.toast('请先加入房间', 'error'); return; }
 
     chatContainer = document.getElementById('chat-container');

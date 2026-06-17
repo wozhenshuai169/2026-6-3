@@ -20,11 +20,9 @@
   var els = {};
 
   function init() {
-    if (!A.auth.guardRole('tour_leader')) return;
-
-    cacheDom();
-    bindEvents();
-    loadRoutes();
+    A.auth.guardRole('tour_leader', function(){
+      cacheDom(); bindEvents(); loadRoutes();
+    });
   }
 
   function cacheDom() {
@@ -52,6 +50,8 @@
     if (els.routeConfirm) els.routeConfirm.addEventListener('click', confirmCreateRoom);
     if (els.tabAll) els.tabAll.addEventListener('click', function(){ renderMemberList('all'); });
     if (els.tabRequests) els.tabRequests.addEventListener('click', function(){ renderMemberList('requests'); });
+    if (els.btnViewRequests) els.btnViewRequests.addEventListener('click', showRequestsModal);
+    if (els.btnViewRequests2) els.btnViewRequests2.addEventListener('click', showRequestsModal);
     // Close dropdown on outside click
     document.addEventListener('click', function(e) {
       if (els.spotDropdown && els.spotSelectorBtn && !els.spotSelectorBtn.contains(e.target) && !els.spotDropdown.contains(e.target)) {
@@ -237,6 +237,27 @@
   function toggleSpotDropdown() {
     if (!els.spotDropdown) return;
     els.spotDropdown.classList.toggle('hidden');
+  }
+
+  function showRequestsModal(){
+    var pending = members.filter(function(m){ return m.hasRequest; });
+    var content = '';
+    if (pending.length === 0) {
+      content = '<div class="text-center py-8 text-sm text-on-surface-variant">暂无待处理私人请求</div>';
+    } else {
+      pending.forEach(function(m){
+        content += '<div class="border border-outline rounded-lg p-3 mb-2 flex items-start gap-3"><div class="w-8 h-8 rounded-full bg-error/10 text-error flex items-center justify-center text-xs font-bold">'+(m.userName||'?').charAt(0).toUpperCase()+'</div><div><div class="text-sm font-medium">'+ui.escapeHtml(m.userName||'游客')+'</div><div class="text-xs text-on-surface-variant mt-1">私人请求详情 · 待查看</div></div></div>';
+      });
+    }
+    ui.toast(pending.length+' 条私人请求 · 点击查看详情','info');
+    // Inject a simple overlay
+    var ov = document.createElement('div');
+    ov.id='requests-overlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(26,26,28,0.2);backdrop-filter:blur(6px)';
+    ov.innerHTML='<div style="background:#fff;border:1px solid #E8E8E6;border-radius:16px;padding:24px;max-width:400px;width:90%;max-height:70vh;overflow-y:auto"><div class="flex items-center justify-between mb-4"><h3 style="font-family:\'Source Han Serif\',serif;font-size:16px;font-weight:500">私人请求 ('+pending.length+')</h3><button id="requests-close" style="padding:4px 8px;cursor:pointer;border:1px solid #E8E8E6;border-radius:8px;background:#fff;font-size:12px">关闭</button></div>'+content+'</div>';
+    document.body.appendChild(ov);
+    document.getElementById('requests-close').addEventListener('click',function(){ov.remove();});
+    ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
   }
 
   // === Polling ===

@@ -3,7 +3,7 @@
  */
 (function () {
   'use strict';
-  var A = window.Aurelian, api = A.api, ui = A.ui, comp = A.components;
+  var A = window.Aurelian, api = A.api, ui = A.ui, comp = A.components, state = A.state;
 
   var docs = [];
   var currentPage = 1;
@@ -12,8 +12,10 @@
   var selectedFile = null;
 
   function init() {
-    bindEvents();
-    fetchDocs();
+    A.auth.guard(function(){
+      bindEvents();
+      fetchDocs();
+    });
   }
 
   function bindEvents() {
@@ -109,6 +111,17 @@
         '</tr>';
     });
     tbody.innerHTML = html;
+    // Wire edit/delete buttons
+    tbody.querySelectorAll('.row-actions button').forEach(function(btn){
+      var action = btn.querySelector('.material-icons').textContent.trim();
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var row = btn.closest('tr');
+        var docName = row ? row.querySelector('td:nth-child(2)').textContent.trim() : '';
+        if (action === 'edit') ui.toast('编辑文档: ' + docName + ' · 功能开发中', 'info');
+        else if (action === 'delete') ui.toast('删除文档: ' + docName + ' · 功能开发中', 'warning');
+      });
+    });
   }
 
   function renderPagination() {

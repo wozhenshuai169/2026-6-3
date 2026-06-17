@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.core.logging import Timer
 from app.providers.factory import get_llm
 from app.services.audio import asr_transcribe, tts_synthesize
-from app.services.rooms import get_room
+from app.services.rooms import get_room, record_voice_log
 from app.services.stats import record_event
 
 logger = logging.getLogger(__name__)
@@ -43,6 +43,31 @@ def _avatar_state(status: str, action: str = "answer", mouth_open: bool | None =
 
 def _tts_failed(result: dict) -> bool:
     return not result.get("success", True) or not result.get("audioUrl")
+
+
+def _record_voice_interaction(
+    room_id: str,
+    user_id: str,
+    channel: str,
+    audio_url: str,
+    asr_text: str,
+    decision: str,
+    answer: str,
+    confidence: float = 0.0,
+) -> None:
+    record_voice_log(
+        room_id,
+        {
+            "userId": user_id,
+            "channel": channel,
+            "audioUrl": audio_url,
+            "asrText": asr_text,
+            "decision": decision,
+            "answerSummary": answer[:120],
+            "confidence": confidence,
+            "stage": "voice_question",
+        },
+    )
 
 
 async def _answer_with_llm(room_id: str, question: str) -> dict | None:
@@ -204,6 +229,16 @@ async def public_voice_question(
                 latency_ms=(perf_counter() - started) * 1000,
                 payload={"roomId": room_id, "error": "asr_disabled"},
             )
+            _record_voice_interaction(
+                room_id,
+                user_id,
+                channel,
+                audio_url,
+                "",
+                "error",
+                result["answer"],
+                0.0,
+            )
             return result
 
         asr_result = await asr_transcribe(
@@ -247,6 +282,16 @@ async def public_voice_question(
                 success=True,
                 latency_ms=(perf_counter() - started) * 1000,
                 payload={"roomId": room_id, "asrText": asr_text, "decision": "ask_clarification"},
+            )
+            _record_voice_interaction(
+                room_id,
+                user_id,
+                channel,
+                audio_url,
+                asr_text,
+                "ask_clarification",
+                result["answer"],
+                confidence,
             )
             return result
 
@@ -315,6 +360,16 @@ async def public_voice_question(
                 "decision": decision,
                 "hasAudio": bool(answer_audio_url),
             },
+        )
+        _record_voice_interaction(
+            room_id,
+            user_id,
+            channel,
+            audio_url,
+            asr_text,
+            decision,
+            answer,
+            confidence,
         )
         return result
     except Exception as e:

@@ -5,8 +5,10 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from time import time
 from typing import Any
+from uuid import uuid4
 
 _events: list[dict[str, Any]] = []
+_feedback: list[dict[str, Any]] = []
 _latencies: defaultdict[str, list[float]] = defaultdict(list)
 _success: Counter[str] = Counter()
 _failure: Counter[str] = Counter()
@@ -40,6 +42,26 @@ def record_event(
         _success[event_type] += 1
     else:
         _failure[event_type] += 1
+
+
+def record_feedback(
+    score: int,
+    room_id: str | None = None,
+    user_id: str | None = None,
+    scene: str | None = None,
+    comment: str | None = None,
+) -> dict[str, Any]:
+    item = {
+        "feedbackId": str(uuid4()),
+        "roomId": room_id or "",
+        "userId": user_id or "",
+        "scene": scene or "",
+        "score": int(score),
+        "comment": comment or "",
+        "timestamp": time(),
+    }
+    _feedback.append(item)
+    return item
 
 
 def get_overview(active_rooms: int = 0, visitor_count: int = 0) -> dict[str, Any]:
@@ -86,6 +108,22 @@ def get_hot_spots() -> list[dict[str, Any]]:
 
 
 def get_satisfaction() -> dict[str, Any]:
+    if _feedback:
+        scores = [int(item["score"]) for item in _feedback]
+        average = round(sum(scores) / len(scores), 2)
+        buckets: Counter[int] = Counter(scores)
+        recent = _feedback[-20:]
+        return {
+            "averageScore": average,
+            "feedbackCount": len(_feedback),
+            "distribution": {str(score): buckets[score] for score in range(1, 6)},
+            "trend": [
+                {"time": str(index + 1), "score": item["score"]}
+                for index, item in enumerate(recent)
+            ],
+            "items": list(reversed(recent)),
+            "emotion": {"friendly": buckets[5] + buckets[4], "neutral": buckets[3], "thinking": buckets[2], "surprised": buckets[1]},
+        }
     return {
         "averageScore": 4.7,
         "trend": [

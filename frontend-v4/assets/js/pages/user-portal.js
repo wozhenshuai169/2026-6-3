@@ -13,15 +13,16 @@
   var els={};
 
   function init(){
-    if(!A.auth.guardRole('visitor')) return;
-    cacheDom(); bindEvents();
-    initSpeechRecognition();
-    if(roomId) startRoomMode();
-    else showJoinOverlay();
+    A.auth.guardRole('visitor', function(){
+      cacheDom(); bindEvents();
+      initSpeechRecognition();
+      if(roomId) startRoomMode();
+      else showJoinOverlay();
+    });
   }
 
   function cacheDom(){
-    ['avatarStatusDot','avatarStatusLabel','roomJoinOverlay','roomCodeInput','roomJoinBtn','roomJoinError',
+    ['avatarContainer','avatarStatusLabel','roomJoinOverlay','roomCodeInput','roomJoinBtn','roomJoinError',
      'memberListContainer','menuToggle','menuClose','functionOverlay',
      'fnKnowledge','fnAudio','fnMap','fnAi',
      'avatarMode','textMode','btnSwitchText','btnSwitchAvatar',
@@ -47,6 +48,17 @@
     if(els.publicChatSend) els.publicChatSend.addEventListener('click',sendPublicQuestion);
     if(els.publicChatInput) els.publicChatInput.addEventListener('keydown',function(e){if(e.key==='Enter')sendPublicQuestion();});
     if(els.btnVoice) els.btnVoice.addEventListener('click',toggleRecording);
+    // Feedback stars
+    document.querySelectorAll('.feedback-star').forEach(function(star){
+      star.addEventListener('click', function(){
+        var score = parseInt(this.getAttribute('data-score'));
+        document.querySelectorAll('.feedback-star').forEach(function(s,i){s.style.color = i < score ? '#F59E0B' : '#E8E8E4';});
+        api.post('/feedback', { score: score, roomId: roomId, userId: userId, scene: 'public-tour' }).then(function(r){
+          if(r.ok) ui.toast('感谢评分: '+score+' 星！', 'success');
+          else ui.toast('评分提交失败', 'error');
+        });
+      });
+    });
   }
 
   // === Mode switching ===
@@ -148,14 +160,12 @@
   }
 
   function updateDigitalHumanState(status){
-    if(!els.pageBody)return;
-    els.pageBody.className=els.pageBody.className.replace(/state-\w+/g,'');
-    els.pageBody.classList.add('state-'+status);
-    if(els.avatarStatusDot){
-      if(status==='speaking')els.avatarStatusDot.className='size-2 bg-[#E07B3C] rounded-full speaking-ring';
-      else if(status==='listening')els.avatarStatusDot.className='size-2 bg-[#4ADE80] rounded-full speaking-ring';
-      else if(status==='thinking')els.avatarStatusDot.className='size-2 bg-[#E07B3C] rounded-full ai-status-pulse';
-      else els.avatarStatusDot.className='size-2 bg-[#A0A0A0] rounded-full';
+    // Update CSS avatar via data-status attribute
+    if(els.avatarContainer) els.avatarContainer.setAttribute('data-status', status);
+    // Also keep body class for backward compatibility
+    if(els.pageBody){
+      els.pageBody.className=els.pageBody.className.replace(/state-\w+/g,'');
+      els.pageBody.classList.add('state-'+status);
     }
   }
 
@@ -289,25 +299,34 @@
 
   function processAudioBlob(blob){
     isRecording=false;updateVoiceBtn();
-    // Show ASR processing toast
-    ui.toast('正在识别语音...','info');
+    ui.toast('正在上传音频并识别...','info');
 
-    // Try FormData upload to voice-question endpoint
+    // Step 1: Upload audio file
     var fd=new FormData();
     fd.append('file',blob,'recording.webm');
     fd.append('roomId',roomId);
     fd.append('userId',userId);
     fd.append('channel','public');
 
-    api.upload('/ai/public-voice-question',fd).then(function(r){
-      if(r.ok&&r.data){
-        // Show ASR text
-        if(r.data.asrText){addMsg('system','🎤 语音识别: '+r.data.asrText);}
-        if(r.data.answer){addMsg('ai',r.data.answer);playTTS(r.data.audioUrl);}
-      }else{
-        // Fallback: try Web Speech if available
-        ui.toast('后端语音识别不可用，请使用文字输入','warning');
-        ui.toast('提示：后端需支持音频上传以启用语音功能','info');
+    api.upload('/audio/upload',fd).then(function(uploadR){
+      if(uploadR.ok&&uploadR.data&&uploadR.data.audioUrl){
+        var audioUrl = uploadR.data.audioUrl;
+        // Step 2: Send to voice-question with the audio URL
+        api.post('/ai/public-voice-question',{
+          roomId: roomId, userId: userId, channel: 'public',
+          audioUrl: audioUrl, audioFormat: 'webm'
+        }).then(function(r){
+          if(r.ok&&r.data){
+            if(r.data.asrText){addMsg('system','🎤 '+r.data.asrText);}
+            if(r.data.answer){addMsg('ai',r.data.answer);playTTS(r.data.audioUrl);}
+            if(r.data.resumeText&&els.narrationText)els.narrationText.textContent=r.data.resumeText;
+          } else {
+            // Fallback: Web Speech
+            ui.toast('语音识别失败，请用文字','warning');
+          }
+        });
+      } else {
+        ui.toast('音频上传失败，请用文字输入','warning');
       }
     });
   }

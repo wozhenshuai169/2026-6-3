@@ -4,7 +4,7 @@
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
 <title>AI 私人助手</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols from jsDelivr -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans+SC:wght@400;500&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
@@ -34,6 +34,7 @@
         }}
     }
 </script>
+<link rel="stylesheet" href="../../assets/css/material-icons.css"/>
 <style>
     ::-webkit-scrollbar{display:none}
     *{-ms-overflow-style:none;scrollbar-width:none}
@@ -44,26 +45,28 @@
     @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.3}}
     .recording-dot{animation:pulse-dot 0.8s ease-in-out infinite}
     .loading-spinner{width:20px;height:20px;border:2px solid #E07B3C;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+    
 </style>
-<link rel="stylesheet" href="../../assets/css/studio-command.css"/>
+<!-- studio-command removed -->
 </head>
 <body class="bg-chat-bg text-chat-text-dark font-body-md h-screen w-screen overflow-hidden flex flex-col antialiased">
 
 <!-- Navbar -->
 <header class="h-[52px] min-h-[52px] bg-white border-b border-chat-border flex items-center justify-between px-4 z-10 shrink-0">
     <button id="btn-back" class="w-8 h-8 flex items-center justify-center text-chat-text-dark opacity-80 hover:opacity-100 transition-opacity">
-        <span class="material-symbols-outlined" style="font-size:20px">close</span>
+        <span class="material-icons" style="font-size:20px">close</span>
     </button>
     <h1 class="font-headline-md text-[16px] font-medium tracking-wide">AI私人助手</h1>
-    <button id="btn-more" class="w-8 h-8 flex items-center justify-center text-chat-text-dark opacity-80 hover:opacity-100 transition-opacity">
-        <span class="material-symbols-outlined" style="font-size:20px">more_horiz</span>
+    <button id="btn-more" class="w-8 h-8 flex items-center justify-center text-chat-text-dark opacity-80 hover:opacity-100 transition-opacity"
+        onclick="Aurelian.ui.toast('对话历史 · 清除记录 · 功能开发中','info')">
+        <span class="material-icons" style="font-size:20px">more_horiz</span>
     </button>
 </header>
 
 <!-- Privacy Notice -->
 <div class="h-[28px] min-h-[28px] bg-chat-accent-bg flex items-center justify-center shrink-0">
     <p class="text-[11px] text-chat-accent font-medium flex items-center gap-1">
-        <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL'1">lock</span>
+        <span class="material-icons" style="font-size:14px;font-variation-settings:'FILL'1">lock</span>
         私密对话 · 仅你和AI可见
     </p>
 </div>
@@ -76,25 +79,25 @@
 <!-- Quick Actions -->
 <div class="shrink-0 bg-white border-t border-chat-border flex flex-col">
     <div class="w-full overflow-x-auto py-3 px-4 flex gap-2 border-b border-chat-border/50 bg-chat-bg/50">
-        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="最近的洗手间在哪里？"><span class="material-symbols-outlined text-[17px]">wc</span>洗手间在哪</button>
-        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="我累了，附近有可以休息的地方吗？"><span class="material-symbols-outlined text-[17px]">chair</span>附近休息区</button>
-        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="有没有不用爬太多台阶的路线？"><span class="material-symbols-outlined text-[17px]">directions_walk</span>不想爬太多台阶</button>
+        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="最近的洗手间在哪里？"><span class="material-icons text-[17px]">wc</span>洗手间在哪</button>
+        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="我累了，附近有可以休息的地方吗？"><span class="material-icons text-[17px]">chair</span>附近休息区</button>
+        <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="有没有不用爬太多台阶的路线？"><span class="material-icons text-[17px]">directions_walk</span>不想爬太多台阶</button>
         <button class="quick-btn whitespace-nowrap px-3 py-1.5 bg-white border border-chat-border rounded-full text-[13px] text-chat-text-dark hover:border-chat-accent transition-colors flex items-center gap-1" data-question="这个景点最佳拍照位置在哪里？">📸 最佳拍照点</button>
         <a href="../recommend/index.html" class="whitespace-nowrap px-3 py-1.5 rounded-full text-[13px] transition-colors flex items-center gap-1 no-underline" style="background:#FDF6F1;border:1px solid #E07B3C;color:#E07B3C">
-          <span class="material-symbols-outlined text-[17px]">explore</span>路线推荐
+          <span class="material-icons text-[17px]">explore</span>路线推荐
         </a>
     </div>
 
     <!-- Input Bar -->
     <div class="h-[72px] flex items-center px-4 gap-3 bg-white pb-safe">
         <button id="btn-mic" class="w-10 h-10 rounded-full bg-chat-bubble-gray flex items-center justify-center text-chat-text-dark hover:bg-chat-border transition-colors shrink-0">
-            <span class="material-symbols-outlined" style="font-size:22px">mic</span>
+            <span class="material-icons" style="font-size:22px">mic</span>
         </button>
         <div class="flex-1 h-10 bg-chat-bubble-gray rounded-full px-4 flex items-center border border-transparent focus-within:border-chat-accent focus-within:bg-white transition-all">
             <input id="chat-input" class="w-full bg-transparent border-none focus:ring-0 text-[15px] p-0 placeholder:text-chat-text-muted text-chat-text-dark" placeholder="想问什么？" type="text"/>
         </div>
         <button id="btn-send" class="w-10 h-10 rounded-full bg-chat-accent flex items-center justify-center text-white hover:opacity-90 transition-opacity shrink-0 shadow-sm">
-            <span class="material-symbols-outlined" style="font-size:20px;transform:translateX(1px);font-variation-settings:'FILL'1">send</span>
+            <span class="material-icons" style="font-size:20px;transform:translateX(1px);font-variation-settings:'FILL'1">send</span>
         </button>
     </div>
 </div>
@@ -107,5 +110,5 @@
 <script src="../../assets/js/router.js"></script>
 <script src="../../assets/js/components.js"></script>
 <script src="../../assets/js/pages/ai-assistant.js"></script>
-<script src="../../assets/js/studio-command.js"></script>
+<!-- studio-command.js removed -->
 </body></html>

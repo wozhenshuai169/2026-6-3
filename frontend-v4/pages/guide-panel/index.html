@@ -4,7 +4,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>导览控制台</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols from jsDelivr -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Han+Sans:wght@400;500&amp;family=Source+Han+Serif:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
@@ -34,8 +34,9 @@
         }}
     }
 </script>
+<link rel="stylesheet" href="../../assets/css/material-icons.css"/>
 <style>
-    .material-symbols-outlined { font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:20px;display:inline-block;line-height:1;text-transform:none;letter-spacing:normal;word-wrap:normal;white-space:nowrap;direction:ltr; }
+    
     .skeleton { background: linear-gradient(90deg,#e8e8e6 25%,#f5f5f3 50%,#e8e8e6 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     @keyframes spin { to{transform:rotate(360deg)} } .animate-spin{animation:spin 1s linear infinite}
@@ -51,12 +52,12 @@
 <nav class="h-[56px] bg-surface flex items-center justify-between px-md md:px-lg border-b border-surface-variant sticky top-0 z-50">
     <div class="flex items-center gap-sm">
         <button id="btn-back" aria-label="Go back" class="text-on-surface hover:text-on-surface-variant transition-colors flex items-center justify-center p-xs">
-            <span class="material-symbols-outlined">arrow_back</span>
+            <span class="material-icons">arrow_back</span>
         </button>
         <h1 class="font-headline-md text-on-surface text-[20px] font-medium leading-none">导览控制台</h1>
     </div>
     <button id="btn-share" aria-label="Share room" class="text-secondary hover:text-on-secondary-container transition-colors flex items-center gap-xs text-[14px] font-medium font-label-sm">
-        <span class="material-symbols-outlined text-[18px]">ios_share</span> 分享房间
+        <span class="material-icons text-[18px]">ios_share</span> 分享房间
     </button>
 </nav>
 
@@ -70,7 +71,7 @@
                     <span class="text-on-surface-variant">房间号:</span>
                     <span id="room-id-display" class="font-medium">—</span>
                     <button id="btn-copy-room" aria-label="Copy room number" class="text-secondary hover:text-on-secondary-container transition-colors ml-xs flex items-center">
-                        <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                        <span class="material-icons text-[16px]">content_copy</span>
                     </button>
                 </div>
                 <div class="flex items-center gap-xs text-[14px] text-on-surface font-label-sm">
@@ -86,7 +87,7 @@
                 </div>
                 <div class="flex items-center gap-xs text-[14px] text-on-surface font-label-sm">
                     <span class="text-on-surface-variant">当前景点:</span>
-                    <span class="material-symbols-outlined text-[16px] text-secondary">location_on</span>
+                    <span class="material-icons text-[16px] text-secondary">location_on</span>
                     <span id="current-spot-display" class="font-medium text-secondary">—</span>
                 </div>
             </div>
@@ -116,7 +117,7 @@
                 <span id="pending-requests-text" class="text-[13px] text-error font-medium font-label-sm"></span>
             </div>
             <button id="btn-view-requests" aria-label="View pending requests" class="hidden text-secondary hover:text-on-secondary-container transition-colors flex items-center gap-xs text-[13px] font-medium font-label-sm group">
-                查看 <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                查看 <span class="material-icons text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
             </button>
         </div>
     </section>
@@ -126,13 +127,13 @@
         <div class="flex flex-col gap-sm">
             <h2 class="text-[12px] text-on-surface-variant font-medium font-label-sm uppercase tracking-wider mb-xs">导览控制</h2>
             <button id="btn-start" aria-label="Start narration" class="h-2xl w-full bg-secondary hover:bg-[#C96E36] active:bg-[#B36230] text-on-primary rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm shadow-sm">
-                <span class="material-symbols-outlined">play_arrow</span> 开始讲解
+                <span class="material-icons">play_arrow</span> 开始讲解
             </button>
             <button id="btn-skip" aria-label="Skip current attraction" class="h-2xl w-full bg-transparent border border-outline hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm">
-                <span class="material-symbols-outlined">skip_next</span> 跳过当前景点
+                <span class="material-icons">skip_next</span> 跳过当前景点
             </button>
             <button id="btn-collect" aria-label="Publish assembly reminder" class="h-2xl w-full bg-transparent border border-outline hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm">
-                <span class="material-symbols-outlined">notifications_active</span> 发布集合提醒
+                <span class="material-icons">notifications_active</span> 发布集合提醒
             </button>
         </div>
         <div class="flex flex-col gap-sm">
@@ -140,18 +141,18 @@
             <div class="relative">
                 <button id="spot-selector-btn" aria-expanded="false" aria-haspopup="listbox" class="h-2xl w-full bg-surface border border-outline hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-between px-md font-medium transition-colors font-label-sm text-left">
                     <div class="flex items-center gap-sm">
-                        <span class="material-symbols-outlined text-on-surface-variant">location_on</span>
+                        <span class="material-icons text-on-surface-variant">location_on</span>
                         <span id="spot-selector-label">选择景点</span>
                     </div>
-                    <span class="material-symbols-outlined text-on-surface-variant">arrow_drop_down</span>
+                    <span class="material-icons text-on-surface-variant">arrow_drop_down</span>
                 </button>
                 <div id="spot-dropdown" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-outline rounded-lg shadow-sm z-40 max-h-48 overflow-y-auto"></div>
             </div>
             <button id="btn-pause" aria-label="Pause narration" class="h-2xl w-full bg-transparent border border-outline hover:bg-surface-container-low text-on-surface rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm">
-                <span class="material-symbols-outlined">pause</span> 暂停讲解
+                <span class="material-icons">pause</span> 暂停讲解
             </button>
             <button id="btn-view-requests2" aria-label="View private requests" class="h-2xl w-full bg-transparent border border-secondary text-secondary hover:bg-secondary-fixed hover:text-on-secondary-fixed rounded-lg flex items-center justify-center gap-sm font-medium transition-colors font-label-sm relative">
-                <span class="material-symbols-outlined">assignment</span> 查看私人请求
+                <span class="material-icons">assignment</span> 查看私人请求
                 <span id="requests-badge" class="hidden absolute right-md top-1/2 -translate-y-1/2 bg-secondary text-on-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">0</span>
             </button>
         </div>

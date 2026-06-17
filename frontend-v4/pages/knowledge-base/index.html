@@ -4,7 +4,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>知识库管理 · 智慧导览</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols from jsDelivr -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans+SC:wght@400;500&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
@@ -34,9 +34,10 @@
         }}
     }
 </script>
+<link rel="stylesheet" href="../../assets/css/material-icons.css"/>
 <style>
     body{background:#FAFAF7;color:#1A1A1C;font-family:"Noto Sans SC",sans-serif}
-    .material-symbols-outlined{font-variation-settings:'FILL'0,'wght'300,'GRAD'0,'opsz'24}
+    
     .custom-scrollbar::-webkit-scrollbar{width:6px}.custom-scrollbar::-webkit-scrollbar-track{background:transparent}.custom-scrollbar::-webkit-scrollbar-thumb{background:#E8E8E6;border-radius:10px}
     .skeleton{background:linear-gradient(90deg,#e8e8e6 25%,#f5f5f3 50%,#e8e8e6 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -46,22 +47,22 @@
     .loading-spinner{width:20px;height:20px;border:2px solid #E07B3C;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
     .table-row:hover .row-actions{opacity:1}
 </style>
-<link rel="stylesheet" href="../../assets/css/studio-command.css"/>
+<!-- studio-command removed -->
 </head>
 <body class="h-screen overflow-hidden flex">
 
 <!-- Sidebar -->
 <aside class="w-[220px] bg-white border-r border-outline flex flex-col shrink-0 h-full">
     <div class="p-lg flex items-center gap-2 border-b border-outline">
-        <span class="material-symbols-outlined text-primary text-[24px]">landscape</span>
+        <span class="material-icons text-primary text-[24px]">landscape</span>
         <span class="font-headline-md text-[16px] font-medium">智慧导览</span>
     </div>
     <nav class="flex-1 py-md">
-        <a href="../dashboard/index.html" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[18px]">dashboard</span> 数据大屏</a>
-        <a class="flex items-center gap-3 px-lg py-3 text-sm text-primary font-medium bg-primary/5 border-r-2 border-primary"><span class="material-symbols-outlined text-[18px]">menu_book</span> 知识库管理</a>
-        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[18px]">person</span> 数字人形象</a>
-        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[18px]">feedback</span> 游客反馈</a>
-        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-[18px]">settings</span> 系统设置</a>
+        <a href="../dashboard/index.html" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors"><span class="material-icons text-[18px]">dashboard</span> 数据大屏</a>
+        <a class="flex items-center gap-3 px-lg py-3 text-sm text-primary font-medium bg-primary/5 border-r-2 border-primary"><span class="material-icons text-[18px]">menu_book</span> 知识库管理</a>
+        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors" onclick="Aurelian.ui.toast('数字人形象管理 · 功能开发中','info');return false"><span class="material-icons text-[18px]">person</span> 数字人形象</a>
+        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors" onclick="Aurelian.ui.toast('游客反馈列表 · 功能开发中','info');return false"><span class="material-icons text-[18px]">feedback</span> 游客反馈</a>
+        <a href="#" class="flex items-center gap-3 px-lg py-3 text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors" onclick="Aurelian.ui.toast('系统设置 · 功能开发中','info');return false"><span class="material-icons text-[18px]">settings</span> 系统设置</a>
     </nav>
     <div class="p-lg border-t border-outline flex items-center gap-3">
         <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">A</div>
@@ -76,11 +77,11 @@
         <h1 class="font-headline-md text-[20px] font-medium">知识库管理</h1>
         <div class="flex items-center gap-4">
             <div class="relative">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
                 <input id="search-input" type="text" placeholder="搜索文档..." class="pl-10 pr-4 py-2 w-[240px] border border-outline rounded-lg text-sm outline-none focus:border-primary bg-background">
             </div>
             <button id="btn-upload" class="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:opacity-85 transition-opacity flex items-center gap-2">
-                <span class="material-symbols-outlined text-[16px]">cloud_upload</span> 上传文档
+                <span class="material-icons text-[16px]">cloud_upload</span> 上传文档
             </button>
         </div>
     </div>
@@ -123,7 +124,7 @@
         <h3 class="font-headline-md text-lg font-medium mb-6">上传文档</h3>
         <!-- Drop Zone -->
         <div id="drop-zone" class="border-2 border-dashed border-outline rounded-xl p-8 text-center mb-6 hover:border-primary transition-colors cursor-pointer">
-            <span class="material-symbols-outlined text-[40px] text-on-surface-variant mb-2">cloud_upload</span>
+            <span class="material-icons text-[40px] text-on-surface-variant mb-2">cloud_upload</span>
             <p class="text-sm text-on-surface-variant mb-1">点击或拖拽文件至此区域</p>
             <p class="text-xs text-on-surface-variant">支持 .txt, .md, .json, .pdf · 最大 20MB</p>
             <input id="file-input" type="file" accept=".txt,.md,.json,.pdf" class="hidden">
@@ -145,5 +146,5 @@
 <script src="../../assets/js/router.js"></script>
 <script src="../../assets/js/components.js"></script>
 <script src="../../assets/js/pages/knowledge-base.js"></script>
-<script src="../../assets/js/studio-command.js"></script>
+<!-- studio-command.js removed -->
 </body></html>
