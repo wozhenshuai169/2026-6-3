@@ -39,7 +39,7 @@ class ProviderFactory:
     def get_audio():
         """获取音频 Provider（duck-typing，优先 DashScope）。"""
         # 优先用 DashScope（复用百炼 API Key）
-        if settings.vision_api_key:
+        if settings.dashscope_enabled:
             from app.providers.audio.dashscope import DashScopeAudioProvider
             logger.info("[Audio] Using DashScope provider (CosyVoice + Paraformer)")
             return DashScopeAudioProvider()
@@ -60,3 +60,11 @@ get_llm = _factory.get_llm
 get_vision = _factory.get_vision
 get_map = _factory.get_map
 get_audio = _factory.get_audio
+
+
+def provider_name(provider) -> str:
+    return getattr(provider, "provider_name", provider.__class__.__name__)
+
+
+def is_mock_provider(provider) -> bool:
+    return "mock" in provider_name(provider).lower()

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class MockLLMProvider(LLMProvider):
+    provider_name = "mock_llm"
     """Mock LLM：返回模板化回答，不调用任何外部 API。"""
 
     def __init__(self) -> None:

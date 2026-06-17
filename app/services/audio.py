@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from app.core.config import settings
 from app.core.logging import Timer
-from app.providers.factory import get_audio
+from app.providers.factory import get_audio, is_mock_provider, provider_name
 from app.services.rooms import get_room
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 SUPPORTED_FORMATS = {"wav", "mp3", "webm", "ogg", "m4a"}
 UPLOADS_AUDIO_DIR = Path("uploads") / "audio"
 UPLOADS_TTS_DIR = Path("uploads") / "tts"
-_audio = get_audio()
 
 
 def _validate_format(audio_format: str | None = None) -> str:
@@ -126,12 +125,29 @@ async def asr_transcribe(
     if not settings.enable_asr:
         logger.info("ASR disabled by config, using hint fallback")
         if text_hint and text_hint.strip():
-            return {"text": text_hint.strip(), "confidence": 0.7, "success": True, "format": fmt}
-        return {"text": "", "confidence": 0.0, "success": False, "format": fmt, "error": "ASR disabled"}
+            return {
+                "text": text_hint.strip(),
+                "confidence": 0.7,
+                "success": True,
+                "format": fmt,
+                "provider": "disabled_hint",
+                "trace": {"provider": "disabled_hint", "isMock": False, "asrDisabled": True},
+            }
+        return {
+            "text": "",
+            "confidence": 0.0,
+            "success": False,
+            "format": fmt,
+            "error": "ASR disabled",
+            "provider": "disabled",
+            "trace": {"provider": "disabled", "isMock": False, "asrDisabled": True},
+        }
 
+    provider = get_audio()
+    name = provider_name(provider)
     with Timer(logger, f"ASR '{audio_url[-30:]}'"):
         try:
-            result = await _audio.asr_transcribe(
+            result = await provider.asr_transcribe(
                 audio_url=audio_url,
                 audio_format=fmt,
                 text_hint=text_hint or "",
@@ -148,6 +164,8 @@ async def asr_transcribe(
             }
 
     result["format"] = fmt
+    result["provider"] = name
+    result["trace"] = {"provider": name, "isMock": is_mock_provider(provider)}
     return result
 
 
@@ -191,9 +209,11 @@ async def tts_synthesize(
             "error": str(e),
         }
 
+    provider = get_audio()
+    name = provider_name(provider)
     with Timer(logger, f"TTS '{text[:30]}...'"):
         try:
-            result = await _audio.tts_synthesize(text=text, voice=voice, speed=speed, audio_format=fmt)
+            result = await provider.tts_synthesize(text=text, voice=voice, speed=speed, audio_format=fmt)
         except Exception as e:
             logger.error("TTS provider error: %s", e)
             result = {
@@ -204,6 +224,9 @@ async def tts_synthesize(
                 "success": False,
                 "error": f"TTS error: {e}",
             }
+
+    result["provider"] = name
+    result["trace"] = {"provider": name, "isMock": is_mock_provider(provider)}
 
     if result.get("success", True):
         provider_url = result.get("audioUrl", "")

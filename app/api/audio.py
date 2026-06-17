@@ -96,10 +96,20 @@ async def asr(request: Request):
             "stage": "asr",
         },
     )
-    return ASRResponse(text=result["text"], confidence=result["confidence"])
+    return ASRResponse(
+        text=result["text"],
+        confidence=result["confidence"],
+        provider=result.get("provider", ""),
+        trace=result.get("trace", {}),
+    )
 
 
 @router.post("/tts", response_model=TTSResponse)
 async def tts(req: TTSRequest):
     result = await tts_synthesize(req.text, req.voice, req.speed, req.audioFormat)
-    return TTSResponse(audioUrl=result["audioUrl"], duration=result["duration"])
+    return TTSResponse(
+        audioUrl=result["audioUrl"],
+        duration=result["duration"],
+        provider=result.get("provider", ""),
+        trace=result.get("trace", {}),
+    )

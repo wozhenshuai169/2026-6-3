@@ -21,6 +21,8 @@ img*_result.*
 
 # ── 运行时 ──
 uploads/tts/
+uploads/audio/
+.codex_pycache/
 *.log
 
 # ── IDE ──

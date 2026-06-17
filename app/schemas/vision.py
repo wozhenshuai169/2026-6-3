@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class RecognizedSpotSchema(BaseModel):
@@ -25,3 +25,5 @@ class VisionRecognizeResponse(BaseModel):
     relatedSpots: list[RelatedSpotSchema] = []
     visualFeatures: list[str] = []
     category: str = "spot"  # "spot" | "person" | "object" | "scene" | "unknown"
+    provider: str = ""
+    trace: dict = Field(default_factory=dict)
