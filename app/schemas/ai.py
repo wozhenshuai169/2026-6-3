@@ -23,6 +23,8 @@ class PublicQuestionResponse(BaseModel):
     sources: list["SourceSchema"] = Field(default_factory=list)
     avatarState: AvatarStateSchema
     warning: str | None = None
+    provider: str = ""
+    trace: dict = Field(default_factory=dict)
 
 
 class SourceSchema(BaseModel):
@@ -52,3 +54,5 @@ class VoiceQuestionResponse(BaseModel):
     avatarState: AvatarStateSchema
     warning: str | None = None
     events: list[dict] = Field(default_factory=list)
+    provider: str = ""
+    trace: dict = Field(default_factory=dict)

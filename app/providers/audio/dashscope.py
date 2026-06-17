@@ -38,10 +38,11 @@ SPEED_MAP = {
 
 
 class DashScopeAudioProvider:
+    provider_name = "dashscope_audio"
     """音频 Provider —— edge-tts (TTS) + DashScope Paraformer (ASR)。"""
 
     def __init__(self) -> None:
-        self._api_key = settings.vision_api_key  # 复用百炼 Key（ASR用）
+        self._api_key = settings.qwen_vl_api_key  # 复用百炼 Key（ASR用）
         self._asr_headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",

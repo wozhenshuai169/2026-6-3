@@ -3,6 +3,7 @@
 所有 API Key 均为可选：未设置时对应 Provider 自动降级到 Mock。
 """
 
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
@@ -16,9 +17,12 @@ class Settings(BaseSettings):
     deepseek_base_url: str = "https://api.deepseek.com/v1"
     deepseek_model: str = "deepseek-chat"
 
+    # DashScope is the shared real provider for Qwen-VL vision and Paraformer ASR.
+    dashscope_api_key: str = ""
+    qwen_vl_api_key_override: str = Field(default="", validation_alias="QWEN_VL_API_KEY")
     vision_api_key: str = ""
-    vision_base_url: str = ""
-    vision_model: str = ""
+    vision_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    vision_model: str = "qwen-vl-plus"
 
     # ═══════════════════════════════════════════════════
     # 功能开关
@@ -59,11 +63,19 @@ class Settings(BaseSettings):
     @property
     def vision_enabled(self) -> bool:
         return (
-            bool(self.vision_api_key)
+            bool(self.qwen_vl_api_key)
             and bool(self.vision_base_url)
             and bool(self.vision_model)
             and self.enable_vision
         )
+
+    @property
+    def qwen_vl_api_key(self) -> str:
+        return self.vision_api_key or self.dashscope_api_key or self.qwen_vl_api_key_override
+
+    @property
+    def dashscope_enabled(self) -> bool:
+        return bool(self.dashscope_api_key or self.vision_api_key)
 
     @property
     def isi_enabled(self) -> bool:

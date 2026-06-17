@@ -24,6 +24,7 @@ def _load_vision_spots() -> list[dict]:
 
 
 class MockVisionProvider(VisionProvider):
+    provider_name = "mock_vision"
     """Mock 视觉：从 vision_spots.json 图库匹配景点。"""
 
     def __init__(self) -> None:

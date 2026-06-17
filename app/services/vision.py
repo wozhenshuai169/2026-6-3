@@ -4,7 +4,7 @@ import logging
 
 from app.core.config import settings
 from app.core.logging import Timer
-from app.providers.factory import get_vision
+from app.providers.factory import get_vision, is_mock_provider, provider_name
 from app.services.rooms import get_room
 
 logger = logging.getLogger(__name__)
@@ -23,10 +23,13 @@ async def recognize_image(room_id: str, user_id: str, image_url: str, current_sp
             "relatedSpots": [],
             "visualFeatures": [],
             "category": "unknown",
+            "provider": "disabled",
+            "trace": {"provider": "disabled", "isMock": False, "visionDisabled": True},
         }
 
     hint = current_spot_id or room.get("currentSpot", "")
     provider = get_vision()
+    name = provider_name(provider)
 
     with Timer(logger, f"Vision recognize (hint={hint[:20]})"):
         try:
@@ -39,6 +42,8 @@ async def recognize_image(room_id: str, user_id: str, image_url: str, current_sp
                 "relatedSpots": [],
                 "visualFeatures": [],
                 "category": "unknown",
+                "provider": name,
+                "trace": {"provider": name, "isMock": is_mock_provider(provider), "error": str(e)},
             }
 
     description = result.description or "No useful visual information was recognized. Please try another angle."
@@ -52,4 +57,6 @@ async def recognize_image(room_id: str, user_id: str, image_url: str, current_sp
         "relatedSpots": result.related_spots,
         "visualFeatures": result.visual_features,
         "category": result.category,
+        "provider": name,
+        "trace": {"provider": name, "isMock": is_mock_provider(provider)},
     }

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ASRRequest(BaseModel):
@@ -13,6 +13,8 @@ class ASRRequest(BaseModel):
 class ASRResponse(BaseModel):
     text: str
     confidence: float
+    provider: str = ""
+    trace: dict = Field(default_factory=dict)
 
 
 class AudioUploadResponse(BaseModel):
@@ -32,3 +34,5 @@ class TTSRequest(BaseModel):
 class TTSResponse(BaseModel):
     audioUrl: str
     duration: float  # seconds
+    provider: str = ""
+    trace: dict = Field(default_factory=dict)

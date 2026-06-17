@@ -5,7 +5,7 @@ from time import perf_counter
 
 from app.core.config import settings
 from app.core.logging import Timer
-from app.providers.factory import get_llm
+from app.providers.factory import get_llm, is_mock_provider, provider_name
 from app.services.audio import asr_transcribe, tts_synthesize
 from app.services.rooms import get_room, record_voice_log
 from app.services.stats import record_event
@@ -88,6 +88,7 @@ async def _answer_with_llm(room_id: str, question: str) -> dict | None:
     )
 
     llm = get_llm()
+    name = provider_name(llm)
     with Timer(logger, f"LLM question '{clean_question[:20]}...'"):
         try:
             response = await llm.chat(
@@ -105,13 +106,21 @@ async def _answer_with_llm(room_id: str, question: str) -> dict | None:
                 "answer": "抱歉，我暂时无法回答您的问题，请稍后再试。",
                 "source": "error_fallback",
                 "error": str(e),
+                "provider": name,
+                "trace": {"llm": {"provider": name, "isMock": is_mock_provider(llm), "error": str(e)}},
             }
 
     answer = (response.content or "").strip()
     if not answer:
         answer = "这是一个很好的问题，不过我需要更多信息来准确回答，您可以换个方式描述吗？"
 
-    return {"roomId": room_id, "answer": answer, "source": "llm"}
+    return {
+        "roomId": room_id,
+        "answer": answer,
+        "source": "llm",
+        "provider": name,
+        "trace": {"llm": {"provider": name, "isMock": is_mock_provider(llm)}},
+    }
 
 
 async def public_question(room_id: str, question: str, need_audio: bool = True) -> dict | None:
@@ -132,9 +141,11 @@ async def public_question(room_id: str, question: str, need_audio: bool = True) 
         duration = 0.0
         warning = None
         avatar_state = _avatar_state("idle", mouth_open=False)
+        trace = qa_result.get("trace", {})
 
         if need_audio:
             tts = await tts_synthesize(answer, room_id=room_id)
+            trace["tts"] = tts.get("trace", {})
             if _tts_failed(tts):
                 warning = TTS_WARNING
             else:
@@ -150,6 +161,8 @@ async def public_question(room_id: str, question: str, need_audio: bool = True) 
             "sources": DEFAULT_SOURCES,
             "avatarState": avatar_state,
             "warning": warning,
+            "provider": qa_result.get("provider", ""),
+            "trace": trace,
         }
         record_event(
             "public_question",
@@ -222,6 +235,8 @@ async def public_voice_question(
                 "avatarState": _avatar_state("idle", mouth_open=False),
                 "warning": "ASR disabled.",
                 "events": [],
+                "provider": "disabled",
+                "trace": {"asr": {"provider": "disabled", "isMock": False, "asrDisabled": True}},
             }
             record_event(
                 "public_voice_question",
@@ -261,6 +276,7 @@ async def public_voice_question(
         asr_text = asr_result.get("text", "")
         confidence = float(asr_result.get("confidence", 0.0) or 0.0)
         events: list[dict] = []
+        trace = {"asr": asr_result.get("trace", {})}
 
         if asr_result.get("error") or (confidence < 0.6 and not text_hint):
             result = {
@@ -276,6 +292,8 @@ async def public_voice_question(
                 "avatarState": _avatar_state("idle", mouth_open=False),
                 "warning": None,
                 "events": [],
+                "provider": asr_result.get("provider", ""),
+                "trace": trace,
             }
             record_event(
                 "public_voice_question",
@@ -316,10 +334,12 @@ async def public_voice_question(
             return None
 
         answer = qa_result["answer"]
+        trace["llm"] = qa_result.get("trace", {}).get("llm", qa_result.get("trace", {}))
         answer_audio_url = None
         answer_duration = 0.0
         avatar_state = _avatar_state("idle", mouth_open=False)
         answer_tts = await tts_synthesize(answer, room_id=room_id)
+        trace["tts"] = answer_tts.get("trace", {})
         if _tts_failed(answer_tts):
             warning = TTS_WARNING
         else:
@@ -332,6 +352,7 @@ async def public_voice_question(
         resume_duration = 0.0
         if resume_text:
             resume_tts = await tts_synthesize(resume_text, room_id=room_id)
+            trace["resumeTts"] = resume_tts.get("trace", {})
             if not _tts_failed(resume_tts):
                 resume_audio_url = resume_tts.get("audioUrl")
                 resume_duration = float(resume_tts.get("duration", 0.0) or 0.0)
@@ -349,6 +370,8 @@ async def public_voice_question(
             "avatarState": avatar_state,
             "warning": warning,
             "events": events,
+            "provider": qa_result.get("provider", ""),
+            "trace": trace,
         }
         record_event(
             "public_voice_question",

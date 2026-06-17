@@ -60,6 +60,7 @@ def _sign_request(method: str, accept: str, content_type: str, body: str) -> dic
 
 
 class AliyunISIProvider:
+    provider_name = "aliyun_isi"
     """阿里云智能语音交互 Provider —— ASR + TTS。"""
 
     def __init__(self) -> None:
@@ -68,7 +69,13 @@ class AliyunISIProvider:
 
     # ── ASR 录音文件识别 ────────────────────────────────
 
-    async def asr_transcribe(self, audio_url: str, audio_format: str = "wav") -> dict:
+    async def asr_transcribe(
+        self,
+        audio_url: str,
+        audio_format: str = "wav",
+        text_hint: str = "",
+        current_spot: str = "",
+    ) -> dict:
         """提交录音文件识别任务并轮询获取结果。
 
         Args:

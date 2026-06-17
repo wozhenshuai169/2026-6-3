@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class DeepSeekProvider(LLMProvider):
+    provider_name = "deepseek"
     """DeepSeek 真实 LLM Provider（OpenAI 兼容协议）。"""
 
     def __init__(self) -> None:

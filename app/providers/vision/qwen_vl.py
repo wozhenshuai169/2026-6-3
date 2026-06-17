@@ -17,10 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 class QwenVLVisionProvider(VisionProvider):
+    provider_name = "qwen_vl"
     """Qwen-VL 多模态识景 Provider —— 百炼 DashScope 真实调用。"""
 
     def __init__(self) -> None:
-        self._api_key = settings.vision_api_key
+        self._api_key = settings.qwen_vl_api_key
         self._base_url = settings.vision_base_url.rstrip("/")
         self._model = settings.vision_model
         self._client = httpx.AsyncClient(
@@ -105,18 +106,28 @@ class QwenVLVisionProvider(VisionProvider):
                 )
             logger.error("[Qwen-VL] API error: %s — %s", e, resp_body[:300])
             # 其他HTTP错误降级到 Mock
-            from app.providers.vision.mock import MockVisionProvider
-            logger.warning("[Qwen-VL] Falling back to Mock vision")
-            mock = MockVisionProvider()
-            return await mock.recognize(image_url, hint=hint)
+            return VisionResult(
+                spot_id="error",
+                spot_name="Vision provider error",
+                confidence=0.0,
+                description=f"Qwen-VL request failed: {e}",
+                related_spots=[],
+                visual_features=[],
+                category="unknown",
+            )
 
         except (httpx.HTTPError, json.JSONDecodeError, KeyError) as e:
             logger.error("[Qwen-VL] API error: %s", e)
             # 降级到 Mock
-            from app.providers.vision.mock import MockVisionProvider
-            logger.warning("[Qwen-VL] Falling back to Mock vision")
-            mock = MockVisionProvider()
-            return await mock.recognize(image_url, hint=hint)
+            return VisionResult(
+                spot_id="error",
+                spot_name="Vision provider error",
+                confidence=0.0,
+                description=f"Qwen-VL request failed: {e}",
+                related_spots=[],
+                visual_features=[],
+                category="unknown",
+            )
 
     def _parse_response(self, content: str, hint: str = "") -> VisionResult:
         """解析 Qwen-VL 返回的 JSON 或文本。"""

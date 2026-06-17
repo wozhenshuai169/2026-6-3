@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class MockAudioProvider:
+    provider_name = "mock_audio"
     """Mock 音频：关键词匹配 + 假音频 URL。"""
 
     def __init__(self) -> None:
