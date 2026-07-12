@@ -1,0 +1,233 @@
+/* ============================================================
+   Aurelian Guide — Digital Human Avatar
+   Abstract AI guide portrait with status-aware animations.
+   Pure CSS. Fits ~442×396 area on dark background.
+   ============================================================ */
+
+.avatar-container {
+  --ring-color: #E07B3C;
+  --ring-glow: rgba(224, 123, 60, 0.4);
+  --face-warm: #F5E6D8;
+  --face-cool: #E8E4DF;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 45%, #1a1a1c 0%, #0c0c0e 100%);
+  overflow: hidden;
+}
+
+/* Subtle ambient particles */
+.avatar-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.avatar-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--ring-color);
+  opacity: 0;
+  animation: float 6s ease-in-out infinite;
+}
+.avatar-particle:nth-child(1) { width:2px; height:2px; left:20%; top:30%; animation-delay:0s; }
+.avatar-particle:nth-child(2) { width:3px; height:3px; left:75%; top:20%; animation-delay:1.5s; }
+.avatar-particle:nth-child(3) { width:2px; height:2px; left:60%; top:70%; animation-delay:3s; }
+.avatar-particle:nth-child(4) { width:1px; height:1px; left:35%; top:65%; animation-delay:4.5s; }
+.avatar-particle:nth-child(5) { width:2px; height:2px; left:80%; top:55%; animation-delay:2s; }
+
+@keyframes float {
+  0%, 100% { opacity:0; transform:translateY(0) scale(1); }
+  30% { opacity:0.6; }
+  60% { opacity:0; transform:translateY(-30px) scale(1.8); }
+}
+
+/* Outer status ring */
+.avatar-ring {
+  position: absolute;
+  width: min(220px, 55%);
+  height: min(220px, 55%);
+  border-radius: 50%;
+  border: 2px solid var(--ring-color);
+  box-shadow: 0 0 20px var(--ring-glow), inset 0 0 20px var(--ring-glow);
+  opacity: 0.7;
+  transition: border-color 0.8s ease, box-shadow 0.8s ease, opacity 0.8s ease;
+  animation: ringBreathe 4s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes ringBreathe {
+  0%, 100% { box-shadow: 0 0 15px var(--ring-glow), inset 0 0 15px var(--ring-glow); }
+  50% { box-shadow: 0 0 30px var(--ring-glow), inset 0 0 30px var(--ring-glow); }
+}
+
+/* Inner subtle ring */
+.avatar-ring-inner {
+  position: absolute;
+  width: min(190px, 48%);
+  height: min(190px, 48%);
+  border-radius: 50%;
+  border: 1px solid rgba(224, 123, 60, 0.25);
+  z-index: 3;
+}
+
+/* Abstract face — geometric, elegant */
+.avatar-face {
+  position: absolute;
+  width: min(140px, 35%);
+  height: min(170px, 43%);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Forehead — warm gradient arc */
+.avatar-forehead {
+  width: min(100px, 70%);
+  height: min(40px, 23%);
+  background: linear-gradient(180deg, rgba(245,230,216,0.9) 0%, rgba(245,230,216,0.5) 100%);
+  border-radius: 50% 50% 0 0;
+  margin-bottom: 2px;
+}
+
+/* Eyes — two elegant slits */
+.avatar-eyes {
+  display: flex;
+  gap: min(24px, 17%);
+  margin: min(6px, 4%) 0;
+}
+
+.avatar-eye {
+  width: min(10px, 7%);
+  height: min(6px, 3.5%);
+  background: rgba(245,230,216,0.85);
+  border-radius: 50%;
+  animation: eyePulse 5s ease-in-out infinite;
+}
+
+@keyframes eyePulse {
+  0%, 90%, 100% { transform:scaleY(1); opacity:0.85; }
+  95% { transform:scaleY(0.1); opacity:0.3; }
+}
+
+/* Nose bridge — subtle vertical line */
+.avatar-nose {
+  width: 2px;
+  height: min(28px, 16%);
+  background: linear-gradient(180deg, rgba(245,230,216,0.6) 0%, rgba(245,230,216,0.2) 100%);
+  margin: min(4px, 2%) 0;
+}
+
+/* Mouth — warm accent line */
+.avatar-mouth {
+  width: min(40px, 28%);
+  height: 2px;
+  background: rgba(224, 123, 60, 0.6);
+  border-radius: 1px;
+  margin-top: min(6px, 4%);
+  animation: mouthGlow 3s ease-in-out infinite;
+}
+
+@keyframes mouthGlow {
+  0%, 100% { opacity:0.5; width:min(40px, 28%); }
+  50% { opacity:0.9; width:min(48px, 34%); }
+}
+
+/* Jaw line */
+.avatar-jaw {
+  width: min(80px, 57%);
+  height: min(24px, 14%);
+  border-bottom: 1px solid rgba(245,230,216,0.3);
+  border-radius: 0 0 50% 50%;
+}
+
+/* Status label below avatar */
+.avatar-status-text {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Source Han Serif', 'Noto Serif SC', serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  z-index: 10;
+  transition: color 0.6s ease;
+}
+
+/* Status dot near label */
+.avatar-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ring-color);
+  margin-right: 6px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* State variants — applied to avatar-container */
+.avatar-container[data-status="speaking"] {
+  --ring-color: #E07B3C;
+  --ring-glow: rgba(224, 123, 60, 0.6);
+}
+.avatar-container[data-status="speaking"] .avatar-ring {
+  animation: ringBreathe 1.2s ease-in-out infinite;
+  opacity: 1;
+}
+.avatar-container[data-status="speaking"] .avatar-mouth {
+  animation: speakMouth 0.4s ease-in-out infinite;
+}
+
+@keyframes speakMouth {
+  0%, 100% { transform:scaleY(1); height:2px; }
+  50% { transform:scaleY(3); height:6px; opacity:1; }
+}
+
+.avatar-container[data-status="listening"] {
+  --ring-color: #4ADE80;
+  --ring-glow: rgba(74, 222, 128, 0.5);
+}
+.avatar-container[data-status="listening"] .avatar-ring {
+  animation: ringBreathe 2.5s ease-in-out infinite;
+}
+
+.avatar-container[data-status="thinking"] {
+  --ring-color: #E07B3C;
+  --ring-glow: rgba(224, 123, 60, 0.3);
+}
+.avatar-container[data-status="thinking"] .avatar-ring {
+  animation: ringBreathe 3s ease-in-out infinite;
+  opacity: 0.5;
+}
+
+.avatar-container[data-status="idle"] {
+  --ring-color: #8E8E90;
+  --ring-glow: rgba(142, 142, 144, 0.2);
+}
+.avatar-container[data-status="idle"] .avatar-ring {
+  animation: ringBreathe 5s ease-in-out infinite;
+  opacity: 0.4;
+}
+
+.avatar-container[data-status="paused"] {
+  --ring-color: #F87171;
+  --ring-glow: rgba(248, 113, 113, 0.3);
+}
+.avatar-container[data-status="paused"] .avatar-ring {
+  animation: none;
+  opacity: 0.3;
+}

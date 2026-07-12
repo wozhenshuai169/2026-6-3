@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurelian Guide — 智慧导览系统</title>
+  <script>window.location.replace('pages/landing/index.html');</script>
+  <link rel="stylesheet" href="assets/css/common.css">
+  <style>
+    body.nav-page {
+      min-height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      font-family: "Noto Sans SC", "Source Han Sans", sans-serif !important;
+      background: #FAFAF8 !important;
+      color: #1A1A1C !important;
+      letter-spacing: normal !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .nav-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 1200px !important;
+      margin: 0 auto !important;
+      padding: 0 32px !important;
+      width: 100% !important;
+    }
+    .nav-header {
+      padding: 20px 0 !important;
+      border-bottom: 1px solid #E8E8E6 !important;
+      background: #FAFAF8 !important;
+      height: auto !important;
+    }
+    .nav-header .container {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+    .nav-header .brand {
+      font-family: "Noto Serif SC", "Source Han Serif", Georgia, serif !important;
+      font-size: 20px !important;
+      font-weight: 500 !important;
+      color: #1A1A1C !important;
+      letter-spacing: 0.01em;
+    }
+    .nav-header .version {
+      font-family: Inter, sans-serif !important;
+      font-size: 11px !important;
+      color: #A0A0A0 !important;
+    }
+    .nav-main {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      padding: 40px 0 20px;
+    }
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(250px, 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+    .page-card {
+      display: flex !important;
+      flex-direction: column;
+      text-decoration: none;
+      color: #1A1A1C !important;
+      background: #FFFFFF !important;
+      border: 1px solid #E8E8E6 !important;
+      border-radius: 12px !important;
+      padding: 28px 24px !important;
+      min-height: 180px;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+    .page-card:hover {
+      border-color: #E07B3C !important;
+      transform: translateY(-2px);
+    }
+    .page-card .icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+      background: rgba(224, 123, 60, 0.08);
+      color: #E07B3C;
+      font-size: 22px;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+    }
+    .page-card h3 {
+      font-family: "Noto Serif SC", "Source Han Serif", Georgia, serif !important;
+      font-size: 18px !important;
+      font-weight: 500 !important;
+      margin: 0 0 8px 0 !important;
+      color: #1A1A1C !important;
+    }
+    .page-card p {
+      font-size: 13px !important;
+      color: #6F6F6F !important;
+      line-height: 1.5 !important;
+      margin: 0 0 12px 0 !important;
+      flex: 1;
+    }
+    .page-card .tag {
+      display: inline-block;
+      margin-top: auto;
+      padding: 3px 10px;
+      font-family: Inter, sans-serif !important;
+      font-size: 11px !important;
+      color: #A0A0A0 !important;
+      border: 1px solid #E8E8E6 !important;
+      border-radius: 4px !important;
+      width: fit-content;
+    }
+    .nav-footer {
+      padding: 20px 0;
+      border-top: 1px solid #E8E8E6;
+    }
+    .nav-footer .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-footer span {
+      font-size: 11px;
+      color: #A0A0A0;
+      font-family: Inter, sans-serif;
+    }
+
+    @media (max-width: 1200px) {
+      .page-grid {
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
+      }
+    }
+    @media (max-width: 900px) {
+      .page-grid {
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+      }
+    }
+    @media (max-width: 600px) {
+      .page-grid {
+        grid-template-columns: 1fr;
+      }
+      .page-card {
+        min-height: auto;
+      }
+      .container {
+        padding: 0 16px;
+      }
+    }
+  </style>
+<!-- studio-command removed from nav hub to prevent layout conflicts -->
+</head>
+<body class="nav-page">
+  <header class="nav-header">
+    <div class="container">
+      <span class="brand">Aurelian Guide · 智慧导览</span>
+      <span class="version">frontend-v4</span>
+    </div>
+  </header>
+
+  <main class="nav-main">
+    <div class="container">
+      <div class="page-grid">
+        <!-- 入口界面 → landing -->
+        <a href="pages/landing/index.html" class="page-card">
+          <div class="icon">🏠</div>
+          <h3>入口界面</h3>
+          <p>景区导览系统的主入口，用户首次接触的欢迎页面与导航起点。</p>
+          <span class="tag">Landing</span>
+        </a>
+
+        <!-- 团长控制端 → guide-panel -->
+        <a href="pages/guide-panel/index.html" class="page-card">
+          <div class="icon">🎯</div>
+          <h3>团长控制端</h3>
+          <p>导游/团长使用的团队管理面板，实时掌控团员状态与行程。</p>
+          <span class="tag">Guide Panel</span>
+        </a>
+
+        <!-- 数据大屏 → dashboard -->
+        <a href="pages/dashboard/index.html" class="page-card">
+          <div class="icon">📊</div>
+          <h3>数据大屏</h3>
+          <p>景区管理数据总览，深色主题"指挥中心"风格，展示核心KPI与趋势。</p>
+          <span class="tag">Dashboard · Dark</span>
+        </a>
+
+        <!-- 用户核心界面 → user-portal -->
+        <a href="pages/user-portal/index.html" class="page-card">
+          <div class="icon">👤</div>
+          <h3>用户核心界面</h3>
+          <p>游客个人中心，查看行程、历史记录与个性化推荐。</p>
+          <span class="tag">User Portal</span>
+        </a>
+
+        <!-- 知识库管理后台 → knowledge-base -->
+        <a href="pages/knowledge-base/index.html" class="page-card">
+          <div class="icon">📚</div>
+          <h3>知识库管理后台</h3>
+          <p>管理与维护景区知识库文档，配置AI问答内容与知识点。</p>
+          <span class="tag">Knowledge Base</span>
+        </a>
+
+        <!-- 私人AI助手 → ai-assistant -->
+        <a href="pages/ai-assistant/index.html" class="page-card">
+          <div class="icon">🤖</div>
+          <h3>私人AI助手</h3>
+          <p>AI数字人导览对话界面，智能问答、路线推荐、文化讲解。</p>
+          <span class="tag">AI Assistant</span>
+        </a>
+
+        <!-- 图片识景 → vision -->
+        <a href="pages/vision/index.html" class="page-card">
+          <div class="icon">📷</div>
+          <h3>图片识景</h3>
+          <p>上传景点图片，AI 识别景点并生成讲解，推荐相关景点。</p>
+          <span class="tag">Vision · Week 2</span>
+        </a>
+
+        <!-- 路线推荐 → recommend -->
+        <a href="pages/recommend/index.html" class="page-card">
+          <div class="icon">🗺</div>
+          <h3>路线推荐</h3>
+          <p>根据兴趣偏好、时间、体力，AI 智能推荐个性化游览路线。</p>
+          <span class="tag">Recommend · Week 2</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="nav-footer">
+    <div class="container">
+      <span>Aurelian Guide · AI Digital Human Tour Guide</span>
+      <span>frontend-v4 · Week 3</span>
+      <span style="font-size:11px;color:#A0A0A0">
+        <a href="pages/landing/index.html?demo=1&role=tour_leader" style="color:#E07B3C">团长Demo</a> ·
+        <a href="pages/landing/index.html?demo=1&role=visitor" style="color:#E07B3C">游客Demo</a>
+      </span>
+    </div>
+  </footer>
+<!-- studio-command.js removed from nav hub -->
+</body>
+</html>

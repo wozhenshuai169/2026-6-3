@@ -1,0 +1,141 @@
+/**
+ * Landing Page — Identity Selection (Visitor / Leader / Admin)
+ */
+(function () {
+  'use strict';
+
+  var A = window.Aurelian, state = A.state, auth = A.auth, api = A.api, ui = A.ui, router = A.router;
+
+  var btnVisitor, btnLeader, btnAdmin;
+  var modal, dialog, modalTitle, modalClose, modalName, modalError, modalSubmit;
+  var adminModal, adminClose, adminPasscode, adminError, adminSubmit;
+  var chosenRole = null;
+  var ADMIN_PASSCODE = 'admin123';
+
+  function init() {
+    // Demo mode
+    if (new URLSearchParams(location.search).get('demo') === '1') {
+      var demoRole = new URLSearchParams(location.search).get('role') || 'tour_leader';
+      state.set('token','demo-token-'+Date.now());
+      state.set('userId','demo-'+demoRole);
+      state.set('userName',demoRole==='admin'?'管理员Demo':(demoRole==='visitor'?'游客Demo':'团长Demo'));
+      state.set('role',demoRole);
+      state.save();
+      if (demoRole==='admin') router.go('knowledge-base');
+      else router.go(demoRole==='visitor'?'user-portal':'guide-panel');
+      return;
+    }
+
+    // Already logged in
+    if (state.isLoggedIn()) {
+      var role = state.get('role');
+      if (role === 'visitor') { router.go('user-portal'); return; }
+      if (role === 'tour_leader') { router.go('guide-panel'); return; }
+      if (role === 'admin') { router.go('knowledge-base'); return; }
+    }
+
+    // Cache DOM refs
+    btnVisitor = document.getElementById('btn-visitor');
+    btnLeader = document.getElementById('btn-leader');
+    btnAdmin = document.getElementById('btn-admin');
+    modal = document.getElementById('register-modal');
+    dialog = document.getElementById('register-dialog');
+    modalTitle = document.getElementById('modal-title');
+    modalClose = document.getElementById('modal-close');
+    modalName = document.getElementById('modal-name');
+    modalError = document.getElementById('modal-error');
+    modalSubmit = document.getElementById('modal-submit');
+    adminModal = document.getElementById('admin-modal');
+    adminClose = document.getElementById('admin-modal-close');
+    adminPasscode = document.getElementById('admin-passcode');
+    adminError = document.getElementById('admin-error');
+    adminSubmit = document.getElementById('admin-submit');
+
+    // Bind events
+    if (btnVisitor) btnVisitor.addEventListener('click', function () { openModal('visitor'); });
+    if (btnLeader) btnLeader.addEventListener('click', function () { openModal('tour_leader'); });
+    if (btnAdmin) btnAdmin.addEventListener('click', openAdminModal);
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    if (modalSubmit) modalSubmit.addEventListener('click', handleSubmit);
+    if (modalName) modalName.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleSubmit(); });
+    // Admin modal
+    if (adminClose) adminClose.addEventListener('click', closeAdminModal);
+    if (adminModal) adminModal.addEventListener('click', function (e) { if (e.target === adminModal) closeAdminModal(); });
+    if (adminSubmit) adminSubmit.addEventListener('click', handleAdminAuth);
+    if (adminPasscode) adminPasscode.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleAdminAuth(); });
+  }
+
+  function openModal(role) {
+    chosenRole = role;
+    var label = role === 'visitor' ? '游客' : '团长';
+    if (modalTitle) modalTitle.textContent = label + ' — 输入你的名字';
+    if (modalName) { modalName.value = ''; modalName.focus(); }
+    if (modalError) modalError.classList.add('hidden');
+    if (modalSubmit) { modalSubmit.disabled = false; modalSubmit.textContent = '开始导览'; }
+    if (modal) modal.classList.remove('hidden');
+    if (dialog) { dialog.classList.remove('animate-modal-in'); void dialog.offsetWidth; dialog.classList.add('animate-modal-in'); }
+  }
+
+  function closeModal() {
+    if (modal) modal.classList.add('hidden');
+    chosenRole = null;
+  }
+
+  function handleSubmit() {
+    var name = (modalName.value || '').trim();
+    if (name.length < 2) {
+      if (modalError) { modalError.textContent = '昵称至少需要2个字'; modalError.classList.remove('hidden'); }
+      return;
+    }
+    if (modalError) modalError.classList.add('hidden');
+    if (modalSubmit) { modalSubmit.disabled = true; modalSubmit.textContent = '注册中...'; }
+
+    var password = 'guide_' + Date.now();
+
+    auth.register(name, password).then(function (result) {
+      if (result.ok) {
+        state.set('role', chosenRole);
+        state.save();
+        ui.toast('注册成功，欢迎！', 'success');
+        if (chosenRole === 'visitor') router.go('user-portal');
+        else router.go('guide-panel');
+      } else {
+        var msg = (result.error && result.error.message) || '注册失败，请重试';
+        if (modalError) { modalError.textContent = msg; modalError.classList.remove('hidden'); }
+        if (modalSubmit) { modalSubmit.disabled = false; modalSubmit.textContent = '重试'; }
+      }
+    });
+  }
+
+  // === Admin auth ===
+  function openAdminModal() {
+    if (adminPasscode) { adminPasscode.value = ''; adminPasscode.focus(); }
+    if (adminError) adminError.classList.add('hidden');
+    if (adminModal) adminModal.classList.remove('hidden');
+  }
+
+  function closeAdminModal() {
+    if (adminModal) adminModal.classList.add('hidden');
+  }
+
+  function handleAdminAuth() {
+    var code = (adminPasscode.value || '').trim();
+    if (code !== ADMIN_PASSCODE) {
+      if (adminError) adminError.classList.remove('hidden');
+      return;
+    }
+    if (adminError) adminError.classList.add('hidden');
+    // Set admin session
+    state.set('token', 'admin-' + Date.now());
+    state.set('userId', 'admin');
+    state.set('userName', '管理员');
+    state.set('role', 'admin');
+    state.save();
+    ui.toast('验证通过，欢迎管理员！', 'success');
+    router.go('knowledge-base');
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
