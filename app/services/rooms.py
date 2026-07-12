@@ -5,12 +5,20 @@ from app.services.users import get_user_by_token
 rooms: dict[str, dict] = {}
 
 
-def create_room(leader_id: str) -> dict:
+def create_room(
+    leader: dict,
+    room_name: str,
+    scenic_area_id: str,
+    route_id: str,
+) -> dict:
     room_id = str(uuid4())
     rooms[room_id] = {
         "roomId": room_id,
-        "leaderId": leader_id,
-        "members": [],
+        "leaderId": leader["userId"],
+        "roomName": room_name,
+        "scenicAreaId": scenic_area_id,
+        "routeId": route_id,
+        "members": [{"userId": leader["userId"], "userName": leader["userName"]}],
         "currentSpot": "",
         "status": "active",
     }
@@ -55,7 +63,7 @@ def get_avatar_state(room_id: str) -> dict | None:
             "aiStatus": "paused",
             "emotion": "neutral",
             "action": "paused",
-            "text": "导览已暂停。",
+            "text": "The tour is paused.",
             "audioUrl": "",
         }
     if member_count == 0:
@@ -63,7 +71,7 @@ def get_avatar_state(room_id: str) -> dict | None:
             "aiStatus": "idle",
             "emotion": "neutral",
             "action": "idle",
-            "text": "等待游客加入房间。",
+            "text": "Waiting for visitors to join the room.",
             "audioUrl": "",
         }
     if current_spot:
@@ -71,13 +79,13 @@ def get_avatar_state(room_id: str) -> dict | None:
             "aiStatus": "speaking",
             "emotion": "friendly",
             "action": "speaking",
-            "text": f"欢迎来到{current_spot}，让我为大家介绍这里的历史和文化。",
+            "text": f"Welcome to {current_spot}. Let me introduce its history and culture.",
             "audioUrl": "",
         }
     return {
         "aiStatus": "idle",
         "emotion": "friendly",
         "action": "idle",
-        "text": "大家好，我是您的智能导游，随时为您解答问题。",
+        "text": "Hello, I am your intelligent tour guide.",
         "audioUrl": "",
     }

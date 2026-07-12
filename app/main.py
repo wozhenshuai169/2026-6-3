@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -18,6 +19,7 @@ from app.api.vision import router as vision_router
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.middleware.logging import RequestLoggingMiddleware
+from app.services.users import ensure_bootstrap_admin
 
 for directory in ["uploads", "uploads/tts", "uploads/kb", "data"]:
     Path(directory).mkdir(parents=True, exist_ok=True)
@@ -25,7 +27,16 @@ for directory in ["uploads", "uploads/tts", "uploads/kb", "data"]:
 setup_logging(settings.log_level)
 logger = logging.getLogger(__name__)
 
+ensure_bootstrap_admin()
+
 app = FastAPI(title="A5 Intelligent Tour Guide System", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.add_middleware(RequestLoggingMiddleware)
 
 app.include_router(rooms_router)

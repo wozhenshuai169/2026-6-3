@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from app.core.auth import require_roles
 
 from app.services.rooms import rooms
 from app.services.stats import (
@@ -10,7 +12,7 @@ from app.services.stats import (
 )
 from app.services.users import users
 
-router = APIRouter(prefix="/api/dashboard")
+router = APIRouter(prefix="/api/dashboard", dependencies=[Depends(require_roles("admin"))])
 
 
 @router.get("/overview")

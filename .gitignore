@@ -16,6 +16,7 @@ tests/__pycache__/
 test_result*.json
 test_*.json
 test_*.py
+!tests/test_backend_security.py
 tts_debug.*
 img*_result.*
 

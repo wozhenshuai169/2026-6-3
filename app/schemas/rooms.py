@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class CreateRoomRequest(BaseModel):
-    token: str
+    token: str | None = None
     roomName: str
     scenicAreaId: str
     routeId: str
@@ -14,7 +14,7 @@ class CreateRoomResponse(BaseModel):
 
 
 class JoinRoomRequest(BaseModel):
-    token: str
+    token: str | None = None
 
 
 class JoinRoomResponse(BaseModel):
@@ -30,6 +30,10 @@ class MemberSchema(BaseModel):
 
 class RoomStatusResponse(BaseModel):
     roomId: str
+    leaderId: str
+    roomName: str
+    scenicAreaId: str
+    routeId: str
     members: list[MemberSchema]
     currentSpot: str
     status: str

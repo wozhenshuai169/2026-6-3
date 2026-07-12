@@ -49,6 +49,17 @@ class Settings(BaseSettings):
     asr_timeout: int = 90         # ASR 轮询超时（秒）
     max_retries: int = 1          # 失败重试次数
 
+    # Authentication and browser access
+    session_ttl_seconds: int = 24 * 60 * 60
+    admin_user_name: str = ""
+    admin_password: str = ""
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+
+    @property
+    def allowed_cors_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+
     # ═══════════════════════════════════════════════════
     # 派生属性
     # ═══════════════════════════════════════════════════

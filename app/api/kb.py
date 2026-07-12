@@ -4,10 +4,12 @@ from pathlib import Path
 from time import time
 from uuid import uuid4
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+
+from app.core.auth import require_roles
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/api/kb")
+router = APIRouter(prefix="/api/kb", dependencies=[Depends(require_roles("admin"))])
 
 DATA_DIR = Path("data")
 UPLOAD_DIR = Path("uploads") / "kb"
