@@ -35,6 +35,18 @@ async def _persist_public_exchange(
     await room_connections.broadcast(room_id, {"type": "room.message", "data": answer_message})
 
 
+async def _deliver_algorithm_events(room: dict, result: dict) -> None:
+    """Keep safety and authorization details out of the public room stream."""
+    for event in result.get("_events", result.get("events", [])):
+        if event.get("type") != "leader_notify":
+            continue
+        await room_connections.send_to_user(
+            room["roomId"],
+            room["leaderId"],
+            {"type": "room.alert", "data": event.get("payload", {})},
+        )
+
+
 @router.post("/public-question", response_model=PublicQuestionResponse)
 async def ask(req: PublicQuestionRequest, user: dict = Depends(get_current_user)):
     require_matching_user(req.userId, user)
@@ -42,10 +54,12 @@ async def ask(req: PublicQuestionRequest, user: dict = Depends(get_current_user)
     enforce_rate_limit("ai", user["userId"], 30, 60)
     if room["status"] != "active":
         raise AppError(409, "ROOM_NOT_ACTIVE", "Public AI is available only in active rooms")
-    result = await public_question(req.roomId, req.question, req.needAudio)
+    result = await public_question(req.roomId, req.question, req.needAudio, user_id=user["userId"])
     if result is None:
         raise AppError(404, "ROOM_NOT_FOUND", "Room not found")
-    await _persist_public_exchange(req.roomId, user, req.question, result["answer"])
+    if result.get("_replyChannel") == "public":
+        await _persist_public_exchange(req.roomId, user, req.question, result["answer"])
+    await _deliver_algorithm_events(room, result)
     return PublicQuestionResponse(**result)
 
 
@@ -62,6 +76,7 @@ async def voice_ask(req: VoiceQuestionRequest, user: dict = Depends(get_current_
     )
     if result is None:
         raise AppError(404, "ROOM_NOT_FOUND", "Room not found")
-    if req.channel == "public" and result.get("asrText") and result.get("answer"):
+    if result.get("_replyChannel") == "public" and result.get("asrText") and result.get("answer"):
         await _persist_public_exchange(req.roomId, user, result["asrText"], result["answer"])
+    await _deliver_algorithm_events(room, result)
     return VoiceQuestionResponse(**result)

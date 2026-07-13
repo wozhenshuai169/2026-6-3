@@ -199,23 +199,26 @@ def seed_scenic_chunks() -> None:
             )
 
 
-def search_knowledge(query: str, limit: int = 5) -> list[dict]:
+def search_knowledge(query: str, limit: int = 5, spot_id: str = "") -> list[dict]:
     clean = query.strip()
     if not clean:
         raise ValueError("Query is empty")
     bounded = max(1, min(limit, 20))
     with database() as connection:
         if len(clean) >= 3:
-            rows = connection.execute(
-                """
-                SELECT c.chunk_id, c.title, c.source, c.content, bm25(kb_chunks_fts) AS rank
-                FROM kb_chunks_fts
-                JOIN kb_chunks c ON c.chunk_id = kb_chunks_fts.chunk_id
-                WHERE kb_chunks_fts MATCH ?
-                ORDER BY rank LIMIT ?
-                """,
-                (f'"{clean.replace(chr(34), chr(34) * 2)}"', bounded),
-            ).fetchall()
+            try:
+                rows = connection.execute(
+                    """
+                    SELECT c.chunk_id, c.title, c.source, c.content, bm25(kb_chunks_fts) AS rank
+                    FROM kb_chunks_fts
+                    JOIN kb_chunks c ON c.chunk_id = kb_chunks_fts.chunk_id
+                    WHERE kb_chunks_fts MATCH ?
+                    ORDER BY rank LIMIT ?
+                    """,
+                    (f'"{clean.replace(chr(34), chr(34) * 2)}"', bounded),
+                ).fetchall()
+            except Exception:
+                rows = []
         else:
             rows = connection.execute(
                 """
@@ -223,6 +226,26 @@ def search_knowledge(query: str, limit: int = 5) -> list[dict]:
                 WHERE title LIKE ? OR content LIKE ? LIMIT ?
                 """,
                 (f"%{clean}%", f"%{clean}%", bounded),
+            ).fetchall()
+        # Natural-language questions often do not exactly match an FTS phrase.
+        # Current-spot material is a grounded fallback, never a fabricated citation.
+        if not rows and spot_id:
+            rows = connection.execute(
+                """
+                SELECT chunk_id, title, source, content, 0.0 AS rank
+                FROM kb_chunks WHERE spot_id = ?
+                ORDER BY created_at DESC LIMIT ?
+                """,
+                (spot_id, bounded),
+            ).fetchall()
+        if not rows:
+            rows = connection.execute(
+                """
+                SELECT chunk_id, title, source, content, 0.0 AS rank
+                FROM kb_chunks
+                WHERE title LIKE ? OR content LIKE ? LIMIT ?
+                """,
+                (f"%{clean[:24]}%", f"%{clean[:24]}%", bounded),
             ).fetchall()
     return [
         {

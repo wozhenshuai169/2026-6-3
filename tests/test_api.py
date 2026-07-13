@@ -1,5 +1,6 @@
 import io
 import base64
+import json
 import wave
 from pathlib import Path
 
@@ -255,6 +256,11 @@ def test_configured_llm_failure_is_503_not_mock_success(client, auth_helpers, mo
     headers = auth_helpers["headers"]
     room_id = auth_helpers["create_room"](guide)
     client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    client.post(
+        f"/api/rooms/{room_id}/current-spot",
+        headers=headers(guide),
+        json={"spotId": "main_hall"},
+    )
     previous_key = settings.deepseek_api_key
     settings.deepseek_api_key = "configured-for-test"
     monkeypatch.setattr(ai_service, "get_llm", lambda: FailingLlm())
@@ -265,7 +271,7 @@ def test_configured_llm_failure_is_503_not_mock_success(client, auth_helpers, mo
             json={
                 "roomId": room_id,
                 "userId": tourist["userId"],
-                "question": "provider check",
+                "question": "这里有什么历史？",
                 "needAudio": False,
             },
         )
@@ -343,3 +349,119 @@ def test_openapi_and_v4_contract(client):
     landing = (root / "frontend-v4/assets/js/pages/landing.js").read_text(encoding="utf-8")
     assert "Authorization" in api_client and "Bearer" in api_client
     assert "admin123" not in landing
+
+
+def test_real_validation_manifest_targets_product_api_contract():
+    root = Path(__file__).resolve().parents[1]
+    manifest = json.loads(
+        (root / "test_data" / "real_model_validation" / "manifest.json").read_text(encoding="utf-8")
+    )
+    runner = root / "tools" / "run_real_model_validation.py"
+    assert manifest["version"] == 2
+    assert runner.exists()
+    assert all("endpoint" not in case for group in manifest["testGroups"].values() for case in group)
+
+
+def test_unified_algorithm_private_need_is_not_persisted_publicly(client, auth_helpers):
+    from app.services.users import get_user_memory_tags
+
+    guide = auth_helpers["register"]("guide", "unified-guide")
+    tourist = auth_helpers["register"]("tourist", "unified-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    before = client.get(f"/api/rooms/{room_id}/messages", headers=headers(tourist)).json()["messages"]
+
+    response = client.post(
+        "/api/ai/public-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "question": "老人走不动了，附近可以休息吗？",
+            "needAudio": False,
+        },
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["decision"] == "private_reply"
+    assert any(event["type"] == "suggest_private_channel" for event in payload["events"])
+    after = client.get(f"/api/rooms/{room_id}/messages", headers=headers(tourist)).json()["messages"]
+    assert len(after) == len(before)
+    memory = get_user_memory_tags(tourist["userId"])
+    assert memory["stamina"] == "low"
+    assert "elderly" in memory["companions"]
+
+
+def test_unified_algorithm_voice_clarification_and_route_score(client, auth_helpers):
+    guide = auth_helpers["register"]("guide", "unified-route-guide")
+    tourist = auth_helpers["register"]("tourist", "unified-route-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+
+    voice = client.post(
+        "/api/ai/public-voice-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "channel": "public",
+            "audioUrl": "https://example.com/audio/unclear.wav",
+            "audioFormat": "wav",
+        },
+    )
+    assert voice.status_code == 200, voice.text
+    assert voice.json()["decision"] == "ask_clarification"
+
+    route = client.post(
+        "/api/recommend/route",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "preferences": {
+                "interest": ["历史"],
+                "timeLimit": 40,
+                "physicalStrength": "low",
+                "withChildren": False,
+                "withElderly": True,
+                "avoidCrowd": True,
+            },
+        },
+    )
+    assert route.status_code == 200, route.text
+    recommendation = route.json()
+    assert recommendation["routeId"] == "short"
+    assert sum(recommendation["scoreBreakdown"].values()) == recommendation["score"]
+    assert recommendation["spots"]
+
+
+def test_unified_algorithm_safety_alert_is_leader_only_websocket_event(client, auth_helpers):
+    guide = auth_helpers["register"]("guide", "alert-guide")
+    tourist = auth_helpers["register"]("tourist", "alert-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    ticket = client.post(
+        "/api/auth/ws-ticket", headers=headers(guide), json={"roomId": room_id}
+    ).json()["ticket"]
+
+    with client.websocket_connect(f"/ws/rooms/{room_id}?ticket={ticket}") as leader_socket:
+        assert leader_socket.receive_json()["type"] == "room.connected"
+        response = client.post(
+            "/api/ai/public-voice-question",
+            headers=headers(tourist),
+            json={
+                "roomId": room_id,
+                "userId": tourist["userId"],
+                "channel": "private",
+                "audioUrl": "https://example.com/audio/lost.wav",
+                "audioFormat": "wav",
+            },
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["decision"] == "emergency_alert"
+        alert = leader_socket.receive_json()
+        assert alert["type"] == "room.alert"
+        assert alert["data"]["riskLevel"] == "high"

@@ -23,6 +23,9 @@ class PublicQuestionResponse(BaseModel):
     sources: list["SourceSchema"] = Field(default_factory=list)
     avatarState: AvatarStateSchema
     warning: str | None = None
+    decision: str | None = None
+    events: list[dict] = Field(default_factory=list)
+    stateUpdate: dict = Field(default_factory=dict)
 
 
 class SourceSchema(BaseModel):
@@ -41,6 +44,7 @@ class VoiceQuestionRequest(BaseModel):
 
 class VoiceQuestionResponse(BaseModel):
     asrText: str
+    asrConfidence: float = 0.0
     decision: str
     answer: str
     audioUrl: str | None = None

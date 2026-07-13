@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import json
 import secrets
 import sqlite3
 from datetime import datetime
@@ -187,6 +188,49 @@ def get_user_by_id(user_id: str) -> dict | None:
             (user_id,),
         ).fetchone()
     return _row_to_user(row)
+
+
+def get_user_memory_tags(user_id: str) -> dict:
+    """Return only structured preference tags; raw dialogue is never persisted."""
+    with database() as connection:
+        row = connection.execute(
+            "SELECT memory_json FROM user_profiles WHERE user_id = ?", (user_id,)
+        ).fetchone()
+    if row is None:
+        return {}
+    try:
+        value = json.loads(row["memory_json"])
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def merge_user_memory_tags(user_id: str, tags: dict) -> dict:
+    """Merge extracted preference tags without retaining the source utterance."""
+    if not tags:
+        return get_user_memory_tags(user_id)
+    current = get_user_memory_tags(user_id)
+    merged = dict(current)
+    for key, value in tags.items():
+        if isinstance(value, list):
+            existing = merged.get(key, [])
+            if not isinstance(existing, list):
+                existing = []
+            merged[key] = list(dict.fromkeys([*existing, *value]))
+        elif value is not None:
+            merged[key] = value
+    with database() as connection:
+        connection.execute(
+            """
+            INSERT INTO user_profiles (user_id, memory_json, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                memory_json = excluded.memory_json,
+                updated_at = excluded.updated_at
+            """,
+            (user_id, json.dumps(merged, ensure_ascii=False, sort_keys=True), int(time())),
+        )
+    return merged
 
 
 def revoke_token(token: str) -> None:

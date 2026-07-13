@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     vision_api_key: str = ""
     vision_base_url: str = ""
     vision_model: str = ""
+    dashscope_api_key: str = ""
+    public_base_url: str = ""
 
     # ═══════════════════════════════════════════════════
     # 功能开关
@@ -26,7 +28,7 @@ class Settings(BaseSettings):
     enable_asr: bool = True       # ASR 语音识别
     enable_tts: bool = True       # TTS 语音合成
     enable_vision: bool = True    # 图片识景
-    enable_rag: bool = False      # RAG 知识检索（暂未实现）
+    enable_rag: bool = True       # RAG 知识检索
 
     # ═══════════════════════════════════════════════════
     # 地图
@@ -85,7 +87,7 @@ class Settings(BaseSettings):
 
     @property
     def audio_provider_enabled(self) -> bool:
-        return bool(self.vision_api_key) or self.isi_enabled
+        return bool(self.dashscope_api_key or self.vision_api_key) or self.isi_enabled
 
     @property
     def isi_enabled(self) -> bool:

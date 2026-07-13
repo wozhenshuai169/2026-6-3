@@ -116,7 +116,15 @@ CREATE VIRTUAL TABLE IF NOT EXISTS kb_chunks_fts USING fts5(
 );
 """
 
-MIGRATIONS = ((1, _MIGRATION_1), (2, _MIGRATION_2))
+_MIGRATION_3 = """
+CREATE TABLE IF NOT EXISTS user_profiles (
+    user_id TEXT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+    memory_json TEXT NOT NULL DEFAULT '{}',
+    updated_at INTEGER NOT NULL
+);
+"""
+
+MIGRATIONS = ((1, _MIGRATION_1), (2, _MIGRATION_2), (3, _MIGRATION_3))
 
 
 def _open(path: str) -> sqlite3.Connection:

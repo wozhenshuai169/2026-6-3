@@ -58,7 +58,7 @@ async def room_websocket(websocket: WebSocket, roomId: str, ticket: str = Query(
         await websocket.close(code=4404 if exc.status_code == 404 else 4403)
         return
 
-    await room_connections.connect(roomId, websocket)
+    await room_connections.connect(roomId, websocket, user["userId"])
     await websocket.send_json(
         {
             "type": "room.connected",

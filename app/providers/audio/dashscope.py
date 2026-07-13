@@ -41,7 +41,7 @@ class DashScopeAudioProvider:
     """音频 Provider —— edge-tts (TTS) + DashScope Paraformer (ASR)。"""
 
     def __init__(self) -> None:
-        self._api_key = settings.vision_api_key  # 复用百炼 Key（ASR用）
+        self._api_key = settings.dashscope_api_key or settings.vision_api_key
         self._asr_headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
@@ -126,10 +126,6 @@ class DashScopeAudioProvider:
 
         要求: 百炼 API Key 需开通 Paraformer 权限 + 音频文件公网 URL。
         """
-        if text_hint and text_hint.strip():
-            return {"text": text_hint.strip(), "confidence": 0.88,
-                    "success": True, "format": audio_format}
-
         if not (audio_url.startswith("http://") or audio_url.startswith("https://")):
             return {"text": "", "confidence": 0.0, "success": False,
                     "format": audio_format,

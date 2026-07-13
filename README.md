@@ -17,7 +17,7 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
 - 存活检查：`GET /health/live`
 - 就绪检查：`GET /health/ready`
 
-前端只调用主后端 `/api/...`。独立算法服务的 `/v1/...` 不属于 V4 前端契约。
+前端只调用主后端 `/api/...`。根目录历史独立算法服务已归档到 `archive/algorithm_service_legacy/`；`/v1/...` 不属于 V4 前端契约。
 
 ## 认证
 
@@ -44,4 +44,4 @@ python -m pytest -q
 python -m compileall -q app src
 ```
 
-真实模型数据集测试仅在配置相应 Provider 环境变量时执行。
+真实模型数据集验证通过已部署的主后端 `/api` 链路运行，不使用内部 `/v1`。录音样本和运行说明见 [test_data/real_model_validation/README.md](test_data/real_model_validation/README.md)。

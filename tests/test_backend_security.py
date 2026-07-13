@@ -78,7 +78,7 @@ def test_new_database_migrations_are_idempotent(tmp_path):
             "SELECT version FROM schema_migrations ORDER BY version"
         ).fetchall()
         connection.close()
-        assert versions == [(1,), (2,)]
+        assert versions == [(1,), (2,), (3,)]
     finally:
         settings.database_path = previous
         reset_database_initialization_for_tests()

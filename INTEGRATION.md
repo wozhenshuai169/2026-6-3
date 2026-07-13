@@ -10,7 +10,7 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 - 前端只请求 `/api/...`
 - `/uploads/...` 用于访问 TTS 音频和知识库上传文件
-- 算法服务 `/v1/...` 仅作为主后端内部调用或本地调试入口，不给前端直接调用
+- 历史算法服务已归档，前端和主后端都不调用 `/v1/...`；产品算法统一经 `app/services/algorithm_facade.py` 调用
 
 ## 服务地址
 

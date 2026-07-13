@@ -59,6 +59,15 @@ def _uploaded_file_from_url(audio_url: str) -> Path | None:
     return UPLOADS_TTS_DIR / audio_url.removeprefix(prefix)
 
 
+def _provider_audio_url(audio_url: str) -> str:
+    """Turn an authenticated local upload path into a provider-readable URL."""
+    if audio_url.startswith(("http://", "https://")):
+        return audio_url
+    if audio_url.startswith("/uploads/") and settings.public_base_url:
+        return f"{settings.public_base_url.rstrip('/')}{audio_url}"
+    return audio_url
+
+
 async def asr_transcribe(
     room_id: str,
     user_id: str,
@@ -93,7 +102,7 @@ async def asr_transcribe(
     with Timer(logger, f"ASR '{audio_url[-30:]}'"):
         try:
             result = await _audio.asr_transcribe(
-                audio_url=audio_url,
+                audio_url=_provider_audio_url(audio_url),
                 audio_format=fmt,
                 text_hint=text_hint or "",
                 current_spot=room.get("currentSpot", ""),

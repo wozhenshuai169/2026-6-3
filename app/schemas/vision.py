@@ -56,3 +56,4 @@ class VisionRecognizeResponse(BaseModel):
     visualFeatures: list[str] = Field(default_factory=list)
     category: str = "spot"  # "spot" | "person" | "object" | "scene" | "unknown"
     warning: str | None = None
+    sources: list[dict] = Field(default_factory=list)
