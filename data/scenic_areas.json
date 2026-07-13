@@ -1,0 +1,50 @@
+{
+  "defaultScenicAreaId": "lingshan_shengjing",
+  "scenicAreas": [
+    {
+      "scenicAreaId": "lingshan_shengjing",
+      "scenicAreaName": "灵山胜境",
+      "city": "无锡市",
+      "district": "滨湖区",
+      "searchKeyword": "灵山胜境",
+      "isPrimary": true,
+      "routeTemplates": [
+        {
+          "routeId": "lingshan_short",
+          "title": "灵山胜境轻松体验线",
+          "maxMinutes": 60,
+          "difficulty": "low",
+          "tags": ["less_walking", "family_friendly"],
+          "spots": [
+            {"spotId": "lingshan_dazhaobi", "name": "灵山大照壁", "stayMinutes": 10},
+            {"spotId": "jiulong_guanyu", "name": "九龙灌浴", "stayMinutes": 20}
+          ]
+        },
+        {
+          "routeId": "lingshan_classic",
+          "title": "灵山胜境经典礼佛线",
+          "maxMinutes": 180,
+          "difficulty": "medium",
+          "tags": ["history", "architecture", "culture"],
+          "spots": [
+            {"spotId": "lingshan_dazhaobi", "name": "灵山大照壁", "stayMinutes": 10},
+            {"spotId": "jiulong_guanyu", "name": "九龙灌浴", "stayMinutes": 15},
+            {"spotId": "xiangfu_temple", "name": "祥符禅寺", "stayMinutes": 20},
+            {"spotId": "lingshan_buddha", "name": "灵山大佛", "stayMinutes": 25},
+            {"spotId": "lingshan_palace", "name": "灵山梵宫", "stayMinutes": 30},
+            {"spotId": "wuyin_mandala", "name": "五印坛城", "stayMinutes": 25}
+          ]
+        }
+      ]
+    },
+    {
+      "scenicAreaId": "nianhuawan",
+      "scenicAreaName": "拈花湾禅意小镇",
+      "city": "无锡市",
+      "district": "滨湖区",
+      "searchKeyword": "拈花湾禅意小镇",
+      "isPrimary": false,
+      "routeTemplates": []
+    }
+  ]
+}

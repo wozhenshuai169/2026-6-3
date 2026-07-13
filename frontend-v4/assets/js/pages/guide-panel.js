@@ -4,6 +4,7 @@
 (function () {
   'use strict';
   var A = window.Aurelian, state = A.state, api = A.api, ui = A.ui, router = A.router, comp = A.components;
+  var SCENIC_AREA_ID = 'lingshan_shengjing';
 
   // State
   var roomId = null;
@@ -70,7 +71,7 @@
 
   // === Route Loading ===
   function loadRoutes() {
-    api.get('/routes').then(function(r) {
+    api.get('/map/scenic-areas/' + SCENIC_AREA_ID + '/routes').then(function(r) {
       if (r.ok && r.data && r.data.routes) {
         routes = r.data.routes;
         if (routes.length > 0) selectedRouteId = routes[0].routeId;
@@ -84,15 +85,17 @@
     // Build spot list from selected route's spots
     var route = getSelectedRoute();
     if (!route || !route.spotIds) { els.spotDropdown.innerHTML = '<div class="p-3 text-sm text-[#A0A0A0]">暂无景点数据</div>'; return; }
+    var spotNames = {};
+    (route.spots || []).forEach(function(spot){ spotNames[spot.spotId] = spot.name; });
     var html = '';
     route.spotIds.forEach(function(sid) {
-      html += '<button class="spot-option w-full text-left px-4 py-2.5 text-sm hover:bg-[#FAFAF7] transition-colors border-b border-[#F0F0ED] last:border-b-0" data-spot-id="' + ui.escapeHtml(sid) + '">' + ui.escapeHtml(sid) + '</button>';
+      html += '<button class="spot-option w-full text-left px-4 py-2.5 text-sm hover:bg-[#FAFAF7] transition-colors border-b border-[#F0F0ED] last:border-b-0" data-spot-id="' + ui.escapeHtml(sid) + '">' + ui.escapeHtml(spotNames[sid] || sid) + '</button>';
     });
     els.spotDropdown.innerHTML = html;
     els.spotDropdown.querySelectorAll('.spot-option').forEach(function(btn) {
       btn.addEventListener('click', function() {
         selectedSpotId = btn.getAttribute('data-spot-id');
-        if (els.spotSelectorLabel) els.spotSelectorLabel.textContent = selectedSpotId;
+        if (els.spotSelectorLabel) els.spotSelectorLabel.textContent = spotNames[selectedSpotId] || selectedSpotId;
         els.spotDropdown.classList.add('hidden');
         // Update current spot if room exists
         if (roomId) updateCurrentSpot(selectedSpotId);
@@ -137,7 +140,7 @@
     if (els.routeConfirm) { els.routeConfirm.disabled = true; els.routeConfirm.innerHTML = '<span class="loading-spinner"></span>创建中...'; }
       api.post('/rooms', {
         roomName: state.get('userName') + '的导览团',
-      scenicAreaId: 'huangshan',
+      scenicAreaId: SCENIC_AREA_ID,
       routeId: selectedRouteId
     }).then(function(r) {
       if (r.ok && r.data) {
@@ -339,8 +342,10 @@
     if (els.routeNameDisplay) els.routeNameDisplay.textContent = route ? route.routeName : '—';
     if (els.memberCount) els.memberCount.textContent = members.length + '人';
     if (els.memberListTitle) els.memberListTitle.textContent = '在线游客 (' + members.length + ')';
-    if (els.currentSpotDisplay) els.currentSpotDisplay.textContent = currentSpotId || '—';
-    if (els.scenicAreaDisplay) els.scenicAreaDisplay.textContent = '黄山风景区';
+    var spotNames = {};
+    if (route && route.spots) route.spots.forEach(function(spot){ spotNames[spot.spotId] = spot.name; });
+    if (els.currentSpotDisplay) els.currentSpotDisplay.textContent = spotNames[currentSpotId] || currentSpotId || '—';
+    if (els.scenicAreaDisplay) els.scenicAreaDisplay.textContent = '灵山胜境';
 
     // Progress
     if (route && currentSpotId && els.progressDisplay) {

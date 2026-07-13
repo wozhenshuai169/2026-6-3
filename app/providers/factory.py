@@ -1,6 +1,7 @@
 """ProviderFactory —— 按环境变量解析 Provider，自动 Mock 降级。"""
 
 import logging
+from functools import lru_cache
 
 from app.core.config import settings
 from app.providers.base import LLMProvider, VisionProvider, MapProvider
@@ -28,12 +29,16 @@ class ProviderFactory:
         return MockVisionProvider()
 
     @staticmethod
+    @lru_cache(maxsize=1)
     def get_map() -> MapProvider:
-        if settings.map_enabled:
-            # 后续接入高德 / 百度地图时在此分支
-            logger.warning("[Map] Real provider not yet implemented, falling back to Mock")
-        from app.providers.map.mock import MockMapProvider
-        return MockMapProvider()
+        if not settings.map_enabled:
+            raise RuntimeError("MAP_API_KEY 未配置，真实地图服务不可用")
+        if settings.map_provider.lower() != "amap":
+            raise RuntimeError(f"不支持的地图服务：{settings.map_provider}")
+        from app.providers.map.amap import AmapMapProvider
+
+        logger.info("[Map] 使用高德 Web 服务（真实 API，不启用 Mock 回退）")
+        return AmapMapProvider()
 
     @staticmethod
     def get_audio():

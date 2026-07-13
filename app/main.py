@@ -14,6 +14,7 @@ from app.api.audio import router as audio_router
 from app.api.dashboard import router as dashboard_router
 from app.api.feedback import router as feedback_router
 from app.api.kb import router as kb_router
+from app.api.map import router as map_router
 from app.api.messages import router as messages_router
 from app.api.recommend import router as recommend_router
 from app.api.rooms import router as rooms_router
@@ -87,6 +88,7 @@ app.include_router(recommend_router)
 app.include_router(spots_router)
 app.include_router(routes_router)
 app.include_router(kb_router)
+app.include_router(map_router)
 app.include_router(dashboard_router)
 app.include_router(feedback_router)
 
@@ -180,5 +182,13 @@ async def root():
             "llmMode": "provider" if settings.llm_enabled else "mock",
             "visionMode": "provider" if settings.vision_enabled else "mock",
             "audioMode": "provider" if settings.audio_provider_enabled else "mock",
+            "mapMode": "amap" if settings.map_enabled and settings.map_provider == "amap" else "disabled",
         },
     }
+
+
+# 前端与 API 同源提供，确保浏览器只访问一个 8000 端口。
+# 必须放在所有 API/健康检查路由之后，避免根路径静态挂载遮挡接口。
+frontend_dir = Path("frontend-v4")
+if frontend_dir.exists():
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")

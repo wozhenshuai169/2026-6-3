@@ -37,7 +37,7 @@
         nav('settings', '#', 'settings', '系统设置', active) +
       '</nav>' +
       '<section class="sc-live-card"><header><span>房间实时状态</span><span style="color:#60c77d">● 运行中</span></header>' +
-        '<dl><div><dt>房间号</dt><dd data-sc-room>839201</dd></div><div><dt>在线游客</dt><dd data-sc-members>8 人</dd></div><div><dt>当前景区</dt><dd>黄山风景区</dd></div><div><dt>当前路线</dt><dd>经典路线</dd></div></dl></section>' +
+        '<dl><div><dt>房间号</dt><dd data-sc-room>839201</dd></div><div><dt>在线游客</dt><dd data-sc-members>8 人</dd></div><div><dt>当前景区</dt><dd>灵山胜境</dd></div><div><dt>当前路线</dt><dd>经典礼佛线</dd></div></dl></section>' +
       '<div class="sc-user"><span class="sc-avatar">A</span><span>Admin<small>管理员</small></span></div>';
     document.body.insertBefore(sidebar, document.body.firstChild);
   }
@@ -67,7 +67,7 @@
   function fillGuidePreview() {
     var values = {
       'room-id-display': '839201', 'route-name-display': '经典路线', 'member-count': '8 人',
-      'current-spot-display': '主展厅', 'scenic-area-display': '黄山风景区', 'progress-display': '第3段/共12段',
+      'current-spot-display': '九龙灌浴', 'scenic-area-display': '灵山胜境', 'progress-display': '第2段/共6段',
       'pending-requests-text': '2 条私人请求待处理', 'spot-selector-label': '主展厅', 'requests-badge': '2'
     };
     Object.keys(values).forEach(function (id) {

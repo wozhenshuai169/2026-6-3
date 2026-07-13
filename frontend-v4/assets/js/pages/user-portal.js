@@ -391,11 +391,27 @@
       });
     }
     if(type==='map'){
-      api.get('/spots/'+(currentSpotId||'bell_tower')+'/nearby').then(function(r){
-        var h='<p class="text-sm mb-3">附近景点</p>';
-        if(r.ok&&r.data&&r.data.nearby)r.data.nearby.forEach(function(s){h+='<div class="flex items-center gap-2 border rounded-lg p-3 mb-2"><span class="material-icons text-brand-accent text-[18px]">location_on</span><span class="text-sm">'+ui.escapeHtml(s.spotName||s.spotId)+'</span></div>';});
-        else h+='<p class="text-xs text-text-secondary">暂无</p>';
-        showResult('附近景点',h);
+      api.get('/map/scenic-areas/current').then(function(r){
+        var h='<p class="text-sm mb-1 font-medium">灵山胜境 · 高德真实 POI</p>';
+        h+='<p class="text-xs text-text-secondary mb-3">数据由后端调用高德 Web 服务取得，不使用 Mock。</p>';
+        if(r.ok&&r.data&&r.data.pois){
+          r.data.pois.slice(0,8).forEach(function(s){
+            var coordinate=(typeof s.longitude==='number'&&typeof s.latitude==='number')?
+              s.longitude.toFixed(6)+', '+s.latitude.toFixed(6):'坐标未返回';
+            h+='<div class="border rounded-lg p-3 mb-2"><div class="flex items-center gap-2">'+
+              '<span class="material-icons text-brand-accent text-[18px]">location_on</span>'+
+              '<span class="text-sm">'+ui.escapeHtml(s.name||s.poiId)+'</span></div>'+
+              '<div class="text-xs text-text-secondary mt-1 ml-7">'+ui.escapeHtml(coordinate)+' · POI '+
+              ui.escapeHtml(s.poiId||'未返回')+'</div></div>';
+          });
+          (r.data.relatedScenicAreas||[]).forEach(function(area){
+            h+='<div class="border border-dashed rounded-lg p-3 mt-3"><div class="text-xs text-text-secondary">独立景区，不加入灵山路线</div>'+
+              '<div class="text-sm mt-1">'+ui.escapeHtml(area.scenicAreaName)+'</div></div>';
+          });
+        }else{
+          h+='<p class="text-xs text-red-600">'+ui.escapeHtml((r.error&&r.error.message)||'高德地图连接失败')+'</p>';
+        }
+        showResult('景区地图数据',h);
       });
     }
     if(type==='assistant') router.withParams('ai-assistant',{roomId:roomId});
