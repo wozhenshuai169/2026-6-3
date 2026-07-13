@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --sc-ink: #171b1d;
   --sc-ink-2: #20282d;
   --sc-paper: #f5f2eb;
@@ -55,8 +55,8 @@ button { cursor: pointer; }
 .sc-nav a:hover { color: #fff; background: rgba(255,255,255,.055); transform: translateX(2px); }
 .sc-nav a.active { color: #fff; background: rgba(255,255,255,.075); }
 .sc-nav a.active::after { content: ""; position: absolute; right: -18px; width: 3px; height: 24px; background: var(--sc-clay); border-radius: 3px 0 0 3px; }
-.sc-nav .material-symbols-outlined { color: #aab2b0; font-size: 20px; }
-.sc-nav a.active .material-symbols-outlined { color: #f18a4f; }
+.sc-nav .material-icons { color: #aab2b0; font-size: 20px; }
+.sc-nav a.active .material-icons { color: #f18a4f; }
 .sc-live-card { margin-top: auto; padding: 16px; border: 1px solid #59605c; border-radius: 10px; background: rgba(255,255,255,.025); }
 .sc-live-card header { display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #3a4243; font: 500 12px/1.4 var(--sc-sans); }
 .sc-live-card dl { display: grid; gap: 12px; margin: 14px 0 0; }

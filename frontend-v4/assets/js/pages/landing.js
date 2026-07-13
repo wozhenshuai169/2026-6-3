@@ -25,12 +25,16 @@
       }
     }
 
-    // Already logged in
+    // Already logged in: validate the stored token before routing.
     if (state.isLoggedIn()) {
-      var role = state.get('role');
-      if (role === 'visitor') { router.go('user-portal'); return; }
-      if (role === 'tour_leader') { router.go('guide-panel'); return; }
-      if (role === 'admin') { router.go('knowledge-base'); return; }
+      auth.me().then(function(result) {
+        if (!result.ok) return;
+        var role = state.get('role');
+        if (role === 'visitor') { router.go('user-portal'); return; }
+        if (role === 'tour_leader') { router.go('guide-panel'); return; }
+        if (role === 'admin') { router.go('knowledge-base'); return; }
+      });
+      return;
     }
 
     // Cache DOM refs
@@ -119,6 +123,14 @@
     var code = (adminPasscode.value || '').trim();
     auth.login(A.config.ADMIN_USER_NAME, code).then(function(result){
       if (!result.ok) { if (adminError) adminError.classList.remove('hidden'); return; }
+      if (state.get('role') !== 'admin') {
+        if (adminError) {
+          adminError.textContent = '当前账号不是管理员';
+          adminError.classList.remove('hidden');
+        }
+        state.clear();
+        return;
+      }
       if (adminError) adminError.classList.add('hidden');
       ui.toast('验证通过，欢迎管理员！', 'success');
       router.go('knowledge-base');

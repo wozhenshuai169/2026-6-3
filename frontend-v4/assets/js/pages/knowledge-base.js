@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Knowledge Base — Document Management
  */
 (function () {
@@ -12,7 +12,7 @@
   var selectedFile = null;
 
   function init() {
-    A.auth.guard(function(){
+    A.auth.guardRole('admin', function(){
       bindEvents();
       fetchDocs();
     });
@@ -109,13 +109,13 @@
         '<td class="px-4 py-3 text-on-surface-variant text-xs">' + size + '</td>' +
         '<td class="px-4 py-3 text-on-surface-variant text-xs">' + date + '</td>' +
         '<td class="px-4 py-3">' + statusBadge + '</td>' +
-        '<td class="px-4 py-3 row-actions opacity-0 transition-opacity"><div class="flex gap-1"><button class="p-1.5 hover:bg-surface-container rounded text-on-surface-variant" title="编辑"><span class="material-symbols-outlined text-[16px]">edit</span></button><button class="p-1.5 hover:bg-error-container rounded text-error" title="删除"><span class="material-symbols-outlined text-[16px]">delete</span></button></div></td>' +
+        '<td class="px-4 py-3 row-actions opacity-0 transition-opacity"><div class="flex gap-1"><button class="p-1.5 hover:bg-surface-container rounded text-on-surface-variant" title="编辑"><span class="material-icons text-[16px]">edit</span></button><button class="p-1.5 hover:bg-error-container rounded text-error" title="删除"><span class="material-icons text-[16px]">delete</span></button></div></td>' +
         '</tr>';
     });
     tbody.innerHTML = html;
     // Wire edit/delete buttons
     tbody.querySelectorAll('.row-actions button').forEach(function(btn){
-      var icon = btn.querySelector('.material-icons, .material-symbols-outlined');
+      var icon = btn.querySelector('.material-icons');
       var action = icon ? icon.textContent.trim() : '';
       btn.addEventListener('click', function(e){
         e.stopPropagation();

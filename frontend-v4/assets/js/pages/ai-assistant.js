@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI Assistant — Private Chat with voice input
  */
 (function () {
@@ -13,7 +13,7 @@
   var chatContainer, chatInput, btnSend, btnMic, btnBack;
 
   function init() {
-    A.auth.guard(function(){
+    A.auth.guardRole('visitor', function(){
       roomId = state.get('roomId');
       userId = state.get('userId');
       if (!roomId || !userId) { ui.toast('请先加入房间', 'error'); return; }
@@ -138,7 +138,7 @@
         html += '<div class="text-center msg-animate"><span class="text-[12px] text-chat-text-muted bg-white/50 px-3 py-1 rounded-full border border-chat-border/50">' + ui.escapeHtml(m.text) + '</span></div>';
       } else if (m.role === 'ai') {
         html += '<div class="flex flex-col gap-1 items-start w-full msg-animate"><div class="bg-chat-bubble-gray rounded-r-xl rounded-bl-xl p-4 max-w-[80%] text-[15px] leading-[1.6]">' + ui.escapeHtml(m.text) + '</div>' +
-          (m.audioUrl ? '<button class="tts-play-btn text-[11px] text-brand-accent flex items-center gap-1 mt-1 hover:opacity-70" data-audio="' + ui.escapeHtml(m.audioUrl) + '"><span class="material-symbols-outlined text-[16px]">volume_up</span> 播放语音</button>' : '') + '</div>';
+          (m.audioUrl ? '<button class="tts-play-btn text-[11px] text-brand-accent flex items-center gap-1 mt-1 hover:opacity-70" data-audio="' + ui.escapeHtml(m.audioUrl) + '"><span class="material-icons text-[16px]">volume_up</span> 播放语音</button>' : '') + '</div>';
       } else if (m.role === 'user') {
         html += '<div class="flex flex-col gap-1 items-end w-full msg-animate"><div class="bg-white border border-chat-border rounded-l-xl rounded-tr-xl p-4 max-w-[65%] text-[15px] leading-[1.6]">' + ui.escapeHtml(m.text) + '</div></div>';
       } else if (m.role === 'help') {
@@ -211,12 +211,12 @@
     if (!btnMic) return;
     if (isRecording) {
       btnMic.style.background = '#FEE2E2';
-      btnMic.querySelector('.material-symbols-outlined').textContent = 'mic_off';
-      btnMic.querySelector('.material-symbols-outlined').style.color = '#EF4444';
+      btnMic.querySelector('.material-icons').textContent = 'mic_off';
+      btnMic.querySelector('.material-icons').style.color = '#EF4444';
     } else {
       btnMic.style.background = '';
-      btnMic.querySelector('.material-symbols-outlined').textContent = 'mic';
-      btnMic.querySelector('.material-symbols-outlined').style.color = '';
+      btnMic.querySelector('.material-icons').textContent = 'mic';
+      btnMic.querySelector('.material-icons').style.color = '';
     }
   }
 

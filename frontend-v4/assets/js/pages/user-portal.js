@@ -1,4 +1,4 @@
-/**
+﻿/**
  * User Portal V2 — Voice + TTS + Digital Human States + Spot Card
  */
 (function(){
@@ -8,7 +8,7 @@
   var roomId=state.get('roomId'),userId=state.get('userId');
   var roomPollTimer,avatarPollTimer,members=[],currentSpotId=null,messages=[];
   var isTextMode=false,isRecording=false,recognition=null,recTimer=null,recSec=0;
-  var lastAvatarStatus='idle',routeSpots=[],routeIndex=0;
+  var lastAvatarStatus='idle',routeSpots=[],routeIndex=0,roomRouteId=state.get('routeId');
   var roomRequestPending=false,avatarRequestPending=false;
 
   var els={};
@@ -88,7 +88,7 @@
   // === Room mode ===
   function startRoomMode(){
     stopRoomMode();
-    fetchRoomMembers();fetchAvatarState();loadRouteData();
+    fetchRoomMembers();fetchAvatarState();loadRouteData();fetchRoomMessages();
     roomPollTimer=setInterval(fetchRoomMembers,A.config.POLL_INTERVAL_ROOM);
     avatarPollTimer=setInterval(fetchAvatarState,A.config.POLL_INTERVAL_AVATAR);
   }
@@ -102,7 +102,10 @@
   function loadRouteData(){
     api.get('/routes').then(function(r){
       if(r.ok&&r.data&&r.data.routes&&r.data.routes.length){
-        routeSpots=r.data.routes[0].spotIds||[];
+        var route=null;
+        if(roomRouteId)route=r.data.routes.find(function(item){return item.routeId===roomRouteId;});
+        route=route||r.data.routes[0];
+        routeSpots=route.spotIds||[];
         updateRouteProgress();
       }
     });
@@ -151,8 +154,16 @@
         members=r.data.members||[];
         var prevSpot=currentSpotId;
         currentSpotId=r.data.currentSpot;
+        roomRouteId=r.data.routeId||roomRouteId;
+        if(roomRouteId)state.set('routeId',roomRouteId);
         renderMemberList();
         if(currentSpotId!==prevSpot){updateRouteProgress();fetchSpotInfo();}
+      }else if(r.error&&r.error.status===403){
+        stopRoomMode();
+        state.clearBusinessContext();
+        roomId=null;
+        showJoinOverlay();
+        ui.toast('无权限访问该房间，请重新加入','warning');
       }
     }).finally(function(){roomRequestPending=false;});
   }
@@ -170,6 +181,18 @@
       // Update spot chip
       if(currentSpotId&&els.spotChip){els.spotChip.classList.remove('hidden');els.spotChipName.textContent=currentSpotId;}
     }).finally(function(){avatarRequestPending=false;});
+  }
+
+  function fetchRoomMessages(){
+    if(!roomId)return;
+    api.get('/rooms/'+roomId+'/messages?limit=100').then(function(r){
+      if(!r.ok||!r.data||!Array.isArray(r.data.messages))return;
+      messages=r.data.messages.map(function(m){
+        var role=m.type==='ai'?'ai':(m.type==='broadcast'?'system':(m.userId===userId?'user':'ai'));
+        return{role:role,text:(m.type==='broadcast'?'【团长广播】':'')+m.content};
+      });
+      renderMessages();
+    });
   }
 
   function updateDigitalHumanState(status){
@@ -231,10 +254,10 @@
   function addMsg(role,text){messages.push({role:role,text:text});renderMessages();}
   function renderMessages(){
     if(!els.publicChatArea)return;
-    var h='<div id="narration-banner" class="bg-[#FDF6F1] border border-[#E07B3C]/15 rounded-lg p-3 text-xs leading-relaxed msg-in"><div class="flex items-center gap-1.5 text-brand-accent font-medium mb-1"><span class="material-symbols-outlined text-[14px]">volume_up</span> AI 正在讲解</div><p id="narration-text">'+(currentSpotId?'当前景点：'+ui.escapeHtml(currentSpotId):'等待 AI 开始讲解...')+'</p></div>';
+    var h='<div id="narration-banner" class="bg-[#FDF6F1] border border-[#E07B3C]/15 rounded-lg p-3 text-xs leading-relaxed msg-in"><div class="flex items-center gap-1.5 text-brand-accent font-medium mb-1"><span class="material-icons text-[14px]">volume_up</span> AI 正在讲解</div><p id="narration-text">'+(currentSpotId?'当前景点：'+ui.escapeHtml(currentSpotId):'等待 AI 开始讲解...')+'</p></div>';
     messages.forEach(function(m){
       if(m.role==='system')h+='<div class="text-center msg-in"><span class="text-[10px] text-[#A0A0A0] bg-[#F5F5F2] px-2 py-0.5 rounded-full">'+ui.escapeHtml(m.text)+'</span></div>';
-      else if(m.role==='decision')h+='<div class="msg-in"><div class="bg-[#FFF8F0] border border-[#E07B3C]/25 rounded-lg px-3 py-2 text-[10px] text-[#E07B3C] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">psychology</span>'+ui.escapeHtml(m.text)+'</div></div>';
+      else if(m.role==='decision')h+='<div class="msg-in"><div class="bg-[#FFF8F0] border border-[#E07B3C]/25 rounded-lg px-3 py-2 text-[10px] text-[#E07B3C] flex items-center gap-1.5"><span class="material-icons text-[14px]">psychology</span>'+ui.escapeHtml(m.text)+'</div></div>';
       else if(m.role==='status')h+='<div class="text-center msg-in"><span class="text-[10px] text-[#E07B3C] bg-[#FDF6F1] px-2 py-0.5 rounded-full flex items-center gap-1 mx-auto w-fit"><span class="w-1 h-1 rounded-full bg-[#E07B3C]"></span>'+ui.escapeHtml(m.text)+'</span></div>';
       else if(m.role==='user')h+='<div class="flex justify-end msg-in"><div class="max-w-[80%] bg-white border border-brand-border rounded-xl rounded-br-sm px-3 py-2 text-xs">'+ui.escapeHtml(m.text)+'</div></div>';
       else h+='<div class="flex msg-in"><div class="max-w-[85%] bg-[#F5F5F2] rounded-xl rounded-bl-sm px-3 py-2 text-xs border-l-2 border-brand-accent">'+ui.escapeHtml(m.text)+'</div></div>';
@@ -347,8 +370,8 @@
 
   function updateVoiceBtn(){
     if(!els.btnVoice)return;
-    if(isRecording){els.btnVoice.style.background='#FEE2E2';els.btnVoice.querySelector('.material-symbols-outlined').textContent='mic_off';els.btnVoice.querySelector('.material-symbols-outlined').style.color='#EF4444';}
-    else{els.btnVoice.style.background='';els.btnVoice.querySelector('.material-symbols-outlined').textContent='mic';els.btnVoice.querySelector('.material-symbols-outlined').style.color='';}
+    if(isRecording){els.btnVoice.style.background='#FEE2E2';els.btnVoice.querySelector('.material-icons').textContent='mic_off';els.btnVoice.querySelector('.material-icons').style.color='#EF4444';}
+    else{els.btnVoice.style.background='';els.btnVoice.querySelector('.material-icons').textContent='mic';els.btnVoice.querySelector('.material-icons').style.color='';}
   }
 
   // === Function menu ===
@@ -370,7 +393,7 @@
     if(type==='map'){
       api.get('/spots/'+(currentSpotId||'bell_tower')+'/nearby').then(function(r){
         var h='<p class="text-sm mb-3">附近景点</p>';
-        if(r.ok&&r.data&&r.data.nearby)r.data.nearby.forEach(function(s){h+='<div class="flex items-center gap-2 border rounded-lg p-3 mb-2"><span class="material-symbols-outlined text-brand-accent text-[18px]">location_on</span><span class="text-sm">'+ui.escapeHtml(s.spotName||s.spotId)+'</span></div>';});
+        if(r.ok&&r.data&&r.data.nearby)r.data.nearby.forEach(function(s){h+='<div class="flex items-center gap-2 border rounded-lg p-3 mb-2"><span class="material-icons text-brand-accent text-[18px]">location_on</span><span class="text-sm">'+ui.escapeHtml(s.spotName||s.spotId)+'</span></div>';});
         else h+='<p class="text-xs text-text-secondary">暂无</p>';
         showResult('附近景点',h);
       });

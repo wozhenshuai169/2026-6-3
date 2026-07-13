@@ -68,7 +68,7 @@ Aurelian.api = (function () {
                   ok: false,
                   error: {
                     status: res.status,
-                    message: (data && data.detail) || data || '请求失败',
+                    message: res.status === 403 ? '无权限访问该资源' : ((data && data.detail) || data || '请求失败'),
                     code: (data && data.errorCode) || ('HTTP_' + res.status)
                   }
                 });
@@ -78,7 +78,7 @@ Aurelian.api = (function () {
               if (res.ok) {
                 resolve({ ok: true, data: null });
               } else {
-                resolve({ ok: false, error: { status: res.status, message: '请求失败 (' + res.status + ')', code: 'HTTP_' + res.status } });
+                resolve({ ok: false, error: { status: res.status, message: res.status === 403 ? '无权限访问该资源' : ('请求失败 (' + res.status + ')'), code: 'HTTP_' + res.status } });
               }
             });
           })

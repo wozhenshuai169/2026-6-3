@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   'use strict';
 
   var path = window.location.pathname.replace(/\\/g, '/');
@@ -19,7 +19,7 @@
   }
 
   function icon(name) {
-    return '<span class="material-symbols-outlined" aria-hidden="true">' + name + '</span>';
+    return '<span class="material-icons" aria-hidden="true">' + name + '</span>';
   }
 
   function addSidebar(active) {

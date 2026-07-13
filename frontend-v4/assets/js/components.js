@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Aurelian Guide — Component Factories
  * Reusable DOM component generators. Returns HTML strings.
  */
@@ -23,7 +23,7 @@ Aurelian.components = (function () {
   /** Error state card */
   function errorCard(message, retryLabel) {
     return '<div class="flex flex-col items-center justify-center py-8 gap-3 text-center">' +
-      '<span class="material-symbols-outlined text-[40px] text-[#F87171]">error_outline</span>' +
+      '<span class="material-icons text-[40px] text-[#F87171]">error_outline</span>' +
       '<p class="text-sm text-[#6F6F6F]">' + esc(message) + '</p>' +
       (retryLabel ? '<button class="retry-btn px-4 py-2 border border-[#E8E8E6] rounded-lg text-sm hover:border-[#E07B3C] transition-colors">' + esc(retryLabel) + '</button>' : '') +
       '</div>';
@@ -32,7 +32,7 @@ Aurelian.components = (function () {
   /** Empty state */
   function emptyState(icon, message, actionText) {
     return '<div class="flex flex-col items-center justify-center py-8 gap-3 text-center">' +
-      '<span class="material-symbols-outlined text-[40px] text-[#A0A0A0]">' + (icon || 'inbox') + '</span>' +
+      '<span class="material-icons text-[40px] text-[#A0A0A0]">' + (icon || 'inbox') + '</span>' +
       '<p class="text-sm text-[#6F6F6F]">' + esc(message) + '</p>' +
       (actionText ? '<span class="text-xs text-[#A0A0A0]">' + esc(actionText) + '</span>' : '') +
       '</div>';

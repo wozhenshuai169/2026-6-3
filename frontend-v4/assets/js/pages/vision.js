@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Vision — Image Recognition Page V2
  */
 (function(){
@@ -7,7 +7,7 @@
   var roomId=st.get('roomId'),userId=st.get('userId');
 
   function init(){
-    A.auth.guard(function(){
+    A.auth.guardRole('visitor', function(){
       var uploadZone=document.getElementById('upload-zone');
       var fileInput=document.getElementById('file-input');
       var retryBtn=document.getElementById('retry-btn');
@@ -71,7 +71,7 @@
     if(related.length){
       document.getElementById('result-related').classList.remove('hidden');
       document.getElementById('related-list').innerHTML=related.map(function(s){
-        return '<div class="flex items-center gap-2 p-2 border border-border rounded-lg"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="text-sm">'+ui.escapeHtml(s.spotName||s.spotId)+'</span></div>';
+        return '<div class="flex items-center gap-2 p-2 border border-border rounded-lg"><span class="material-icons text-primary text-[18px]">location_on</span><span class="text-sm">'+ui.escapeHtml(s.spotName||s.spotId)+'</span></div>';
       }).join('');
     }else document.getElementById('result-related').classList.add('hidden');
     document.getElementById('result-area').classList.remove('hidden');

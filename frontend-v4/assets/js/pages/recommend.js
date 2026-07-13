@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Recommend — Route Recommendation Page
  */
 (function(){
@@ -7,7 +7,7 @@
   var preferences={interests:[],timeLimit:60,physicalStrength:'medium',elderly:false,children:false,avoidCrowd:false};
 
   function init(){
-    A.auth.guard(function(){
+    A.auth.guardRole('visitor', function(){
       // Tag toggle handlers
       bindTagGroup('interest-tags',function(active){
         preferences.interests=active;
@@ -82,7 +82,7 @@
     }).then(function(r){
       document.getElementById('loading-area').classList.add('hidden');
       btn.disabled=false;
-      btn.innerHTML='<span class="material-symbols-outlined text-[18px]">route</span> 生成推荐路线';
+      btn.innerHTML='<span class="material-icons text-[18px]">route</span> 生成推荐路线';
 
       if(r.ok&&r.data){
         showResult(r.data);
@@ -95,7 +95,7 @@
 
   function showResult(data){
     document.getElementById('result-route-name').textContent=data.routeName||'推荐路线';
-    document.getElementById('result-time').innerHTML='<span class="material-symbols-outlined text-[14px]">schedule</span> 约'+(data.estimatedTime||0)+'分钟';
+    document.getElementById('result-time').innerHTML='<span class="material-icons text-[14px]">schedule</span> 约'+(data.estimatedTime||0)+'分钟';
     document.getElementById('result-difficulty').textContent='难度：'+(data.difficulty||'medium');
     document.getElementById('result-score').textContent='★ '+(data.score||0).toFixed(1);
 
@@ -108,7 +108,7 @@
     }).join('');
 
     // Reason
-    document.getElementById('result-reason').innerHTML='<span class="material-symbols-outlined text-[16px] text-primary align-text-bottom mr-1">lightbulb</span> '+ui.escapeHtml(data.reason||'该路线根据你的偏好生成。');
+    document.getElementById('result-reason').innerHTML='<span class="material-icons text-[16px] text-primary align-text-bottom mr-1">lightbulb</span> '+ui.escapeHtml(data.reason||'该路线根据你的偏好生成。');
 
     // Matched
     var matched=data.matchedPreferences||[];

@@ -10,10 +10,12 @@
   var chartData = []; // { hour, publicCount, privateCount }
 
   function init() {
-    startClock();
-    fetchAllData();
-    refreshTimer = setInterval(fetchAllData, A.config.DASHBOARD_REFRESH_MS);
-    document.getElementById('btn-refresh').addEventListener('click', fetchAllData);
+    A.auth.guardRole('admin', function(){
+      startClock();
+      fetchAllData();
+      refreshTimer = setInterval(fetchAllData, A.config.DASHBOARD_REFRESH_MS);
+      document.getElementById('btn-refresh').addEventListener('click', fetchAllData);
+    });
   }
 
   function startClock() {

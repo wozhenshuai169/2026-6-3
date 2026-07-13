@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Aurelian Guide — UI Helpers
  * Toast notifications, loading/skeleton, error, empty states.
  */
@@ -34,7 +34,7 @@ Aurelian.ui = (function () {
 
     var el = document.createElement('div');
     el.style.cssText = 'display:flex;align-items:center;gap:8px;padding:12px 20px;background:' + c.bg + ';border-left:3px solid ' + c.border + ';color:' + c.text + ';border-radius:8px;font-size:14px;font-family:Inter,system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.1);pointer-events:auto;animation:slideUp 0.3s ease-out;';
-    el.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">' + c.icon + '</span><span>' + escapeHtml(message) + '</span>';
+    el.innerHTML = '<span class="material-icons" style="font-size:18px;">' + c.icon + '</span><span>' + escapeHtml(message) + '</span>';
 
     toastContainer().appendChild(el);
 
@@ -69,7 +69,7 @@ Aurelian.ui = (function () {
     if (!containerEl) return;
     containerEl.innerHTML =
       '<div class="flex flex-col items-center justify-center py-8 gap-3">' +
-      '<span class="material-symbols-outlined text-[40px] text-[#F87171]">error_outline</span>' +
+      '<span class="material-icons text-[40px] text-[#F87171]">error_outline</span>' +
       '<p class="text-sm text-[#6F6F6F] text-center">' + escapeHtml(message) + '</p>' +
       (retryFn ? '<button class="retry-btn px-4 py-2 border border-[#E8E8E6] rounded-lg text-sm text-[#1A1A1C] hover:border-[#E07B3C] transition-colors">重试</button>' : '') +
       '</div>';
@@ -85,7 +85,7 @@ Aurelian.ui = (function () {
     var ic = icon || 'inbox';
     containerEl.innerHTML =
       '<div class="flex flex-col items-center justify-center py-8 gap-3">' +
-      '<span class="material-symbols-outlined text-[40px] text-[#A0A0A0]">' + ic + '</span>' +
+      '<span class="material-icons text-[40px] text-[#A0A0A0]">' + ic + '</span>' +
       '<p class="text-sm text-[#6F6F6F] text-center">' + escapeHtml(message) + '</p>' +
       (actionLabel && actionFn ? '<button class="empty-action-btn px-4 py-2 bg-[#E07B3C] text-white rounded-lg text-sm hover:opacity-85 transition-opacity">' + escapeHtml(actionLabel) + '</button>' : '') +
       '</div>';

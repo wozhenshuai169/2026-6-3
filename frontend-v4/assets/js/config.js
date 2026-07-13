@@ -23,3 +23,31 @@ Aurelian.config = {
   MAX_RETRIES: 1,
   RETRY_DELAY_MS: 1000,
 };
+
+(function () {
+  'use strict';
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  function samePageHash(anchor) {
+    return anchor.pathname === window.location.pathname && anchor.hash;
+  }
+
+  function isInternalPage(anchor) {
+    return anchor.origin === window.location.origin && /\.html(?:$|[?#])/.test(anchor.href);
+  }
+
+  function navigateWithMotion(url) {
+    document.body.classList.add('is-leaving');
+    window.setTimeout(function () { window.location.href = url; }, 130);
+  }
+
+  window.Aurelian.navigateWithMotion = navigateWithMotion;
+
+  document.addEventListener('click', function (event) {
+    var anchor = event.target.closest && event.target.closest('a[href]');
+    if (!anchor || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (anchor.target || anchor.hasAttribute('download') || samePageHash(anchor) || !isInternalPage(anchor)) return;
+    event.preventDefault();
+    navigateWithMotion(anchor.href);
+  });
+})();

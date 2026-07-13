@@ -90,6 +90,12 @@ app.include_router(kb_router)
 app.include_router(dashboard_router)
 app.include_router(feedback_router)
 
+frontend_root = Path("frontend-v4")
+if frontend_root.exists():
+    app.mount("/assets", StaticFiles(directory=frontend_root / "assets"), name="frontend-assets")
+    app.mount("/pages", StaticFiles(directory=frontend_root / "pages", html=True), name="frontend-pages")
+    app.mount("/frontend-v4", StaticFiles(directory=frontend_root, html=True), name="frontend-v4")
+
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 

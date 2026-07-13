@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Aurelian Guide — Auth
  * Registration, login, guard, logout.
  * Guards show inline overlay instead of hard redirect.
@@ -12,16 +12,14 @@ Aurelian.auth = (function () {
   var st = Aurelian.state;
 
   /** Register a new user */
-  function register(userName, password) {
+  function register(userName, password, role) {
     return api.post('/auth/register', {
       userName: userName,
-      password: password
+      password: password,
+      role: apiRole(role || 'visitor')
     }).then(function (result) {
       if (result.ok && result.data) {
-        st.set('userId', result.data.userId);
-        st.set('userName', result.data.userName);
-        st.set('token', result.data.token);
-        st.save();
+        saveAuth(result.data);
       }
       return result;
     });
@@ -36,9 +34,22 @@ Aurelian.auth = (function () {
   }
 
   function saveAuth(data) {
+    var nextRole = uiRole(data.role);
+    var identityChanged = st.get('userId') && st.get('userId') !== data.userId;
+    var roleChanged = st.get('role') && st.get('role') !== nextRole;
+    if (identityChanged || roleChanged) st.clearBusinessContext();
     st.set('userId', data.userId);
     st.set('userName', data.userName);
     st.set('token', data.token);
+    st.set('role', nextRole);
+    if (data.expiresAt) st.set('expiresAt', data.expiresAt);
+    st.save();
+  }
+
+  function saveCurrentUser(data) {
+    if (!data) return;
+    st.set('userId', data.userId);
+    st.set('userName', data.userName);
     st.set('role', uiRole(data.role));
     st.save();
   }
@@ -57,6 +68,18 @@ Aurelian.auth = (function () {
     });
   }
 
+  function me() {
+    return api.get('/auth/me').then(function(result) {
+      if (result.ok && result.data) saveCurrentUser(result.data);
+      return result;
+    });
+  }
+
+  function sessionExpired() {
+    var expiresAt = Number(st.get('expiresAt') || 0);
+    return !!expiresAt && Date.now() >= expiresAt * 1000;
+  }
+
   /** Check if logged in. Returns true if ok. */
   function isLoggedIn() {
     return st.isLoggedIn();
@@ -68,7 +91,15 @@ Aurelian.auth = (function () {
       showAuthOverlay(onPass);
       return false;
     }
-    if (onPass) onPass();
+    if (sessionExpired()) {
+      st.clear();
+      showAuthOverlay(onPass);
+      return false;
+    }
+    me().then(function(result) {
+      if (result.ok && onPass) onPass();
+      else if (result.error && result.error.status !== 401) showAuthOverlay(onPass);
+    });
     return true;
   }
 
@@ -78,12 +109,23 @@ Aurelian.auth = (function () {
       showAuthOverlay(onPass);
       return false;
     }
-    var role = st.get('role');
-    if (apiRole(role) !== apiRole(requiredRole)) {
+    if (sessionExpired()) {
+      st.clear();
       showAuthOverlay(onPass, requiredRole);
       return false;
     }
-    if (onPass) onPass();
+    me().then(function(result) {
+      if (!result.ok) {
+        if (result.error && result.error.status !== 401) showAuthOverlay(onPass, requiredRole);
+        return;
+      }
+      var role = st.get('role');
+      if (apiRole(role) !== apiRole(requiredRole)) {
+        showAuthOverlay(onPass, requiredRole);
+        return;
+      }
+      if (onPass) onPass();
+    });
     return true;
   }
 
@@ -102,7 +144,7 @@ Aurelian.auth = (function () {
 
     overlay.innerHTML =
       '<div style="background:#fff;border:1px solid #E8E8E6;border-radius:16px;padding:32px;max-width:360px;width:90%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.08)">' +
-        '<span class="material-symbols-outlined" style="font-size:48px;color:#E07B3C;margin-bottom:12px;display:block">person_alert</span>' +
+        '<span class="material-icons" style="font-size:48px;color:#E07B3C;margin-bottom:12px;display:block">person_alert</span>' +
         '<h3 style="font-family:\'Noto Serif SC\',serif;font-size:18px;font-weight:500;color:#1A1A1C;margin:0 0 8px">需要登录</h3>' +
         '<p style="font-size:13px;color:#6F6F6F;margin:0 0 20px;line-height:1.5">' + hint + '</p>' +
         '<div style="display:flex;flex-direction:column;gap:8px">' +
@@ -148,6 +190,7 @@ Aurelian.auth = (function () {
     register: register,
     guest: guest,
     login: login,
+    me: me,
     guard: guard,
     guardRole: guardRole,
     logout: logout,

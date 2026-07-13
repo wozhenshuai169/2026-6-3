@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Guide Panel — Tour Leader Control Console
  */
 (function () {
@@ -143,6 +143,7 @@
       if (r.ok && r.data) {
         roomId = r.data.roomId;
         state.set('roomId', roomId);
+        state.set('routeId', selectedRouteId);
         closeRouteModal();
         ui.toast('房间创建成功！', 'success');
         updateRoomDisplay();
@@ -164,11 +165,15 @@
     // Room exists — resume or start
     if (isPaused) {
       isPaused = false;
-      if (els.btnPause) els.btnPause.innerHTML = '<span class="material-symbols-outlined">pause</span> 暂停讲解';
+      if (els.btnPause) els.btnPause.innerHTML = '<span class="material-icons">pause</span> 暂停讲解';
       ui.toast('讲解已继续', 'info');
     } else {
-      if (selectedSpotId) updateCurrentSpot(selectedSpotId);
-      ui.toast('讲解已开始', 'success');
+      var route = getSelectedRoute();
+      var startSpot = selectedSpotId || currentSpotId || (route && route.spotIds && route.spotIds[0]);
+      if (!startSpot) { ui.toast('请先选择路线景点', 'warning'); return; }
+      updateCurrentSpot(startSpot).then(function(ok) {
+        if (ok) ui.toast('讲解已开始', 'success');
+      });
     }
   }
 
@@ -184,12 +189,9 @@
 
   function handleCollect() {
     if (!roomId) { ui.toast('请先创建房间', 'warning'); return; }
-    // Broadcast collect reminder to the room
-    api.post('/ai/public-question', {
-      roomId: roomId,
-      userId: state.get('userId'),
-      question: '【集合提醒】请各位游客注意，即将在当前位置集合，跟随团长继续游览。',
-      needAudio: false
+    api.post('/rooms/' + roomId + '/messages', {
+      content: '【集合提醒】请各位游客注意，即将在当前位置集合，跟随团长继续游览。',
+      type: 'broadcast'
     }).then(function(r) {
       if (r.ok) ui.toast('集合提醒已发布给所有游客', 'success');
       else ui.toast('集合提醒发布失败', 'error');
@@ -201,21 +203,27 @@
     isPaused = !isPaused;
     if (els.btnPause) {
       els.btnPause.innerHTML = isPaused
-        ? '<span class="material-symbols-outlined">play_arrow</span> 继续讲解'
-        : '<span class="material-symbols-outlined">pause</span> 暂停讲解';
+        ? '<span class="material-icons">play_arrow</span> 继续讲解'
+        : '<span class="material-icons">pause</span> 暂停讲解';
     }
       api.patch('/rooms/' + roomId + '/status', { status: isPaused ? 'paused' : 'active' }).then(function(){});
     ui.toast(isPaused ? '讲解已暂停 · AI 将停止播报' : '讲解已继续 · AI 将恢复播报', 'info');
   }
 
   function updateCurrentSpot(spotId) {
-    if (!roomId) return;
-    api.post('/rooms/' + roomId + '/current-spot', { spotId: spotId }).then(function(r) {
+    if (!roomId) return Promise.resolve(false);
+    return api.post('/rooms/' + roomId + '/current-spot', { spotId: spotId }).then(function(r) {
       if (r.ok) {
+        selectedSpotId = spotId;
         currentSpotId = spotId;
+        state.set('currentSpotId', spotId);
+        if (els.spotSelectorLabel) els.spotSelectorLabel.textContent = spotId;
         updateRoomDisplay();
         ui.toast('已切换到: ' + spotId, 'success');
+        return true;
       }
+      ui.toast((r.error && r.error.message) || '景点更新失败', 'error');
+      return false;
     });
   }
 
@@ -370,7 +378,7 @@
       html += '<li class="flex items-center justify-between px-lg py-sm hover:bg-surface-container-low transition-colors">' +
         '<div class="flex items-center gap-md">' +
         '<div class="w-[32px] h-[32px] rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">' +
-        '<span class="material-symbols-outlined text-[16px]">person</span></div>' +
+        '<span class="material-icons text-[16px]">person</span></div>' +
         '<span class="text-[14px] text-on-surface font-medium font-label-sm">' + ui.escapeHtml(m.userName || '游客') + (isSelf ? ' <span class="text-xs text-on-surface-variant">(团长)</span>' : '') + '</span></div>';
       if (m.hasRequest) {
         html += '<div class="flex items-center gap-xs"><div class="w-1.5 h-1.5 rounded-full bg-secondary"></div><span class="text-[12px] text-secondary font-medium font-label-sm">有提问</span></div>';

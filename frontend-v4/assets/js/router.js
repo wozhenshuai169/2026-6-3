@@ -42,7 +42,9 @@ Aurelian.router = (function () {
       console.error('Unknown page:', page);
       return;
     }
-    window.location.href = base + target;
+    var url = base + target;
+    if (Aurelian.navigateWithMotion) Aurelian.navigateWithMotion(url);
+    else window.location.href = url;
   }
 
   /** Navigate back */

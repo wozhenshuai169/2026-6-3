@@ -9,7 +9,7 @@ Aurelian.state = (function () {
   'use strict';
 
   // Keys that get persisted to sessionStorage
-  var PERSIST_KEYS = ['userId', 'userName', 'token', 'role', 'roomId', 'currentSpotId', 'routeId'];
+  var PERSIST_KEYS = ['userId', 'userName', 'token', 'role', 'expiresAt', 'roomId', 'currentSpotId', 'routeId'];
   var _store = {};
 
   /** Save persistable keys to sessionStorage */
@@ -56,6 +56,11 @@ Aurelian.state = (function () {
     });
   }
 
+  /** Clear room state that belongs to a previous identity. */
+  function clearBusinessContext() {
+    ['roomId', 'currentSpotId', 'routeId'].forEach(remove);
+  }
+
   /** Whether user is logged in (has token) */
   function isLoggedIn() {
     return !!get('token');
@@ -69,6 +74,7 @@ Aurelian.state = (function () {
     set: set,
     remove: remove,
     clear: clear,
+    clearBusinessContext: clearBusinessContext,
     save: save,
     load: load,
     isLoggedIn: isLoggedIn
