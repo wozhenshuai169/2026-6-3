@@ -1,70 +1,47 @@
 # A5 智能导游系统
 
-## 主后端启动方式
+## 主后端启动
 
-前端只访问主后端 `/api/...`，不要直接访问算法服务。
+安装依赖并从示例配置创建本地 `.env`，然后以单 Worker 启动：
 
 ```bash
-uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+python -m pip install -r requirements.txt
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
 
-常用地址：
+本版本使用 SQLite 和进程内 WebSocket/限流状态，不支持多 Worker。开发时可以将最后一个参数替换为 `--reload`，不要同时使用 `--reload` 和 `--workers`。
 
-- API 服务：`http://127.0.0.1:8000`
-- Swagger 文档：`http://127.0.0.1:8000/docs`
+- 服务：`http://127.0.0.1:8000`
+- Swagger：`http://127.0.0.1:8000/docs`
 - OpenAPI：`http://127.0.0.1:8000/openapi.json`
-- 静态文件：`http://127.0.0.1:8000/uploads/`
+- 存活检查：`GET /health/live`
+- 就绪检查：`GET /health/ready`
 
-## 联调架构
+前端只调用主后端 `/api/...`。独立算法服务的 `/v1/...` 不属于 V4 前端契约。
 
-```text
-frontend-v2
-  -> /api/...
-app.main
-  -> app/services + providers
-  -> algorithm_service or model providers
-LLM / RAG / ASR / TTS / Vision / Route
+## 认证
+
+除注册、登录、访客会话和公开景点/路线外，HTTP 接口使用唯一长期认证方式：
+
+```http
+Authorization: Bearer <token>
 ```
 
-前端唯一入口：`/api/...`
+Token 不得放入业务 JSON、FormData 或 URL。WebSocket 连接前调用 `POST /api/auth/ws-ticket` 换取 60 秒一次性票据，再连接 `/ws/rooms/{roomId}?ticket=...`。
 
-算法服务内部调试入口：`/v1/...`
+## 数据与备份
 
-`/v1` 只保留给主后端内部调用或算法同学本地调试，不作为前端联调路径。
+默认数据库为 `data/app.db`。启动时自动执行版本迁移；检测到未版本化旧库时，会先通过 SQLite Backup API 生成 `data/backups/app-时间.db`。数据库、WAL、备份和上传文件均不提交 Git。
 
-## 主后端接口
+恢复时先停止后端，将当前数据库另行保存，再把选定备份复制为 `data/app.db` 后启动。不要在服务运行中直接覆盖数据库文件。
 
-- `POST /api/auth/register`
-- `POST /api/rooms`
-- `POST /api/rooms/{roomId}/join`
-- `GET /api/rooms/{roomId}`
-- `GET /api/rooms/{roomId}/avatar-state`
-- `POST /api/ai/public-question`
-- `POST /api/ai/public-voice-question`
-- `POST /api/audio/asr`
-- `POST /api/audio/tts`
-- `POST /api/vision/recognize`
-- `GET /api/spots/{spotId}`
-- `GET /api/spots/{spotId}/nearby`
-- `POST /api/recommend/route`
-- `GET /api/routes`
-- `GET /api/routes/{routeId}`
-- `POST /api/kb/upload`
-- `GET /api/kb/docs`
-- `POST /api/kb/rebuild`
-- `POST /api/kb/test-query`
-- `GET /api/dashboard/overview`
-- `GET /api/dashboard/hot-questions`
-- `GET /api/dashboard/hot-spots`
-- `GET /api/dashboard/satisfaction`
-- `GET /api/dashboard/system-metrics`
+详细接口见 [docs/API.md](docs/API.md)，认证说明见 [docs/BACKEND_AUTH_API_2026-07-12.md](docs/BACKEND_AUTH_API_2026-07-12.md)。
 
-## 算法服务内部调试
+## 验证
 
-算法服务可继续保留 `/v1` 前缀作为内部接口，例如 `/v1/orchestrate`、`/v1/vision/recognize`、`/v1/routes/recommend`。前端和产品联调文档不应使用这些路径。
+```bash
+python -m pytest -q
+python -m compileall -q app src
+```
 
-## 测试集覆盖度
-
-真实外部 API 验证使用 `test_data/real_model_validation/manifest.json` 和 `tools/run_real_model_validation.py`。
-
-测试集覆盖度建议见 [TEST_DATA_RECOMMENDATIONS.md](TEST_DATA_RECOMMENDATIONS.md)。
+真实模型数据集测试仅在配置相应 Provider 环境变量时执行。

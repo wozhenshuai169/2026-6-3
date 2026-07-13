@@ -135,9 +135,8 @@
   function confirmCreateRoom() {
     if (!selectedRouteId) return;
     if (els.routeConfirm) { els.routeConfirm.disabled = true; els.routeConfirm.innerHTML = '<span class="loading-spinner"></span>创建中...'; }
-    api.post('/rooms', {
-      token: state.get('token'),
-      roomName: state.get('userName') + '的导览团',
+      api.post('/rooms', {
+        roomName: state.get('userName') + '的导览团',
       scenicAreaId: 'huangshan',
       routeId: selectedRouteId
     }).then(function(r) {
@@ -205,10 +204,7 @@
         ? '<span class="material-symbols-outlined">play_arrow</span> 继续讲解'
         : '<span class="material-symbols-outlined">pause</span> 暂停讲解';
     }
-    // Attempt to update room status
-    if (isPaused) {
-      api.post('/rooms/' + roomId + '/current-spot', { spotId: currentSpotId || 'paused' }).then(function(){});
-    }
+      api.patch('/rooms/' + roomId + '/status', { status: isPaused ? 'paused' : 'active' }).then(function(){});
     ui.toast(isPaused ? '讲解已暂停 · AI 将停止播报' : '讲解已继续 · AI 将恢复播报', 'info');
   }
 

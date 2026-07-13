@@ -1,24 +1,10 @@
-"""Lightweight in-memory stats for demo dashboards."""
-
-from __future__ import annotations
-
+import json
 from collections import Counter, defaultdict
 from time import time
 from typing import Any
+from uuid import uuid4
 
-_events: list[dict[str, Any]] = []
-_latencies: defaultdict[str, list[float]] = defaultdict(list)
-_success: Counter[str] = Counter()
-_failure: Counter[str] = Counter()
-
-_DEFAULT_OVERVIEW = {
-    "todayVisitors": 36,
-    "activeRooms": 3,
-    "questionCount": 128,
-    "voiceQuestionCount": 42,
-    "visionRecognizeCount": 17,
-    "routeRecommendCount": 9,
-}
+from app.core.database import database
 
 
 def record_event(
@@ -27,95 +13,121 @@ def record_event(
     latency_ms: float = 0,
     payload: dict[str, Any] | None = None,
 ) -> None:
-    event = {
-        "eventType": event_type,
-        "success": success,
-        "latencyMs": round(float(latency_ms), 2),
-        "payload": payload or {},
-        "timestamp": time(),
-    }
-    _events.append(event)
-    _latencies[event_type].append(event["latencyMs"])
-    if success:
-        _success[event_type] += 1
-    else:
-        _failure[event_type] += 1
+    with database() as connection:
+        connection.execute(
+            """
+            INSERT INTO operation_events (
+                event_id, event_type, success, latency_ms, payload_json, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                uuid4().hex,
+                event_type,
+                1 if success else 0,
+                round(float(latency_ms), 2),
+                json.dumps(payload or {}, ensure_ascii=False),
+                int(time()),
+            ),
+        )
+
+
+def _events(event_types: set[str] | None = None) -> list[dict]:
+    query = "SELECT * FROM operation_events"
+    params: list[str] = []
+    if event_types:
+        placeholders = ",".join("?" for _ in event_types)
+        query += f" WHERE event_type IN ({placeholders})"
+        params.extend(sorted(event_types))
+    with database() as connection:
+        rows = connection.execute(query, params).fetchall()
+    return [
+        {
+            "eventType": row["event_type"],
+            "success": bool(row["success"]),
+            "latencyMs": row["latency_ms"],
+            "payload": json.loads(row["payload_json"]),
+            "timestamp": row["created_at"],
+        }
+        for row in rows
+    ]
 
 
 def get_overview(active_rooms: int = 0, visitor_count: int = 0) -> dict[str, Any]:
-    increments = {
+    with database() as connection:
+        counts = {
+            row["event_type"]: row["total"]
+            for row in connection.execute(
+                "SELECT event_type, COUNT(*) AS total FROM operation_events GROUP BY event_type"
+            )
+        }
+    return {
         "todayVisitors": visitor_count,
         "activeRooms": active_rooms,
-        "questionCount": _success["public_question"] + _failure["public_question"],
-        "voiceQuestionCount": _success["public_voice_question"] + _failure["public_voice_question"],
-        "visionRecognizeCount": _success["vision_recognize"] + _failure["vision_recognize"],
-        "routeRecommendCount": _success["route_recommend"] + _failure["route_recommend"],
+        "questionCount": counts.get("public_question", 0),
+        "voiceQuestionCount": counts.get("public_voice_question", 0),
+        "visionRecognizeCount": counts.get("vision_recognize", 0),
+        "routeRecommendCount": counts.get("route_recommend", 0),
     }
-    return {key: _DEFAULT_OVERVIEW[key] + value for key, value in increments.items()}
 
 
 def get_hot_questions() -> list[dict[str, Any]]:
     counter: Counter[str] = Counter()
-    for event in _events:
-        if event["eventType"] in {"public_question", "public_voice_question"}:
-            question = event["payload"].get("question") or event["payload"].get("asrText")
-            if question:
-                counter[str(question)] += 1
-    if not counter:
-        return [
-            {"question": "这个建筑是什么时候建的？", "count": 18},
-            {"question": "附近哪里可以休息？", "count": 12},
-            {"question": "推荐一条少走路的路线", "count": 9},
-        ]
+    for event in _events({"public_question", "public_voice_question"}):
+        question = event["payload"].get("question") or event["payload"].get("asrText")
+        if question:
+            counter[str(question)] += 1
     return [{"question": text, "count": count} for text, count in counter.most_common(10)]
 
 
 def get_hot_spots() -> list[dict[str, Any]]:
     counter: Counter[str] = Counter()
-    for event in _events:
+    for event in _events():
         spot = event["payload"].get("spotId") or event["payload"].get("currentSpot")
         if spot:
             counter[str(spot)] += 1
-    if not counter:
-        return [
-            {"spotId": "main_hall", "spotName": "主展厅", "count": 28},
-            {"spotId": "bell_tower", "spotName": "钟楼", "count": 19},
-            {"spotId": "courtyard", "spotName": "中心庭院", "count": 15},
-        ]
-    return [{"spotId": spot, "spotName": spot, "count": count} for spot, count in counter.most_common(10)]
+    return [
+        {"spotId": spot, "spotName": spot, "count": count}
+        for spot, count in counter.most_common(10)
+    ]
 
 
 def get_satisfaction() -> dict[str, Any]:
+    with database() as connection:
+        rows = connection.execute(
+            "SELECT score, COUNT(*) AS total FROM feedback GROUP BY score ORDER BY score"
+        ).fetchall()
+    total = sum(row["total"] for row in rows)
+    weighted = sum(row["score"] * row["total"] for row in rows)
     return {
-        "averageScore": 4.7,
-        "trend": [
-            {"time": "09:00", "score": 4.5},
-            {"time": "11:00", "score": 4.8},
-            {"time": "14:00", "score": 4.7},
-            {"time": "16:00", "score": 4.9},
-        ],
-        "emotion": {"friendly": 72, "neutral": 18, "thinking": 7, "surprised": 3},
+        "averageScore": round(weighted / total, 2) if total else 0.0,
+        "totalResponses": total,
+        "distribution": {str(row["score"]): row["total"] for row in rows},
+        "trend": [],
+        "emotion": {},
     }
 
 
 def get_system_metrics() -> dict[str, Any]:
-    total_success = sum(_success.values())
-    total_failure = sum(_failure.values())
-    total = total_success + total_failure
-    success_rate = round(total_success / total, 4) if total else 0.96
-    all_latencies = [item for values in _latencies.values() for item in values]
-    avg_latency = round(sum(all_latencies) / len(all_latencies), 2) if all_latencies else 820.0
+    events = _events()
+    grouped: defaultdict[str, list[dict]] = defaultdict(list)
+    for event in events:
+        grouped[event["eventType"]].append(event)
+    total = len(events)
+    success_total = sum(1 for event in events if event["success"])
+    latencies = [event["latencyMs"] for event in events]
     return {
-        "successRate": success_rate,
-        "averageLatencyMs": avg_latency,
-        "totalCalls": total or 216,
+        "successRate": round(success_total / total, 4) if total else 0.0,
+        "averageLatencyMs": round(sum(latencies) / len(latencies), 2) if latencies else 0.0,
+        "totalCalls": total,
         "byEndpoint": [
             {
                 "eventType": event_type,
-                "success": _success[event_type],
-                "failure": _failure[event_type],
-                "averageLatencyMs": round(sum(values) / len(values), 2) if values else 0,
+                "success": sum(1 for item in items if item["success"]),
+                "failure": sum(1 for item in items if not item["success"]),
+                "averageLatencyMs": round(
+                    sum(item["latencyMs"] for item in items) / len(items), 2
+                ),
             }
-            for event_type, values in sorted(_latencies.items())
+            for event_type, items in sorted(grouped.items())
         ],
     }

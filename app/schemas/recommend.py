@@ -3,8 +3,8 @@ from pydantic import BaseModel, Field
 
 class RoutePreferences(BaseModel):
     interest: list[str] = Field(default_factory=list)
-    timeLimit: int = 60
-    physicalStrength: str = "medium"
+    timeLimit: int = Field(default=60, ge=10, le=480)
+    physicalStrength: str = Field(default="medium", pattern="^(low|medium|high)$")
     withChildren: bool = False
     withElderly: bool = False
     avoidCrowd: bool = True

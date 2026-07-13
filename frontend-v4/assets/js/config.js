@@ -8,6 +8,7 @@ Aurelian.config = {
   // Backend API base URL (served from same origin via StaticFiles mount)
   API_BASE: '/api',
   UPLOADS_BASE: '/uploads',
+  ADMIN_USER_NAME: 'admin',
 
   // Polling intervals (milliseconds)
   POLL_INTERVAL_ROOM: 5000,       // Room status polling

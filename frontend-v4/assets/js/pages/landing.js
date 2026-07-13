@@ -10,20 +10,19 @@
   var modal, dialog, modalTitle, modalClose, modalName, modalError, modalSubmit;
   var adminModal, adminClose, adminPasscode, adminError, adminSubmit;
   var chosenRole = null;
-  var ADMIN_PASSCODE = 'admin123';
+  var demoAdmin = false;
 
   function init() {
     // Demo mode
     if (new URLSearchParams(location.search).get('demo') === '1') {
       var demoRole = new URLSearchParams(location.search).get('role') || 'tour_leader';
-      state.set('token','demo-token-'+Date.now());
-      state.set('userId','demo-'+demoRole);
-      state.set('userName',demoRole==='admin'?'管理员Demo':(demoRole==='visitor'?'游客Demo':'团长Demo'));
-      state.set('role',demoRole);
-      state.save();
-      if (demoRole==='admin') router.go('knowledge-base');
-      else router.go(demoRole==='visitor'?'user-portal':'guide-panel');
-      return;
+      if (demoRole === 'admin') demoAdmin = true;
+      else {
+        auth.guest(demoRole==='visitor'?'游客Demo':'团长Demo', demoRole).then(function(result){
+          if (result.ok) router.go(demoRole==='visitor'?'user-portal':'guide-panel');
+        });
+        return;
+      }
     }
 
     // Already logged in
@@ -64,6 +63,7 @@
     if (adminModal) adminModal.addEventListener('click', function (e) { if (e.target === adminModal) closeAdminModal(); });
     if (adminSubmit) adminSubmit.addEventListener('click', handleAdminAuth);
     if (adminPasscode) adminPasscode.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleAdminAuth(); });
+    if (demoAdmin) openAdminModal();
   }
 
   function openModal(role) {
@@ -91,12 +91,8 @@
     if (modalError) modalError.classList.add('hidden');
     if (modalSubmit) { modalSubmit.disabled = true; modalSubmit.textContent = '注册中...'; }
 
-    var password = 'guide_' + Date.now();
-
-    auth.register(name, password).then(function (result) {
+    auth.guest(name, chosenRole).then(function (result) {
       if (result.ok) {
-        state.set('role', chosenRole);
-        state.save();
         ui.toast('注册成功，欢迎！', 'success');
         if (chosenRole === 'visitor') router.go('user-portal');
         else router.go('guide-panel');
@@ -121,19 +117,12 @@
 
   function handleAdminAuth() {
     var code = (adminPasscode.value || '').trim();
-    if (code !== ADMIN_PASSCODE) {
-      if (adminError) adminError.classList.remove('hidden');
-      return;
-    }
-    if (adminError) adminError.classList.add('hidden');
-    // Set admin session
-    state.set('token', 'admin-' + Date.now());
-    state.set('userId', 'admin');
-    state.set('userName', '管理员');
-    state.set('role', 'admin');
-    state.save();
-    ui.toast('验证通过，欢迎管理员！', 'success');
-    router.go('knowledge-base');
+    auth.login(A.config.ADMIN_USER_NAME, code).then(function(result){
+      if (!result.ok) { if (adminError) adminError.classList.remove('hidden'); return; }
+      if (adminError) adminError.classList.add('hidden');
+      ui.toast('验证通过，欢迎管理员！', 'success');
+      router.go('knowledge-base');
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

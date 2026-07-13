@@ -78,7 +78,7 @@
     if(!code){showJoinError('请输入房间号');return;}
     els.roomJoinBtn.disabled=true;els.roomJoinBtn.textContent='加入中...';
     els.roomJoinError.classList.add('hidden');
-    api.post('/rooms/'+code+'/join',{token:state.get('token')}).then(function(r){
+    api.post('/rooms/'+code+'/join',{}).then(function(r){
       if(r.ok){roomId=code;state.set('roomId',roomId);hideJoinOverlay();ui.toast('加入成功！','success');startRoomMode();addMsg('system','你已加入导览房间');}
       else{var msg=(r.error&&r.error.message)||'加入失败';if(r.error&&r.error.status===404)msg='房间不存在';showJoinError(msg);els.roomJoinBtn.disabled=false;els.roomJoinBtn.textContent='加入房间';}
     });

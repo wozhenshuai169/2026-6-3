@@ -39,6 +39,7 @@ async def recognize_image(room_id: str, user_id: str, image_url: str, current_sp
                 "relatedSpots": [],
                 "visualFeatures": [],
                 "category": "unknown",
+                "providerError": True,
             }
 
     description = result.description or "No useful visual information was recognized. Please try another angle."
@@ -52,4 +53,5 @@ async def recognize_image(room_id: str, user_id: str, image_url: str, current_sp
         "relatedSpots": result.related_spots,
         "visualFeatures": result.visual_features,
         "category": result.category,
+        "warning": None if settings.vision_enabled else "Mock vision mode is active.",
     }

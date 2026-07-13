@@ -49,24 +49,11 @@ class MockVisionProvider(VisionProvider):
                     category="spot",
                 )
 
-        # 未匹配 → 回退到钟楼
-        for spot in self._spots:
-            if spot["spotId"] == "bell_tower":
-                return VisionResult(
-                    spot_id=spot["spotId"],
-                    spot_name=spot["spotName"],
-                    confidence=0.28,
-                    description="我还不能可靠确认图片里的对象。可以结合当前位置先看这些候选信息，也请补充拍摄角度或文字描述。",
-                    related_spots=[{"spotId": s, "spotName": s} for s in spot.get("relatedSpots", [])],
-                    visual_features=[],
-                    category="unknown",
-                )
-
-        # 图库为空时的兜底
+        # 未匹配时必须明确返回 unknown，不能伪造一个景点候选。
         return VisionResult(
-            spot_id="unknown",
+            spot_id="",
             spot_name="未知",
-            confidence=0.28,
+            confidence=0.0,
             description="我还不能可靠确认图片里的对象，请补充拍摄角度或文字描述。",
             related_spots=[],
             visual_features=[],

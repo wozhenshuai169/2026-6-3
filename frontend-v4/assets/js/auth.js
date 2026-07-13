@@ -27,6 +27,36 @@ Aurelian.auth = (function () {
     });
   }
 
+  function uiRole(apiRole) {
+    return apiRole === 'guide' ? 'tour_leader' : (apiRole === 'tourist' ? 'visitor' : apiRole);
+  }
+
+  function apiRole(role) {
+    return role === 'tour_leader' ? 'guide' : (role === 'visitor' ? 'tourist' : role);
+  }
+
+  function saveAuth(data) {
+    st.set('userId', data.userId);
+    st.set('userName', data.userName);
+    st.set('token', data.token);
+    st.set('role', uiRole(data.role));
+    st.save();
+  }
+
+  function guest(displayName, role) {
+    return api.post('/auth/guest', { displayName: displayName, role: apiRole(role) }).then(function(result) {
+      if (result.ok && result.data) saveAuth(result.data);
+      return result;
+    });
+  }
+
+  function login(userName, password) {
+    return api.post('/auth/login', { userName: userName, password: password }).then(function(result) {
+      if (result.ok && result.data) saveAuth(result.data);
+      return result;
+    });
+  }
+
   /** Check if logged in. Returns true if ok. */
   function isLoggedIn() {
     return st.isLoggedIn();
@@ -49,7 +79,7 @@ Aurelian.auth = (function () {
       return false;
     }
     var role = st.get('role');
-    if (role !== requiredRole) {
+    if (apiRole(role) !== apiRole(requiredRole)) {
       showAuthOverlay(onPass, requiredRole);
       return false;
     }
@@ -93,14 +123,13 @@ Aurelian.auth = (function () {
     var btnV = document.getElementById('auth-demo-visitor');
 
     function setupDemo(role) {
-      st.set('token', 'demo-' + Date.now());
-      st.set('userId', 'demo-' + role);
-      st.set('userName', role === 'visitor' ? '游客Demo' : '团长Demo');
-      st.set('role', role);
-      st.save();
-      overlay.remove();
-      if (onPass) onPass();
-      else window.location.reload();
+      var name = role === 'visitor' ? '游客Demo' : '团长Demo';
+      guest(name, role).then(function(result) {
+        if (!result.ok) return;
+        overlay.remove();
+        if (onPass) onPass();
+        else window.location.reload();
+      });
     }
 
     if (btnL) btnL.addEventListener('click', function(){ setupDemo('tour_leader'); });
@@ -109,12 +138,16 @@ Aurelian.auth = (function () {
 
   /** Logout */
   function logout() {
-    st.clear();
-    window.location.href = '../../pages/landing/index.html';
+    api.post('/auth/logout', {}).then(function() {
+      st.clear();
+      window.location.href = '../../pages/landing/index.html';
+    });
   }
 
   return {
     register: register,
+    guest: guest,
+    login: login,
     guard: guard,
     guardRole: guardRole,
     logout: logout,

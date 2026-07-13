@@ -16,16 +16,6 @@ Aurelian.api = (function () {
     return cfg.API_BASE + endpoint;
   }
 
-  /** Inject token into body if user is logged in and body is an object */
-  function injectToken(body) {
-    if (state.isLoggedIn() && body && typeof body === 'object' && !Array.isArray(body)) {
-      if (!body.token) {
-        body.token = state.get('token');
-      }
-    }
-    return body;
-  }
-
   /** Generic fetch with timeout, retry, and error mapping */
   function request(method, endpoint, body, isFormData) {
     var attempts = 0;
@@ -41,6 +31,9 @@ Aurelian.api = (function () {
           signal: controller.signal,
           headers: {}
         };
+        if (state.isLoggedIn()) {
+          opts.headers.Authorization = 'Bearer ' + state.get('token');
+        }
 
         if (body) {
           if (isFormData) {
@@ -76,7 +69,7 @@ Aurelian.api = (function () {
                   error: {
                     status: res.status,
                     message: (data && data.detail) || data || '请求失败',
-                    code: 'HTTP_' + res.status
+                    code: (data && data.errorCode) || ('HTTP_' + res.status)
                   }
                 });
               }
@@ -120,21 +113,27 @@ Aurelian.api = (function () {
 
   /** POST request with JSON body */
   function post(endpoint, body) {
-    return request('POST', endpoint, injectToken(body || {}), false);
+    return request('POST', endpoint, body || {}, false);
+  }
+
+  function patch(endpoint, body) {
+    return request('PATCH', endpoint, body || {}, false);
+  }
+
+  function remove(endpoint) {
+    return request('DELETE', endpoint, null, false);
   }
 
   /** POST request with FormData (file upload) */
   function upload(endpoint, formData) {
-    // Inject token into FormData
-    if (state.isLoggedIn()) {
-      formData.append('token', state.get('token'));
-    }
     return request('POST', endpoint, formData, true);
   }
 
   return {
     get: get,
     post: post,
+    patch: patch,
+    delete: remove,
     upload: upload,
     url: url
   };

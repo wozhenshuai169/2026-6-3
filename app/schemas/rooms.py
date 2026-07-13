@@ -1,11 +1,13 @@
-from pydantic import BaseModel
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CreateRoomRequest(BaseModel):
-    token: str | None = None
-    roomName: str
-    scenicAreaId: str
-    routeId: str
+    model_config = ConfigDict(extra="forbid")
+    roomName: str = Field(min_length=1, max_length=100)
+    scenicAreaId: str = Field(min_length=1, max_length=100)
+    routeId: str = Field(min_length=1, max_length=100)
 
 
 class CreateRoomResponse(BaseModel):
@@ -14,7 +16,8 @@ class CreateRoomResponse(BaseModel):
 
 
 class JoinRoomRequest(BaseModel):
-    token: str | None = None
+    model_config = ConfigDict(extra="forbid")
+    pass
 
 
 class JoinRoomResponse(BaseModel):
@@ -40,10 +43,29 @@ class RoomStatusResponse(BaseModel):
 
 
 class UpdateSpotRequest(BaseModel):
-    spotId: str
+    spotId: str = Field(min_length=1, max_length=100)
 
 
 class UpdateSpotResponse(BaseModel):
     roomId: str
     currentSpot: str
+    status: str
+
+
+class UpdateRoomStatusRequest(BaseModel):
+    status: Literal["active", "paused", "ended"]
+
+
+class UpdateRoomStatusResponse(BaseModel):
+    roomId: str
+    status: str
+
+
+class TransferLeaderRequest(BaseModel):
+    userId: str
+
+
+class MemberActionResponse(BaseModel):
+    roomId: str
+    userId: str
     status: str

@@ -11,7 +11,7 @@ class AvatarStateSchema(BaseModel):
 class PublicQuestionRequest(BaseModel):
     roomId: str
     userId: str
-    question: str
+    question: str = Field(min_length=1, max_length=2000)
     needAudio: bool = True
 
 
@@ -33,8 +33,8 @@ class SourceSchema(BaseModel):
 class VoiceQuestionRequest(BaseModel):
     roomId: str
     userId: str
-    channel: str = "public"
-    audioUrl: str
+    channel: str = Field(default="public", pattern="^(public|private)$")
+    audioUrl: str = Field(min_length=1, max_length=14_000_000)
     audioFormat: str | None = None  # "wav" | "mp3"
     textHint: str | None = None     # 辅助识别文本
 

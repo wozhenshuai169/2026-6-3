@@ -51,9 +51,16 @@ class Settings(BaseSettings):
 
     # Authentication and browser access
     session_ttl_seconds: int = 24 * 60 * 60
-    admin_user_name: str = ""
+    admin_user_name: str = "admin"
     admin_password: str = ""
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    database_path: str = "data/app.db"
+    max_request_bytes: int = 25 * 1024 * 1024
+    max_audio_upload_bytes: int = 12 * 1024 * 1024
+    max_vision_bytes: int = 10 * 1024 * 1024
+    ws_ticket_ttl_seconds: int = 60
+    guest_ttl_seconds: int = 12 * 60 * 60
+    rate_limit_enabled: bool = True
 
     @property
     def allowed_cors_origins(self) -> list[str]:
@@ -75,6 +82,10 @@ class Settings(BaseSettings):
             and bool(self.vision_model)
             and self.enable_vision
         )
+
+    @property
+    def audio_provider_enabled(self) -> bool:
+        return bool(self.vision_api_key) or self.isi_enabled
 
     @property
     def isi_enabled(self) -> bool:

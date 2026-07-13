@@ -4,16 +4,17 @@ import logging
 from time import perf_counter
 
 from app.core.config import settings
+from app.core.errors import AppError
 from app.core.logging import Timer
 from app.providers.factory import get_llm
 from app.services.audio import asr_transcribe, tts_synthesize
+from app.services.knowledge import search_knowledge
 from app.services.rooms import get_room
 from app.services.stats import record_event
 
 logger = logging.getLogger(__name__)
 
 TTS_WARNING = "TTS failed, text answer returned only."
-DEFAULT_SOURCES = [{"title": "主展厅历史资料", "chunkId": "chunk_001"}]
 PRIVATE_KEYWORDS = [
     "厕所",
     "洗手间",
@@ -45,6 +46,11 @@ def _tts_failed(result: dict) -> bool:
     return not result.get("success", True) or not result.get("audioUrl")
 
 
+def _join_warnings(*values: str | None) -> str | None:
+    warnings = [value for value in values if value]
+    return "; ".join(warnings) if warnings else None
+
+
 async def _answer_with_llm(room_id: str, question: str) -> dict | None:
     room = get_room(room_id)
     if room is None:
@@ -56,10 +62,16 @@ async def _answer_with_llm(room_id: str, question: str) -> dict | None:
     if not clean_question:
         return {"roomId": room_id, "answer": "您好，请问有什么可以帮您的？", "source": "fallback"}
 
+    knowledge = search_knowledge(clean_question, 3)
+    context_text = "\n\n".join(
+        f"[{item['title']}] {item['contentPreview']}" for item in knowledge
+    )
+
     system_prompt = (
         "你是一个专业的景区AI导游，名叫小导。请用友好、亲切的中文回答。"
         "如果问题与景区无关，请礼貌引导游客关注景区相关内容。"
-        f"当前游客所在景点：{spot or '景区入口'}。"
+        f"当前游客所在景点：{spot or '景区入口'}。\n"
+        f"知识库上下文：\n{context_text or '未检索到直接相关资料，请明确说明不确定性。'}"
     )
 
     llm = get_llm()
@@ -75,18 +87,19 @@ async def _answer_with_llm(room_id: str, question: str) -> dict | None:
             )
         except Exception as e:
             logger.error("LLM question failed: %s", e)
-            return {
-                "roomId": room_id,
-                "answer": "抱歉，我暂时无法回答您的问题，请稍后再试。",
-                "source": "error_fallback",
-                "error": str(e),
-            }
+            raise AppError(503, "LLM_UNAVAILABLE", "LLM provider is unavailable") from e
 
     answer = (response.content or "").strip()
     if not answer:
         answer = "这是一个很好的问题，不过我需要更多信息来准确回答，您可以换个方式描述吗？"
 
-    return {"roomId": room_id, "answer": answer, "source": "llm"}
+    return {
+        "roomId": room_id,
+        "answer": answer,
+        "source": "llm",
+        "sources": [{"title": item["title"], "chunkId": item["chunkId"]} for item in knowledge],
+        "warning": None if settings.llm_enabled else "Mock LLM mode is active.",
+    }
 
 
 async def public_question(room_id: str, question: str, need_audio: bool = True) -> dict | None:
@@ -105,14 +118,15 @@ async def public_question(room_id: str, question: str, need_audio: bool = True) 
         answer = qa_result["answer"]
         audio_url = None
         duration = 0.0
-        warning = None
+        warning = qa_result.get("warning")
         avatar_state = _avatar_state("idle", mouth_open=False)
 
         if need_audio:
             tts = await tts_synthesize(answer, room_id=room_id)
             if _tts_failed(tts):
-                warning = TTS_WARNING
+                warning = _join_warnings(warning, TTS_WARNING)
             else:
+                warning = _join_warnings(warning, tts.get("warning"))
                 audio_url = tts.get("audioUrl")
                 duration = float(tts.get("duration", 0.0) or 0.0)
                 avatar_state = _avatar_state("speaking", mouth_open=True)
@@ -122,7 +136,7 @@ async def public_question(room_id: str, question: str, need_audio: bool = True) 
             "answer": answer,
             "audioUrl": audio_url,
             "duration": duration,
-            "sources": DEFAULT_SOURCES,
+            "sources": qa_result.get("sources", []),
             "avatarState": avatar_state,
             "warning": warning,
         }
@@ -181,7 +195,7 @@ async def public_voice_question(
     text_hint: str | None = None,
 ) -> dict | None:
     started = perf_counter()
-    warning = None
+    warning = None if settings.audio_provider_enabled else "Mock audio mode is active."
     try:
         if not settings.enable_asr:
             result = {
@@ -271,13 +285,16 @@ async def public_voice_question(
             return None
 
         answer = qa_result["answer"]
+        if qa_result.get("warning"):
+            warning = _join_warnings(warning, qa_result["warning"])
         answer_audio_url = None
         answer_duration = 0.0
         avatar_state = _avatar_state("idle", mouth_open=False)
         answer_tts = await tts_synthesize(answer, room_id=room_id)
         if _tts_failed(answer_tts):
-            warning = TTS_WARNING
+            warning = _join_warnings(warning, TTS_WARNING)
         else:
+            warning = _join_warnings(warning, answer_tts.get("warning"))
             answer_audio_url = answer_tts.get("audioUrl")
             answer_duration = float(answer_tts.get("duration", 0.0) or 0.0)
             avatar_state = _avatar_state("speaking", mouth_open=True)
@@ -300,7 +317,7 @@ async def public_voice_question(
             "resumeText": resume_text,
             "resumeAudioUrl": resume_audio_url,
             "resumeDuration": resume_duration,
-            "sources": DEFAULT_SOURCES,
+            "sources": qa_result.get("sources", []),
             "avatarState": avatar_state,
             "warning": warning,
             "events": events,

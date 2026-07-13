@@ -104,19 +104,11 @@ class QwenVLVisionProvider(VisionProvider):
                     category="unknown",
                 )
             logger.error("[Qwen-VL] API error: %s — %s", e, resp_body[:300])
-            # 其他HTTP错误降级到 Mock
-            from app.providers.vision.mock import MockVisionProvider
-            logger.warning("[Qwen-VL] Falling back to Mock vision")
-            mock = MockVisionProvider()
-            return await mock.recognize(image_url, hint=hint)
+            raise RuntimeError("Vision provider request failed") from e
 
         except (httpx.HTTPError, json.JSONDecodeError, KeyError) as e:
             logger.error("[Qwen-VL] API error: %s", e)
-            # 降级到 Mock
-            from app.providers.vision.mock import MockVisionProvider
-            logger.warning("[Qwen-VL] Falling back to Mock vision")
-            mock = MockVisionProvider()
-            return await mock.recognize(image_url, hint=hint)
+            raise RuntimeError("Vision provider response is invalid") from e
 
     def _parse_response(self, content: str, hint: str = "") -> VisionResult:
         """解析 Qwen-VL 返回的 JSON 或文本。"""

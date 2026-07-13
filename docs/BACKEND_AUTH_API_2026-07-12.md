@@ -1,51 +1,30 @@
-# Backend authentication API changes
+# 后端认证与授权
 
-## Authentication
+## Bearer 认证
 
-Protected endpoints require the Authorization header with value Bearer <token>.
+受保护 HTTP 接口只接受 `Authorization: Bearer <token>`。Body、FormData 和 Query 中的长期 Token 均不兼容。Token 默认有效期由 `SESSION_TTL_SECONDS` 控制，退出登录会立即撤销当前会话；数据库只保存 Token 的 SHA-256 摘要。
 
-Tokens expire after SESSION_TTL_SECONDS seconds. The default is 24 hours.
-POST /api/auth/logout invalidates the current token immediately.
+账号密码使用带随机盐的 PBKDF2-SHA256 存储。公开注册只允许 `tourist` 和 `guide`，不能注册管理员。
 
-### Register
+## 认证端点
 
-POST /api/auth/register accepts userName, password, and role.
-Public registration accepts tourist and guide. It never accepts admin.
-The response contains userId, userName, role, token, and expiresAt.
+- `POST /api/auth/register`：真实账号注册。
+- `POST /api/auth/login`：真实账号登录，包括管理员。
+- `POST /api/auth/guest`：创建限时游客或团长体验会话。
+- `GET /api/auth/me`：读取当前用户。
+- `POST /api/auth/logout`：撤销当前 Bearer 会话。
+- `POST /api/auth/ws-ticket`：房间成员换取 60 秒一次性 WebSocket 票据。
 
-### Login and current user
+## 角色规则
 
-- POST /api/auth/login accepts userName and password.
-- GET /api/auth/me returns the authenticated user.
-- POST /api/auth/logout revokes the current token.
+- `tourist`：加入房间、提问、发普通消息、提交反馈。
+- `guide`：可创建房间；房主可管理成员、景点和房间状态。
+- `admin`：访问知识库和运营看板；账号只通过环境变量首次引导创建。
 
-Passwords are stored as salted PBKDF2-SHA256 hashes, never as plaintext.
+设置 `ADMIN_USER_NAME` 和 `ADMIN_PASSWORD` 后首次启动，管理员即可通过 `/api/auth/login` 登录。生产或终验环境必须修改 `.env.example` 中的示例密码。
 
-## Authorization rules
+## WebSocket
 
-- Only guide or admin can create a room.
-- The room creator is automatically the leader and the first member.
-- A user must join a room before reading its state or using its AI features.
-- Only the room leader can update the current spot.
-- Request userId must match the authenticated user; administrators may act across users.
-- Dashboard and knowledge-base endpoints require the admin role.
-- Spot and route catalog endpoints remain public.
-
-For compatibility, create-room and join-room still accept token in the JSON body.
-New clients should use the Bearer header.
-
-## Administrator bootstrap
-
-Set ADMIN_USER_NAME and ADMIN_PASSWORD before the backend starts.
-The administrator can then sign in through POST /api/auth/login.
-
-Optional configuration:
-
-- SESSION_TTL_SECONDS=86400
-- CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-
-## Frontend integration impact
-
-The frontend API client must attach the Bearer header to every protected GET and POST request.
-Registration must send the selected tourist or guide role. Admin pages require a user
-created from the server-side bootstrap configuration.
+1. 使用 Bearer 调用 `POST /api/auth/ws-ticket`，Body 为 `{"roomId":"..."}`。
+2. 使用响应中的票据连接 `/ws/rooms/{roomId}?ticket=<one-time-ticket>`。
+3. 票据只可消费一次，超时或复用均以 WebSocket 4401 拒绝。

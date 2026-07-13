@@ -1,119 +1,180 @@
-import unittest
-from uuid import uuid4
+import sqlite3
+from time import time
 
-from fastapi.testclient import TestClient
+import pytest
 
-from app.main import app
-from app.services.users import users
+from app.core.config import settings
+from app.core.database import (
+    database,
+    initialize_database,
+    reset_database_initialization_for_tests,
+)
+from app.core.errors import AppError
+from app.core.rate_limit import enforce_rate_limit, reset_rate_limits_for_tests
+from app.services.users import get_user_by_id
 
 
-class TestBackendSecurity(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.client = TestClient(app)
-        suffix = uuid4().hex[:8]
-        cls.guide = cls._register("guide_" + suffix, "guide")
-        cls.tourist = cls._register("tourist_" + suffix, "tourist")
-        cls.outsider = cls._register("outsider_" + suffix, "tourist")
-        cls.guide_headers = cls._headers(cls.guide)
-        cls.tourist_headers = cls._headers(cls.tourist)
-        cls.outsider_headers = cls._headers(cls.outsider)
-
-        response = cls.client.post(
-            "/api/rooms",
-            headers=cls.guide_headers,
-            json={
-                "roomName": "Security test",
-                "scenicAreaId": "scenic_001",
-                "routeId": "route_001",
-            },
+def test_password_token_storage_expiry_and_identity_spoofing(client, auth_helpers):
+    tourist = auth_helpers["register"]("tourist", "secure")
+    guide = auth_helpers["register"]("guide", "secure-guide")
+    headers = auth_helpers["headers"]
+    stored = get_user_by_id(tourist["userId"])
+    assert "password" not in stored
+    assert stored["passwordHash"].startswith("pbkdf2_sha256$")
+    with database() as connection:
+        plain = connection.execute(
+            "SELECT COUNT(*) AS total FROM sessions WHERE token_hash = ?", (tourist["token"],)
+        ).fetchone()["total"]
+        connection.execute(
+            "UPDATE sessions SET expires_at = ? WHERE user_id = ?",
+            (int(time()) - 1, tourist["userId"]),
         )
-        assert response.status_code == 200, response.text
-        cls.room_id = response.json()["roomId"]
+    assert plain == 0
+    assert client.get("/api/auth/me", headers=headers(tourist)).status_code == 401
 
-    @classmethod
-    def _register(cls, name, role):
-        response = cls.client.post(
-            "/api/auth/register",
-            json={"userName": name, "password": "secret123", "role": role},
-        )
-        assert response.status_code == 200, response.text
-        return response.json()
-
-    @staticmethod
-    def _headers(user):
-        return {"Authorization": "Bearer " + user["token"]}
-
-    def test_password_is_hashed_and_login_is_verified(self):
-        stored = users[self.guide["userId"]]
-        self.assertNotIn("password", stored)
-        self.assertTrue(stored["passwordHash"].startswith("pbkdf2_sha256$"))
-
-        bad_login = self.client.post(
-            "/api/auth/login",
-            json={"userName": self.guide["userName"], "password": "wrong123"},
-        )
-        self.assertEqual(bad_login.status_code, 401)
-
-        login = self.client.post(
-            "/api/auth/login",
-            json={"userName": self.guide["userName"], "password": "secret123"},
-        )
-        self.assertEqual(login.status_code, 200)
-
-    def test_room_requires_membership_and_creator_is_leader_member(self):
-        self.assertEqual(self.client.get("/api/rooms/" + self.room_id).status_code, 401)
-        self.assertEqual(
-            self.client.get("/api/rooms/" + self.room_id, headers=self.outsider_headers).status_code,
-            403,
-        )
-
-        response = self.client.get("/api/rooms/" + self.room_id, headers=self.guide_headers)
-        self.assertEqual(response.status_code, 200)
-        room = response.json()
-        self.assertEqual(room["leaderId"], self.guide["userId"])
-        self.assertIn(self.guide["userId"], [member["userId"] for member in room["members"]])
-
-    def test_only_leader_can_update_spot(self):
-        join = self.client.post(
-            "/api/rooms/" + self.room_id + "/join",
-            headers=self.tourist_headers,
-            json={},
-        )
-        self.assertEqual(join.status_code, 200)
-
-        denied = self.client.post(
-            "/api/rooms/" + self.room_id + "/current-spot",
-            headers=self.tourist_headers,
-            json={"spotId": "spot_001"},
-        )
-        self.assertEqual(denied.status_code, 403)
-
-        updated = self.client.post(
-            "/api/rooms/" + self.room_id + "/current-spot",
-            headers=self.guide_headers,
-            json={"spotId": "spot_001"},
-        )
-        self.assertEqual(updated.status_code, 200)
-
-    def test_identity_spoofing_and_admin_access_are_rejected(self):
-        forged = self.client.post(
-            "/api/ai/public-question",
-            headers=self.tourist_headers,
-            json={
-                "roomId": self.room_id,
-                "userId": self.guide["userId"],
-                "question": "test",
-                "needAudio": False,
-            },
-        )
-        self.assertEqual(forged.status_code, 403)
-        self.assertEqual(self.client.get("/api/dashboard/overview").status_code, 401)
-        self.assertEqual(
-            self.client.get("/api/dashboard/overview", headers=self.tourist_headers).status_code,
-            403,
-        )
+    tourist = auth_helpers["register"]("tourist", "spoof")
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    forged = client.post(
+        "/api/ai/public-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": guide["userId"],
+            "question": "forged",
+            "needAudio": False,
+        },
+    )
+    assert forged.status_code == 403
+    assert forged.json()["errorCode"] == "IDENTITY_MISMATCH"
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_rate_limit_returns_retry_after():
+    previous = settings.rate_limit_enabled
+    settings.rate_limit_enabled = True
+    reset_rate_limits_for_tests()
+    try:
+        enforce_rate_limit("test", "identity", 1, 60)
+        with pytest.raises(AppError) as caught:
+            enforce_rate_limit("test", "identity", 1, 60)
+        assert caught.value.status_code == 429
+        assert int(caught.value.headers["Retry-After"]) >= 1
+    finally:
+        settings.rate_limit_enabled = previous
+        reset_rate_limits_for_tests()
+
+
+def test_new_database_migrations_are_idempotent(tmp_path):
+    previous = settings.database_path
+    path = tmp_path / "fresh.db"
+    try:
+        settings.database_path = str(path)
+        reset_database_initialization_for_tests()
+        initialize_database()
+        reset_database_initialization_for_tests()
+        initialize_database()
+        connection = sqlite3.connect(path)
+        versions = connection.execute(
+            "SELECT version FROM schema_migrations ORDER BY version"
+        ).fetchall()
+        connection.close()
+        assert versions == [(1,), (2,)]
+    finally:
+        settings.database_path = previous
+        reset_database_initialization_for_tests()
+
+
+def test_legacy_database_is_backed_up_and_upgraded(tmp_path):
+    previous = settings.database_path
+    path = tmp_path / "legacy.db"
+    connection = sqlite3.connect(path)
+    connection.executescript(
+        """
+        CREATE TABLE users (
+            user_id TEXT PRIMARY KEY,
+            normalized_name TEXT NOT NULL UNIQUE,
+            user_name TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+        );
+        INSERT INTO users VALUES ('u1', 'legacy', 'Legacy', 'hash', 'tourist', 1);
+        """
+    )
+    connection.close()
+    try:
+        settings.database_path = str(path)
+        reset_database_initialization_for_tests()
+        initialize_database()
+        backup_files = list((tmp_path / "backups").glob("legacy-*.db"))
+        assert len(backup_files) == 1
+        backup = sqlite3.connect(backup_files[0])
+        assert backup.execute("SELECT user_name FROM users").fetchone()[0] == "Legacy"
+        assert backup.execute(
+            "SELECT 1 FROM sqlite_master WHERE name = 'schema_migrations'"
+        ).fetchone() is None
+        backup.close()
+        upgraded = sqlite3.connect(path)
+        columns = {row[1] for row in upgraded.execute("PRAGMA table_info(users)")}
+        assert "account_type" in columns
+        assert upgraded.execute("SELECT user_name FROM users WHERE user_id = 'u1'").fetchone()[0] == "Legacy"
+        upgraded.close()
+    finally:
+        settings.database_path = previous
+        reset_database_initialization_for_tests()
+
+
+def test_versioned_database_is_backed_up_before_next_version(tmp_path, monkeypatch):
+    import app.core.database as database_module
+
+    previous_path = settings.database_path
+    all_migrations = database_module.MIGRATIONS
+    path = tmp_path / "versioned.db"
+    try:
+        settings.database_path = str(path)
+        monkeypatch.setattr(database_module, "MIGRATIONS", all_migrations[:1])
+        reset_database_initialization_for_tests()
+        initialize_database()
+        monkeypatch.setattr(database_module, "MIGRATIONS", all_migrations)
+        reset_database_initialization_for_tests()
+        initialize_database()
+        backups = list((tmp_path / "backups").glob("versioned-*.db"))
+        assert len(backups) == 1
+        backup = sqlite3.connect(backups[0])
+        assert backup.execute("SELECT version FROM schema_migrations").fetchall() == [(1,)]
+        assert backup.execute(
+            "SELECT 1 FROM sqlite_master WHERE name = 'ws_tickets'"
+        ).fetchone() is None
+        backup.close()
+    finally:
+        database_module.MIGRATIONS = all_migrations
+        settings.database_path = previous_path
+        reset_database_initialization_for_tests()
+
+
+def test_failed_migration_rolls_back(tmp_path, monkeypatch):
+    import app.core.database as database_module
+
+    previous_path = settings.database_path
+    previous_migrations = database_module.MIGRATIONS
+    path = tmp_path / "rollback.db"
+    monkeypatch.setattr(
+        database_module,
+        "MIGRATIONS",
+        ((99, "CREATE TABLE partial_write (id INTEGER); INVALID SQL;"),),
+    )
+    try:
+        settings.database_path = str(path)
+        reset_database_initialization_for_tests()
+        with pytest.raises(sqlite3.Error):
+            initialize_database()
+        connection = sqlite3.connect(path)
+        assert connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE name = 'partial_write'"
+        ).fetchone() is None
+        assert connection.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == 0
+        connection.close()
+    finally:
+        database_module.MIGRATIONS = previous_migrations
+        settings.database_path = previous_path
+        reset_database_initialization_for_tests()

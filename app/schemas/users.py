@@ -30,3 +30,17 @@ class CurrentUserResponse(BaseModel):
     userId: str
     userName: str
     role: str
+
+
+class GuestRequest(BaseModel):
+    displayName: str = Field(min_length=1, max_length=50)
+    role: Literal["tourist", "guide"]
+
+
+class WsTicketRequest(BaseModel):
+    roomId: str
+
+
+class WsTicketResponse(BaseModel):
+    ticket: str
+    expiresAt: int

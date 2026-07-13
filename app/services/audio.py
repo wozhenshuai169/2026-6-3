@@ -109,6 +109,7 @@ async def asr_transcribe(
             }
 
     result["format"] = fmt
+    result["warning"] = None if settings.audio_provider_enabled else "Mock audio mode is active."
     return result
 
 
@@ -179,5 +180,7 @@ async def tts_synthesize(
             result["audioUrl"] = f"/uploads/tts/{filename}"
             result["duration"] = duration
             result["format"] = "wav"
+
+    result["warning"] = None if settings.audio_provider_enabled else "Mock audio mode is active."
 
     return result
