@@ -27,6 +27,29 @@ def _admin(client):
     return response.json()
 
 
+@pytest.fixture
+def fake_deepseek(monkeypatch):
+    from types import SimpleNamespace
+
+    from app.core.config import settings
+    import app.services.ai as ai_service
+
+    calls = []
+
+    class FakeDeepSeek:
+        async def chat(self, messages, **kwargs):
+            calls.append({"messages": messages, "kwargs": kwargs})
+            return SimpleNamespace(content="这是由 DeepSeek 生成的测试回答，不是固定话术。")
+
+    previous_key = settings.deepseek_api_key
+    settings.deepseek_api_key = "configured-for-test"
+    monkeypatch.setattr(ai_service, "get_llm", lambda: FakeDeepSeek())
+    try:
+        yield calls
+    finally:
+        settings.deepseek_api_key = previous_key
+
+
 def test_health_error_model_and_security_headers(client):
     assert client.get("/health/live").json() == {"status": "live"}
     ready = client.get("/health/ready")
@@ -281,6 +304,163 @@ def test_configured_llm_failure_is_503_not_mock_success(client, auth_helpers, mo
     assert response.json()["errorCode"] == "LLM_UNAVAILABLE"
 
 
+def test_solo_question_uses_deepseek_without_a_room(client, auth_helpers, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.core.config import settings
+    import app.services.ai as ai_service
+
+    calls = []
+
+    class FakeDeepSeek:
+        async def chat(self, messages, **kwargs):
+            calls.append({"messages": messages, "kwargs": kwargs})
+            return SimpleNamespace(content="前方有休息需求时，请先在附近设施中查看实时服务点。")
+
+    async def fake_tts(text, voice="guide_female", room_id=None):
+        assert room_id is None
+        assert voice == "xiaomei"
+        return {
+            "success": True,
+            "audioUrl": "/uploads/audio/solo-test.wav",
+            "duration": 1.25,
+            "warning": None,
+        }
+
+    tourist = auth_helpers["register"]("tourist", "solo-tourist")
+    headers = auth_helpers["headers"]
+    previous_key = settings.deepseek_api_key
+    settings.deepseek_api_key = "configured-for-test"
+    monkeypatch.setattr(ai_service, "get_llm", lambda: FakeDeepSeek())
+    monkeypatch.setattr(ai_service, "tts_synthesize", fake_tts)
+    monkeypatch.setattr(ai_service, "search_knowledge", lambda *args, **kwargs: [])
+    try:
+        response = client.post(
+            "/api/ai/solo-question",
+            headers=headers(tourist),
+            json={
+                "userId": tourist["userId"],
+                "question": "附近有休息区吗？",
+                "currentSpotId": "lingshan_dazhaobi",
+                "needAudio": True,
+                "voice": "xiaomei",
+            },
+        )
+    finally:
+        settings.deepseek_api_key = previous_key
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["provider"] == "deepseek"
+    assert payload["mode"] == "solo"
+    assert payload["audioUrl"] == "/uploads/audio/solo-test.wav"
+    assert calls and calls[0]["messages"][-1]["content"] == "附近有休息区吗？"
+    assert calls[0]["kwargs"]["context"]["mode"] == "solo"
+
+
+def test_solo_question_never_falls_back_to_mock(client, auth_helpers, monkeypatch):
+    from app.core.config import settings
+    import app.services.ai as ai_service
+
+    tourist = auth_helpers["register"]("tourist", "solo-no-key")
+    previous_key = settings.deepseek_api_key
+    settings.deepseek_api_key = ""
+    monkeypatch.setattr(
+        ai_service,
+        "get_llm",
+        lambda: (_ for _ in ()).throw(AssertionError("mock provider must not be used")),
+    )
+    try:
+        response = client.post(
+            "/api/ai/solo-question",
+            headers=auth_helpers["headers"](tourist),
+            json={
+                "userId": tourist["userId"],
+                "question": "介绍一下当前景点",
+                "needAudio": False,
+            },
+        )
+    finally:
+        settings.deepseek_api_key = previous_key
+
+    assert response.status_code == 503
+    assert response.json()["errorCode"] == "LLM_NOT_CONFIGURED"
+
+
+def test_guide_start_narration_generates_audio_for_room_members(client, auth_helpers, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.core.config import settings
+    import app.services.narration as narration_service
+
+    class FakeDeepSeek:
+        async def chat(self, messages, **kwargs):
+            assert "灵山大佛" in messages[0]["content"]
+            return SimpleNamespace(content="各位游客，欢迎来到灵山大佛前，请放慢脚步欣赏庄严的佛教文化景观。")
+
+    async def fake_tts(text, voice="guide_female", speed=1.0, room_id=None):
+        assert room_id
+        assert text.startswith("各位游客")
+        assert voice == "guide_male"
+        return {
+            "success": True,
+            "audioUrl": "/uploads/tts/room-narration-test.mp3",
+            "duration": 6.5,
+            "warning": None,
+        }
+
+    guide = auth_helpers["register"]("guide", "narration-guide")
+    tourist = auth_helpers["register"]("tourist", "narration-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+
+    previous_deepseek = settings.deepseek_api_key
+    previous_vision = settings.vision_api_key
+    settings.deepseek_api_key = "configured-for-test"
+    settings.vision_api_key = "configured-for-test"
+    monkeypatch.setattr(narration_service, "get_llm", lambda: FakeDeepSeek())
+    monkeypatch.setattr(narration_service, "tts_synthesize", fake_tts)
+    monkeypatch.setattr(narration_service, "search_knowledge", lambda *args, **kwargs: [])
+    try:
+        before_start = client.get(
+            f"/api/rooms/{room_id}/avatar-state",
+            headers=headers(tourist),
+        )
+        response = client.post(
+            f"/api/rooms/{room_id}/narration/start",
+            headers=headers(guide),
+            json={"spotId": "lingshan_buddha", "voice": "guide_male"},
+        )
+        forbidden = client.post(
+            f"/api/rooms/{room_id}/narration/start",
+            headers=headers(tourist),
+            json={"spotId": "lingshan_buddha"},
+        )
+        avatar = client.get(
+            f"/api/rooms/{room_id}/avatar-state",
+            headers=headers(tourist),
+        )
+    finally:
+        settings.deepseek_api_key = previous_deepseek
+        settings.vision_api_key = previous_vision
+
+    assert response.status_code == 200, response.text
+    assert before_start.status_code == 200
+    assert before_start.json()["aiStatus"] == "idle"
+    assert before_start.json()["audioUrl"] == ""
+    assert "等待团长" in before_start.json()["text"]
+    payload = response.json()
+    assert payload["llmProvider"] == "deepseek"
+    assert payload["voice"] == "guide_male"
+    assert payload["audioUrl"] == "/uploads/tts/room-narration-test.mp3"
+    assert payload["narrationId"]
+    assert forbidden.status_code == 403
+    assert avatar.status_code == 200
+    assert avatar.json()["narrationId"] == payload["narrationId"]
+    assert avatar.json()["audioUrl"] == payload["audioUrl"]
+
+
 def test_feedback_and_dashboard_use_real_database_aggregates(client, auth_helpers):
     guide = auth_helpers["register"]("guide", "stats-guide")
     tourist = auth_helpers["register"]("tourist", "stats-tourist")
@@ -335,7 +515,9 @@ def test_openapi_and_v4_contract(client):
     expected = {
         ("/api/auth/guest", "post"),
         ("/api/auth/ws-ticket", "post"),
+        ("/api/ai/solo-question", "post"),
         ("/api/audio/upload", "post"),
+        ("/api/rooms/{roomId}/narration/start", "post"),
         ("/api/feedback", "post"),
         ("/api/rooms/{roomId}/status", "patch"),
         ("/api/rooms/{roomId}/messages", "get"),
@@ -347,8 +529,30 @@ def test_openapi_and_v4_contract(client):
     root = Path(__file__).resolve().parents[1]
     api_client = (root / "frontend-v4/assets/js/api-client.js").read_text(encoding="utf-8")
     landing = (root / "frontend-v4/assets/js/pages/landing.js").read_text(encoding="utf-8")
+    guide_html = (root / "frontend-v4/pages/guide-panel/index.html").read_text(encoding="utf-8")
+    guide_script = (root / "frontend-v4/assets/js/pages/guide-panel.js").read_text(encoding="utf-8")
+    landing_html = (root / "frontend-v4/pages/landing/index.html").read_text(encoding="utf-8")
+    visitor_html = (root / "frontend-v4/pages/user-portal/index.html").read_text(encoding="utf-8")
+    visitor_script = (root / "frontend-v4/assets/js/pages/user-portal.js").read_text(encoding="utf-8")
     assert "Authorization" in api_client and "Bearer" in api_client
     assert "admin123" not in landing
+    assert 'id="btn-notifications"' in guide_html
+    assert 'id="btn-more"' in guide_html
+    assert 'data-more-action="refresh"' in guide_html
+    assert 'id="guide-audio-seek"' in guide_html
+    assert 'id="narration-voice"' in guide_html
+    assert 'type="range"' in guide_html
+    assert "voice: voice" in guide_script
+    assert "handleAudioSeek" in guide_script
+    assert "showNotificationCenter" in guide_script
+    assert "handleMoreAction" in guide_script
+    assert "各位朋友，欢迎来到主展厅" not in guide_html
+    assert "AI 实时生成" in guide_html
+    assert 'id="modal-voice"' in landing_html
+    assert 'id="room-voice-select"' in visitor_html
+    assert 'id="visitor-voice"' in visitor_html
+    assert "voice:selectedVoice" in visitor_script
+    assert "playRoomNarration" in visitor_script
 
 
 def test_real_validation_manifest_targets_product_api_contract():
@@ -362,7 +566,32 @@ def test_real_validation_manifest_targets_product_api_contract():
     assert all("endpoint" not in case for group in manifest["testGroups"].values() for case in group)
 
 
-def test_unified_algorithm_private_need_is_not_persisted_publicly(client, auth_helpers):
+def test_public_question_no_action_still_uses_deepseek(client, auth_helpers, fake_deepseek):
+    guide = auth_helpers["register"]("guide", "public-ai-guide")
+    tourist = auth_helpers["register"]("tourist", "public-ai-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+
+    response = client.post(
+        "/api/ai/public-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "question": "你是谁？",
+            "needAudio": False,
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["provider"] == "deepseek"
+    assert response.json()["answer"] == "这是由 DeepSeek 生成的测试回答，不是固定话术。"
+    assert fake_deepseek
+    assert fake_deepseek[0]["messages"][-1]["content"] == "你是谁？"
+
+
+def test_unified_algorithm_private_need_is_not_persisted_publicly(client, auth_helpers, fake_deepseek):
     from app.services.users import get_user_memory_tags
 
     guide = auth_helpers["register"]("guide", "unified-guide")
@@ -385,6 +614,8 @@ def test_unified_algorithm_private_need_is_not_persisted_publicly(client, auth_h
     assert response.status_code == 200, response.text
     payload = response.json()
     assert payload["decision"] == "private_reply"
+    assert payload["provider"] == "deepseek"
+    assert fake_deepseek
     assert any(event["type"] == "suggest_private_channel" for event in payload["events"])
     after = client.get(f"/api/rooms/{room_id}/messages", headers=headers(tourist)).json()["messages"]
     assert len(after) == len(before)
@@ -437,7 +668,7 @@ def test_unified_algorithm_voice_clarification_and_route_score(client, auth_help
     assert recommendation["spots"]
 
 
-def test_unified_algorithm_safety_alert_is_leader_only_websocket_event(client, auth_helpers):
+def test_unified_algorithm_safety_alert_is_leader_only_websocket_event(client, auth_helpers, fake_deepseek):
     guide = auth_helpers["register"]("guide", "alert-guide")
     tourist = auth_helpers["register"]("tourist", "alert-tourist")
     headers = auth_helpers["headers"]
@@ -462,6 +693,7 @@ def test_unified_algorithm_safety_alert_is_leader_only_websocket_event(client, a
         )
         assert response.status_code == 200, response.text
         assert response.json()["decision"] == "emergency_alert"
+        assert response.json()["provider"] == "deepseek"
         alert = leader_socket.receive_json()
         assert alert["type"] == "room.alert"
         assert alert["data"]["riskLevel"] == "high"

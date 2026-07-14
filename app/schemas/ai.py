@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from app.schemas.audio import VoiceName
+
 
 class AvatarStateSchema(BaseModel):
     status: str
@@ -13,6 +15,7 @@ class PublicQuestionRequest(BaseModel):
     userId: str
     question: str = Field(min_length=1, max_length=2000)
     needAudio: bool = True
+    voice: VoiceName = "guide_female"
 
 
 class PublicQuestionResponse(BaseModel):
@@ -26,11 +29,31 @@ class PublicQuestionResponse(BaseModel):
     decision: str | None = None
     events: list[dict] = Field(default_factory=list)
     stateUpdate: dict = Field(default_factory=dict)
+    provider: str = "deepseek"
 
 
 class SourceSchema(BaseModel):
     title: str
     chunkId: str
+
+
+class SoloQuestionRequest(BaseModel):
+    userId: str
+    question: str = Field(min_length=1, max_length=2000)
+    currentSpotId: str = Field(default="", max_length=100)
+    needAudio: bool = True
+    voice: VoiceName = "guide_female"
+
+
+class SoloQuestionResponse(BaseModel):
+    answer: str
+    audioUrl: str | None = None
+    duration: float = 0.0
+    sources: list[SourceSchema] = Field(default_factory=list)
+    avatarState: AvatarStateSchema
+    warning: str | None = None
+    mode: str = "solo"
+    provider: str = "deepseek"
 
 
 class VoiceQuestionRequest(BaseModel):
@@ -40,6 +63,7 @@ class VoiceQuestionRequest(BaseModel):
     audioUrl: str = Field(min_length=1, max_length=14_000_000)
     audioFormat: str | None = None  # "wav" | "mp3"
     textHint: str | None = None     # 辅助识别文本
+    voice: VoiceName = "guide_female"
 
 
 class VoiceQuestionResponse(BaseModel):
@@ -56,3 +80,4 @@ class VoiceQuestionResponse(BaseModel):
     avatarState: AvatarStateSchema
     warning: str | None = None
     events: list[dict] = Field(default_factory=list)
+    provider: str | None = None

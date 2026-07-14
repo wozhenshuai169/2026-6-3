@@ -3,8 +3,15 @@ from fastapi import APIRouter, Depends
 from app.core.auth import get_current_user, require_matching_user, require_room_member
 from app.core.errors import AppError
 from app.core.rate_limit import enforce_rate_limit
-from app.schemas.ai import PublicQuestionRequest, PublicQuestionResponse, VoiceQuestionRequest, VoiceQuestionResponse
-from app.services.ai import public_question, public_voice_question
+from app.schemas.ai import (
+    PublicQuestionRequest,
+    PublicQuestionResponse,
+    SoloQuestionRequest,
+    SoloQuestionResponse,
+    VoiceQuestionRequest,
+    VoiceQuestionResponse,
+)
+from app.services.ai import public_question, public_voice_question, solo_question
 from app.services.messages import create_message
 from app.services.realtime import room_connections
 
@@ -54,13 +61,35 @@ async def ask(req: PublicQuestionRequest, user: dict = Depends(get_current_user)
     enforce_rate_limit("ai", user["userId"], 30, 60)
     if room["status"] != "active":
         raise AppError(409, "ROOM_NOT_ACTIVE", "Public AI is available only in active rooms")
-    result = await public_question(req.roomId, req.question, req.needAudio, user_id=user["userId"])
+    result = await public_question(
+        req.roomId,
+        req.question,
+        req.needAudio,
+        user_id=user["userId"],
+        voice=req.voice,
+    )
     if result is None:
         raise AppError(404, "ROOM_NOT_FOUND", "Room not found")
     if result.get("_replyChannel") == "public":
         await _persist_public_exchange(req.roomId, user, req.question, result["answer"])
     await _deliver_algorithm_events(room, result)
     return PublicQuestionResponse(**result)
+
+
+@router.post("/solo-question", response_model=SoloQuestionResponse)
+async def ask_solo(req: SoloQuestionRequest, user: dict = Depends(get_current_user)):
+    require_matching_user(req.userId, user)
+    if user.get("role") != "tourist":
+        raise AppError(403, "ROLE_FORBIDDEN", "Solo guide is available to tourists only")
+    enforce_rate_limit("ai", user["userId"], 30, 60)
+    result = await solo_question(
+        req.question,
+        current_spot_id=req.currentSpotId,
+        need_audio=req.needAudio,
+        user_id=user["userId"],
+        voice=req.voice,
+    )
+    return SoloQuestionResponse(**result)
 
 
 @router.post("/public-voice-question", response_model=VoiceQuestionResponse)
@@ -72,7 +101,7 @@ async def voice_ask(req: VoiceQuestionRequest, user: dict = Depends(get_current_
         raise AppError(409, "ROOM_NOT_ACTIVE", "Public AI is available only in active rooms")
     result = await public_voice_question(
         req.roomId, user["userId"], req.channel, req.audioUrl,
-        audio_format=req.audioFormat, text_hint=req.textHint,
+        audio_format=req.audioFormat, text_hint=req.textHint, voice=req.voice,
     )
     if result is None:
         raise AppError(404, "ROOM_NOT_FOUND", "Room not found")

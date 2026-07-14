@@ -53,6 +53,10 @@ Desktop.ini
 # ── Claude ──
 .claude/
 
+# ── 本地前端演示录制 ──
+artifacts/
+tools/build_frontend_demo_video.py
+
 # ── RMDB (C++ 相关) ──
 deps/
 build/

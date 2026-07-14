@@ -7,7 +7,7 @@
   var A = window.Aurelian, state = A.state, auth = A.auth, api = A.api, ui = A.ui, router = A.router;
 
   var btnVisitor, btnLeader, btnAdmin;
-  var modal, dialog, modalTitle, modalClose, modalName, modalError, modalSubmit;
+  var modal, dialog, modalTitle, modalClose, modalName, modalVoiceGroup, modalVoice, modalError, modalSubmit;
   var adminModal, adminClose, adminPasscode, adminError, adminSubmit;
   var chosenRole = null;
   var demoAdmin = false;
@@ -42,6 +42,8 @@
     modalTitle = document.getElementById('modal-title');
     modalClose = document.getElementById('modal-close');
     modalName = document.getElementById('modal-name');
+    modalVoiceGroup = document.getElementById('modal-voice-group');
+    modalVoice = document.getElementById('modal-voice');
     modalError = document.getElementById('modal-error');
     modalSubmit = document.getElementById('modal-submit');
     adminModal = document.getElementById('admin-modal');
@@ -70,6 +72,8 @@
     chosenRole = role;
     var label = role === 'visitor' ? '游客' : '团长';
     if (modalTitle) modalTitle.textContent = label + ' — 输入你的名字';
+    if (modalVoiceGroup) modalVoiceGroup.classList.toggle('hidden', role !== 'visitor');
+    if (modalVoice && role === 'visitor') modalVoice.value = state.get('narrationVoice') || 'guide_female';
     if (modalName) { modalName.value = ''; modalName.focus(); }
     if (modalError) modalError.classList.add('hidden');
     if (modalSubmit) { modalSubmit.disabled = false; modalSubmit.textContent = '开始导览'; }
@@ -93,6 +97,7 @@
 
     auth.guest(name, chosenRole).then(function (result) {
       if (result.ok) {
+        if (chosenRole === 'visitor' && modalVoice) state.set('narrationVoice', modalVoice.value);
         ui.toast('注册成功，欢迎！', 'success');
         if (chosenRole === 'visitor') router.go('user-portal');
         else router.go('guide-panel');

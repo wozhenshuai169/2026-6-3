@@ -124,7 +124,19 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 """
 
-MIGRATIONS = ((1, _MIGRATION_1), (2, _MIGRATION_2), (3, _MIGRATION_3))
+_MIGRATION_4 = """
+ALTER TABLE rooms ADD COLUMN narration_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE rooms ADD COLUMN narration_text TEXT NOT NULL DEFAULT '';
+ALTER TABLE rooms ADD COLUMN narration_audio_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE rooms ADD COLUMN narration_duration REAL NOT NULL DEFAULT 0;
+"""
+
+MIGRATIONS = (
+    (1, _MIGRATION_1),
+    (2, _MIGRATION_2),
+    (3, _MIGRATION_3),
+    (4, _MIGRATION_4),
+)
 
 
 def _open(path: str) -> sqlite3.Connection:

@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.audio import VoiceName
+
 
 class CreateRoomRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -50,6 +52,24 @@ class UpdateSpotResponse(BaseModel):
     roomId: str
     currentSpot: str
     status: str
+
+
+class StartNarrationRequest(BaseModel):
+    spotId: str = Field(min_length=1, max_length=100)
+    voice: VoiceName = "guide_female"
+
+
+class StartNarrationResponse(BaseModel):
+    roomId: str
+    spotId: str
+    narrationId: str
+    text: str
+    audioUrl: str
+    duration: float = 0.0
+    voice: VoiceName = "guide_female"
+    status: str = "speaking"
+    llmProvider: str = "deepseek"
+    audioProvider: str = "edge-tts"
 
 
 class UpdateRoomStatusRequest(BaseModel):

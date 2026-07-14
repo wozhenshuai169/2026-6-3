@@ -11,6 +11,8 @@
   var lastAvatarStatus='idle',routeSpots=[],routeIndex=0,roomRouteId=state.get('routeId');
   var roomRequestPending=false,avatarRequestPending=false;
   var isSoloMode=!roomId;
+  var lastNarrationId=null,roomNarrationPaused=false;
+  var selectedVoice=state.get('narrationVoice')||'guide_female';
 
   var els={};
 
@@ -31,7 +33,7 @@
      'fnKnowledge','fnAudio','fnMap','fnAi',
      'avatarMode','textMode','btnSwitchText','btnSwitchAvatar',
      'publicChatArea','publicChatInput','publicChatSend','narrationText',
-     'btnVoice','spotChip','spotChipName','ttsPlayer','pageBody'
+     'btnVoice','spotChip','spotChipName','ttsPlayer','pageBody','visitorVoice','roomVoiceSelect'
     ].forEach(function(id){
       var camel=id.replace(/-([a-z])/g,function(m,c){return c.toUpperCase();});
       var kebab=id.replace(/([A-Z])/g,'-$1').toLowerCase();
@@ -40,6 +42,9 @@
   }
 
   function bindEvents(){
+    syncVoiceSelectors();
+    if(els.visitorVoice) els.visitorVoice.addEventListener('change',function(){setSelectedVoice(els.visitorVoice.value,true);});
+    if(els.roomVoiceSelect) els.roomVoiceSelect.addEventListener('change',function(){setSelectedVoice(els.roomVoiceSelect.value,false);});
     if(els.menuToggle) els.menuToggle.addEventListener('click',function(){els.functionOverlay.classList.remove('hidden');});
     if(els.menuClose) els.menuClose.addEventListener('click',function(){els.functionOverlay.classList.add('hidden');});
     if(els.roomJoinBtn) els.roomJoinBtn.addEventListener('click',handleJoinRoom);
@@ -208,6 +213,22 @@
       if(els.avatarStatusLabel){var labels={idle:'待命中',listening:'聆听中',speaking:'讲解中',thinking:'思考中',paused:'已暂停',resuming:'续讲中',explaining:'讲解中',answering:'回答中'};els.avatarStatusLabel.textContent=labels[status]||status;}
       // Update narration text
       if(d.text&&els.narrationText)els.narrationText.textContent=d.text;
+      if(status==='paused'){
+        if(els.ttsPlayer&&!els.ttsPlayer.paused)els.ttsPlayer.pause();
+        roomNarrationPaused=true;
+      }else if(d.audioUrl&&d.narrationId){
+        if(d.narrationId!==lastNarrationId){
+          lastNarrationId=d.narrationId;
+          roomNarrationPaused=false;
+          playRoomNarration(d);
+          addMsg('status','团长已开始新的景点讲解');
+        }else if(roomNarrationPaused&&els.ttsPlayer){
+          roomNarrationPaused=false;
+          els.ttsPlayer.play().catch(function(){
+            addMsg('system','浏览器阻止了自动续播，请点击“音频导览”继续播放');
+          });
+        }
+      }
       // Update spot chip
       if(currentSpotId&&els.spotChip){els.spotChip.classList.remove('hidden');els.spotChipName.textContent=currentSpotId;}
     }).finally(function(){avatarRequestPending=false;});
@@ -268,7 +289,7 @@
     if(isPrivate){addMsg('decision','检测到私人问题，AI 将在公共频道隐去隐私内容后回答');}
     showTyping();
 
-    api.post('/ai/public-question',{roomId:roomId,userId:userId,question:text,needAudio:true}).then(function(r){
+    api.post('/ai/public-question',{roomId:roomId,userId:userId,question:text,needAudio:true,voice:selectedVoice}).then(function(r){
       removeTyping();
       if(r.ok&&r.data){
         addMsg('ai',r.data.answer||'');
@@ -289,37 +310,38 @@
     var isPrivate=detectPrivateQuestion(text);
     if(isPrivate)addMsg('decision','独自导览模式下，你的问题不会进入公共频道；如需团长协助，请加入房间后使用私人服务');
     showTyping();
-    buildSoloAnswer(text).then(function(answer){
-      removeTyping();
-      addMsg('ai',answer);
-      if(els.narrationText)els.narrationText.textContent=answer;
-      return api.post('/audio/tts',{text:answer,voice:'guide_female',speed:1.0});
+    api.post('/ai/solo-question',{
+      userId:userId,
+      question:text,
+      currentSpotId:currentSpotId||routeSpots[0]||'lingshan_dazhaobi',
+      needAudio:true,
+      voice:selectedVoice
     }).then(function(r){
-      if(r&&r.ok&&r.data&&r.data.audioUrl)playTTS(r.data.audioUrl);
+      removeTyping();
+      if(r.ok&&r.data){
+        addMsg('ai',r.data.answer||'');
+        if(els.narrationText)els.narrationText.textContent=r.data.answer||'';
+        playTTS(r.data.audioUrl);
+      }else{
+        addMsg('system','AI 回答失败: '+(r.error&&r.error.message||'网络错误'));
+      }
     }).catch(function(){
       removeTyping();
-      addMsg('ai','我可以继续陪你独自导览。你可以问景点介绍、路线安排、附近设施，也可以输入“播放讲解”让我朗读当前景点。');
+      addMsg('system','智能问答服务暂时无法连接，请稍后再试');
     });
   }
 
-  function buildSoloAnswer(text){
-    var spotId=currentSpotId||routeSpots[0]||'lingshan_dazhaobi';
-    var wantsRoute=/路线|怎么走|下一站|下一个|行程|游览/.test(text);
-    var wantsHelp=/厕所|洗手间|休息|服务|出口|地图|附近|位置/.test(text);
-    if(wantsRoute){
-      return Promise.resolve('当前为独自导览模式。推荐你按路线顺序游览：'+(routeSpots.length?routeSpots.join(' → '):'从入口景点开始，逐步前往核心景点')+'。你也可以打开“路线规划”查看更完整的横屏导览方案。');
-    }
-    if(wantsHelp){
-      return Promise.resolve('你现在是独自导览模式，可以打开右侧“附近设施”查看景区 POI、服务点和周边位置。如果你需要团长处理身体不适、走散等情况，请先输入房间号加入团队。');
-    }
-    return api.get('/spots/'+spotId).then(function(r){
-      if(r.ok&&r.data){
-        var name=r.data.spotName||r.data.name||spotId;
-        var desc=r.data.description||'这里是本路线中的重要景点，适合边走边听讲解。';
-        return '当前景点是“'+name+'”。'+desc+' 你可以继续问我它的历史、文化背景、拍照建议或下一站怎么走。';
-      }
-      return '当前为独自导览模式。你可以直接和数字人对话，无需加入公共房间；如果想获得团队同步讲解，再输入团长分享的房间号即可。';
-    });
+  function setSelectedVoice(voice,notify){
+    var supported=['guide_female','xiaomei','guide_male','xiaowei'];
+    selectedVoice=supported.indexOf(voice)!==-1?voice:'guide_female';
+    state.set('narrationVoice',selectedVoice);
+    syncVoiceSelectors();
+    if(notify)ui.toast('讲解音色已切换，下次语音生效','success');
+  }
+
+  function syncVoiceSelectors(){
+    if(els.visitorVoice)els.visitorVoice.value=selectedVoice;
+    if(els.roomVoiceSelect)els.roomVoiceSelect.value=selectedVoice;
   }
 
   function detectPrivateQuestion(text){
@@ -350,6 +372,14 @@
   function removeTyping(){var el=document.getElementById('typing-indicator');if(el)el.remove();}
 
   // === TTS playback ===
+  function playRoomNarration(data){
+    if(!data||!data.text){playTTS(data&&data.audioUrl);return;}
+    api.post('/audio/tts',{text:data.text,voice:selectedVoice,speed:1.0,audioFormat:'mp3'}).then(function(r){
+      if(r.ok&&r.data&&r.data.audioUrl)playTTS(r.data.audioUrl);
+      else playTTS(data.audioUrl);
+    }).catch(function(){playTTS(data.audioUrl);});
+  }
+
   function playTTS(audioUrl){
     if(!audioUrl||!els.ttsPlayer)return;
     var fullUrl=audioUrl.startsWith('/')?audioUrl:A.config.API_BASE.replace('/api','')+'/'+audioUrl;
@@ -432,7 +462,7 @@
         // Step 2: Send to voice-question with the audio URL
         api.post('/ai/public-voice-question',{
           roomId: roomId, userId: userId, channel: 'public',
-          audioUrl: audioUrl, audioFormat: 'webm'
+          audioUrl: audioUrl, audioFormat: 'webm', voice: selectedVoice
         }).then(function(r){
           if(r.ok&&r.data){
             if(r.data.asrText){addMsg('system','🎤 '+r.data.asrText);}
@@ -465,7 +495,7 @@
       });
     }
     if(type==='audio'){
-      api.post('/audio/tts',{text:'欢迎来到'+(currentSpotId||'当前景点')+'。',voice:'guide_female',speed:1.0}).then(function(r){
+      api.post('/audio/tts',{text:'欢迎来到'+(currentSpotId||'当前景点')+'。',voice:selectedVoice,speed:1.0}).then(function(r){
         if(r.ok&&r.data&&r.data.audioUrl){playTTS(r.data.audioUrl);showResult('音频导览','<p class="text-sm">正在播放语音讲解...</p>');}
         else showResult('音频导览','<p class="text-xs text-text-secondary">TTS 生成中</p>');
       });

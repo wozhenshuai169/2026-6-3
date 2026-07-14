@@ -106,15 +106,30 @@
     showTyping();
 
     if (soloMode || !roomId) {
-      setTimeout(function() {
+      api.post('/ai/solo-question', {
+        userId: userId,
+        question: text,
+        currentSpotId: state.get('currentSpotId') || 'lingshan_dazhaobi',
+        needAudio: true,
+        voice: state.get('narrationVoice') || 'guide_female'
+      }).then(function(r) {
         removeTyping();
-        var answer = buildSoloAssistantAnswer(text);
-        addMessage('ai', answer);
-        if (text.indexOf('累')!==-1 || text.indexOf('休息')!==-1 || text.indexOf('不舒服')!==-1 || text.indexOf('走不动')!==-1) {
-          addMessage('system', '独自导览模式下无法通知团长；如需团队协助，请返回导览页输入房间号加入团队。');
+        if (r.ok && r.data) {
+          addMessage('ai', r.data.answer || '', r.data.audioUrl);
+          if (text.indexOf('累')!==-1 || text.indexOf('休息')!==-1 || text.indexOf('不舒服')!==-1 || text.indexOf('走不动')!==-1) {
+            addMessage('system', '独自导览模式下无法通知团长；如需团队协助，请返回导览页输入房间号加入团队。');
+          }
+        } else {
+          var soloErr = (r.error && r.error.message) || '智能问答服务暂时无法连接';
+          addMessage('system', soloErr);
+          ui.toast(soloErr, 'error');
         }
         scrollToBottom();
-      }, 240);
+      }).catch(function() {
+        removeTyping();
+        addMessage('system', '智能问答服务暂时无法连接，请稍后再试');
+        scrollToBottom();
+      });
       return;
     }
 
@@ -122,7 +137,8 @@
       roomId: roomId,
       userId: userId,
       question: text,
-      needAudio: true
+      needAudio: true,
+      voice: state.get('narrationVoice') || 'guide_female'
     }).then(function(r) {
       removeTyping();
       if (r.ok && r.data) {
@@ -142,16 +158,6 @@
   function addMessage(role, text, audioUrl) {
     messages.push({ role: role, text: text, time: new Date().toISOString(), audioUrl: audioUrl || null });
     renderMessages();
-  }
-
-  function buildSoloAssistantAnswer(text) {
-    if (/厕所|洗手间|休息|服务|出口|地图|附近|位置/.test(text)) {
-      return '你现在没有加入公共房间，但仍可以使用独自导览服务。建议返回实时导览页，打开“附近设施”查看景区 POI、服务点和周边位置；如果身体不适，请优先联系现场工作人员。';
-    }
-    if (/路线|怎么走|下一站|下一个|行程|游览/.test(text)) {
-      return '独自导览建议从入口景点开始，按推荐路线逐步游览核心景点。你可以返回“路线规划”选择轻松、经典或文化主题路线。';
-    }
-    return '我会按独自导览模式为你处理这个问题：不会广播到团队，也不会通知团长。你可以继续问我景点介绍、路线安排、附近设施或个人游览建议。';
   }
 
   function renderMessages() {
