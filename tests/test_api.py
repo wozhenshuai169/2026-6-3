@@ -510,6 +510,16 @@ def test_knowledge_upload_chinese_search_detail_rebuild_and_delete(client, auth_
     assert client.get(f"/api/kb/docs/{document['docId']}", headers=headers).status_code == 404
 
 
+def test_lingshan_spot_knowledge_supports_route_spot_ids(client):
+    response = client.get("/api/spots/lingshan_dazhaobi")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["spotName"] == "灵山大照壁"
+    assert payload["scenicAreaName"] == "灵山胜境"
+    assert payload["description"]
+    assert isinstance(payload["chunks"], list)
+
+
 def test_openapi_and_v4_contract(client):
     schema = client.get("/openapi.json").json()
     expected = {
@@ -551,8 +561,16 @@ def test_openapi_and_v4_contract(client):
     assert 'id="modal-voice"' in landing_html
     assert 'id="room-voice-select"' in visitor_html
     assert 'id="visitor-voice"' in visitor_html
+    assert 'id="fn-audio"' not in visitor_html
     assert "voice:selectedVoice" in visitor_script
     assert "playRoomNarration" in visitor_script
+    assert "type==='audio'" not in visitor_script
+    assert "renderKnowledgeResult" in visitor_script
+    assert "正在读取当前景点资料" in visitor_script
+    assert "灵山胜境周边" in visitor_script
+    assert "高德真实 POI" not in visitor_script
+    assert "不使用 Mock" not in visitor_script
+    assert " · POI " not in visitor_script
 
 
 def test_real_validation_manifest_targets_product_api_contract():

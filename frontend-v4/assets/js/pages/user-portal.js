@@ -30,7 +30,7 @@
   function cacheDom(){
     ['avatarContainer','avatarStatusLabel','roomJoinOverlay','roomCodeInput','roomJoinBtn','roomSoloBtn','roomJoinError',
      'memberListContainer','menuToggle','menuClose','functionOverlay',
-     'fnKnowledge','fnAudio','fnMap','fnAi',
+     'fnKnowledge','fnMap','fnAi',
      'avatarMode','textMode','btnSwitchText','btnSwitchAvatar',
      'publicChatArea','publicChatInput','publicChatSend','narrationText',
      'btnVoice','spotChip','spotChipName','ttsPlayer','pageBody','visitorVoice','roomVoiceSelect'
@@ -51,7 +51,6 @@
     if(els.roomSoloBtn) els.roomSoloBtn.addEventListener('click',startSoloMode);
     if(els.roomCodeInput) els.roomCodeInput.addEventListener('keydown',function(e){if(e.key==='Enter') handleJoinRoom();});
     if(els.fnKnowledge) els.fnKnowledge.addEventListener('click',function(){handleFunction('knowledge');});
-    if(els.fnAudio) els.fnAudio.addEventListener('click',function(){handleFunction('audio');});
     if(els.fnMap) els.fnMap.addEventListener('click',function(){handleFunction('map');});
     if(els.fnAi) els.fnAi.addEventListener('click',function(){handleFunction('assistant');});
     if(els.btnSwitchText) els.btnSwitchText.addEventListener('click',switchToTextMode);
@@ -225,7 +224,7 @@
         }else if(roomNarrationPaused&&els.ttsPlayer){
           roomNarrationPaused=false;
           els.ttsPlayer.play().catch(function(){
-            addMsg('system','浏览器阻止了自动续播，请点击“音频导览”继续播放');
+            addMsg('system','浏览器阻止了自动续播，请等待团长重新开始讲解');
           });
         }
       }
@@ -489,42 +488,64 @@
   function handleFunction(type){
     els.functionOverlay.classList.add('hidden');
     if(type==='knowledge'){
-      api.get('/spots/'+(currentSpotId||routeSpots[0]||'lingshan_dazhaobi')).then(function(r){
-        var h=r.ok&&r.data?(r.data.description||'暂无描述'):'加载失败';
-        showResult('知识库',h);
-      });
-    }
-    if(type==='audio'){
-      api.post('/audio/tts',{text:'欢迎来到'+(currentSpotId||'当前景点')+'。',voice:selectedVoice,speed:1.0}).then(function(r){
-        if(r.ok&&r.data&&r.data.audioUrl){playTTS(r.data.audioUrl);showResult('音频导览','<p class="text-sm">正在播放语音讲解...</p>');}
-        else showResult('音频导览','<p class="text-xs text-text-secondary">TTS 生成中</p>');
+      var knowledgeSpotId=currentSpotId||routeSpots[0]||'lingshan_dazhaobi';
+      showResult('景点知识','<div class="text-sm text-text-secondary">正在读取当前景点资料...</div>');
+      api.get('/spots/'+knowledgeSpotId).then(function(r){
+        if(r.ok&&r.data){
+          showResult('景点知识',renderKnowledgeResult(r.data));
+          return;
+        }
+        var message=(r.error&&r.error.message)||'景点资料加载失败';
+        showResult('景点知识','<div class="border rounded-lg p-4 text-sm text-text-secondary">'+ui.escapeHtml(message)+'</div>');
+      }).catch(function(){
+        showResult('景点知识','<div class="border rounded-lg p-4 text-sm text-text-secondary">知识库暂时无法连接，请稍后重试。</div>');
       });
     }
     if(type==='map'){
       api.get('/map/scenic-areas/current').then(function(r){
-        var h='<p class="text-sm mb-1 font-medium">灵山胜境 · 高德真实 POI</p>';
-        h+='<p class="text-xs text-text-secondary mb-3">数据由后端调用高德 Web 服务取得，不使用 Mock。</p>';
+        var h='<p class="text-sm mb-1 font-medium">灵山胜境周边</p>';
+        h+='<p class="text-xs text-text-secondary mb-3">附近的参观地点与便民服务</p>';
         if(r.ok&&r.data&&r.data.pois){
           r.data.pois.slice(0,8).forEach(function(s){
-            var coordinate=(typeof s.longitude==='number'&&typeof s.latitude==='number')?
-              s.longitude.toFixed(6)+', '+s.latitude.toFixed(6):'坐标未返回';
+            var location=s.address||s.district||'位于灵山胜境周边';
             h+='<div class="border rounded-lg p-3 mb-2"><div class="flex items-center gap-2">'+
               '<span class="material-icons text-brand-accent text-[18px]">location_on</span>'+
-              '<span class="text-sm">'+ui.escapeHtml(s.name||s.poiId)+'</span></div>'+
-              '<div class="text-xs text-text-secondary mt-1 ml-7">'+ui.escapeHtml(coordinate)+' · POI '+
-              ui.escapeHtml(s.poiId||'未返回')+'</div></div>';
+              '<span class="text-sm">'+ui.escapeHtml(s.name||'附近地点')+'</span></div>'+
+              '<div class="text-xs text-text-secondary mt-1 ml-7">'+ui.escapeHtml(location)+'</div></div>';
           });
           (r.data.relatedScenicAreas||[]).forEach(function(area){
             h+='<div class="border border-dashed rounded-lg p-3 mt-3"><div class="text-xs text-text-secondary">独立景区，不加入灵山路线</div>'+
               '<div class="text-sm mt-1">'+ui.escapeHtml(area.scenicAreaName)+'</div></div>';
           });
         }else{
-          h+='<p class="text-xs text-red-600">'+ui.escapeHtml((r.error&&r.error.message)||'高德地图连接失败')+'</p>';
+          h+='<p class="text-xs text-red-600">附近信息暂时无法获取，请稍后重试。</p>';
         }
-        showResult('景区地图数据',h);
+        showResult('附近景点',h);
       });
     }
     if(type==='assistant') router.withParams('ai-assistant',roomId?{roomId:roomId}:{});
+  }
+
+  function renderKnowledgeResult(data){
+    var name=data.spotName||data.name||data.spotId||'当前景点';
+    var h='<div class="space-y-sm">';
+    h+='<div class="border rounded-xl p-4 bg-[#FAFAF7]"><div class="text-xs text-text-secondary">当前景点</div><div class="text-lg font-medium mt-1">'+ui.escapeHtml(name)+'</div>';
+    if(data.scenicAreaName)h+='<div class="text-xs text-text-secondary mt-1">'+ui.escapeHtml(data.scenicAreaName+(data.district?' · '+data.district:''))+'</div>';
+    if(data.description)h+='<p class="text-sm leading-relaxed mt-3">'+ui.escapeHtml(data.description)+'</p>';
+    h+='</div>';
+    var chunks=Array.isArray(data.chunks)?data.chunks:[];
+    if(chunks.length){
+      h+='<div class="text-xs font-medium mt-4 mb-2">知识条目 '+chunks.length+'</div>';
+      chunks.forEach(function(chunk){
+        h+='<article class="border rounded-lg p-3 mb-2"><div class="text-sm font-medium">'+ui.escapeHtml(chunk.title||'景点资料')+'</div>';
+        if(chunk.source)h+='<div class="text-[10px] text-text-secondary mt-1">来源：'+ui.escapeHtml(chunk.source)+'</div>';
+        h+='<p class="text-xs leading-relaxed mt-2">'+ui.escapeHtml(chunk.content||'暂无正文')+'</p></article>';
+      });
+    }else{
+      h+='<div class="border border-dashed rounded-lg p-4 mt-3 text-xs text-text-secondary">当前知识库还没有该景点的详细分段资料，已先展示路线中的基础信息。</div>';
+    }
+    h+='</div>';
+    return h;
   }
 
   function showResult(title,content){
