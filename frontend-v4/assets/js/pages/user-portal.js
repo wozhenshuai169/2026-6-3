@@ -6,10 +6,11 @@
   var A=window.Aurelian,state=A.state,api=A.api,ui=A.ui,router=A.router,comp=A.components;
 
   var roomId=state.get('roomId'),userId=state.get('userId');
-  var roomPollTimer,avatarPollTimer,members=[],currentSpotId=null,messages=[];
+  var roomPollTimer,avatarPollTimer,members=[],currentSpotId=state.get('currentSpotId')||null,messages=[];
   var isTextMode=false,isRecording=false,recognition=null,recTimer=null,recSec=0;
   var lastAvatarStatus='idle',routeSpots=[],routeIndex=0,roomRouteId=state.get('routeId');
   var roomRequestPending=false,avatarRequestPending=false;
+  var isSoloMode=!roomId;
 
   var els={};
 
@@ -25,7 +26,7 @@
   }
 
   function cacheDom(){
-    ['avatarContainer','avatarStatusLabel','roomJoinOverlay','roomCodeInput','roomJoinBtn','roomJoinError',
+    ['avatarContainer','avatarStatusLabel','roomJoinOverlay','roomCodeInput','roomJoinBtn','roomSoloBtn','roomJoinError',
      'memberListContainer','menuToggle','menuClose','functionOverlay',
      'fnKnowledge','fnAudio','fnMap','fnAi',
      'avatarMode','textMode','btnSwitchText','btnSwitchAvatar',
@@ -42,6 +43,7 @@
     if(els.menuToggle) els.menuToggle.addEventListener('click',function(){els.functionOverlay.classList.remove('hidden');});
     if(els.menuClose) els.menuClose.addEventListener('click',function(){els.functionOverlay.classList.add('hidden');});
     if(els.roomJoinBtn) els.roomJoinBtn.addEventListener('click',handleJoinRoom);
+    if(els.roomSoloBtn) els.roomSoloBtn.addEventListener('click',startSoloMode);
     if(els.roomCodeInput) els.roomCodeInput.addEventListener('keydown',function(e){if(e.key==='Enter') handleJoinRoom();});
     if(els.fnKnowledge) els.fnKnowledge.addEventListener('click',function(){handleFunction('knowledge');});
     if(els.fnAudio) els.fnAudio.addEventListener('click',function(){handleFunction('audio');});
@@ -57,6 +59,10 @@
       star.addEventListener('click', function(){
         var score = parseInt(this.getAttribute('data-score'));
         document.querySelectorAll('.feedback-star').forEach(function(s,i){s.style.color = i < score ? '#F59E0B' : '#E8E8E4';});
+        if(!roomId){
+          ui.toast('感谢评分: '+score+' 星！', 'success');
+          return;
+        }
         api.post('/feedback', { score: score, roomId: roomId, userId: userId, scene: 'public-tour' }).then(function(r){
           if(r.ok) ui.toast('感谢评分: '+score+' 星！', 'success');
           else ui.toast('评分提交失败', 'error');
@@ -75,19 +81,38 @@
 
   function handleJoinRoom(){
     var code=(els.roomCodeInput.value||'').trim();
-    if(!code){showJoinError('请输入房间号');return;}
+    if(!code){showJoinError('请输入房间号，或点击“独自导览”');return;}
     els.roomJoinBtn.disabled=true;els.roomJoinBtn.textContent='加入中...';
     els.roomJoinError.classList.add('hidden');
     api.post('/rooms/'+code+'/join',{}).then(function(r){
-      if(r.ok){roomId=code;state.set('roomId',roomId);hideJoinOverlay();ui.toast('加入成功！','success');startRoomMode();addMsg('system','你已加入导览房间');}
-      else{var msg=(r.error&&r.error.message)||'加入失败';if(r.error&&r.error.status===404)msg='房间不存在';showJoinError(msg);els.roomJoinBtn.disabled=false;els.roomJoinBtn.textContent='加入房间';}
+      if(r.ok){roomId=code;isSoloMode=false;state.set('roomId',roomId);hideJoinOverlay();ui.toast('加入成功！','success');startRoomMode();addMsg('system','你已加入导览房间');}
+      else{var msg=(r.error&&r.error.message)||'加入失败';if(r.error&&r.error.status===404)msg='房间不存在';showJoinError(msg);els.roomJoinBtn.disabled=false;els.roomJoinBtn.textContent='进入导览';}
     });
   }
   function showJoinError(msg){els.roomJoinError.textContent=msg;els.roomJoinError.classList.remove('hidden');}
 
+  function startSoloMode(){
+    stopRoomMode();
+    roomId=null;isSoloMode=true;members=[];
+    state.remove('roomId');
+    if(els.roomJoinError)els.roomJoinError.classList.add('hidden');
+    if(els.roomJoinBtn){els.roomJoinBtn.disabled=false;els.roomJoinBtn.textContent='进入导览';}
+    hideJoinOverlay();
+    renderMemberList();
+    updateDigitalHumanState('idle');
+    if(els.avatarStatusLabel)els.avatarStatusLabel.textContent='独自导览';
+    if(els.spotChip){els.spotChip.classList.remove('hidden');}
+    if(els.spotChipName)els.spotChipName.textContent='独自游览';
+    if(els.narrationText)els.narrationText.textContent='已进入独自导览模式。你可以直接向数字人提问，无需加入公共房间。';
+    loadRouteData();
+    if(!messages.length)addMsg('system','已进入独自导览模式，可直接提问或播放讲解');
+    ui.toast('已进入独自导览', 'success');
+  }
+
   // === Room mode ===
   function startRoomMode(){
     stopRoomMode();
+    isSoloMode=false;
     fetchRoomMembers();fetchAvatarState();loadRouteData();fetchRoomMessages();
     roomPollTimer=setInterval(fetchRoomMembers,A.config.POLL_INTERVAL_ROOM);
     avatarPollTimer=setInterval(fetchAvatarState,A.config.POLL_INTERVAL_AVATAR);
@@ -106,6 +131,11 @@
         if(roomRouteId)route=r.data.routes.find(function(item){return item.routeId===roomRouteId;});
         route=route||r.data.routes[0];
         routeSpots=route.spotIds||[];
+        if(!currentSpotId&&routeSpots.length){
+          currentSpotId=routeSpots[0];
+          state.set('currentSpotId',currentSpotId);
+          fetchSpotInfo();
+        }
         updateRouteProgress();
       }
     });
@@ -207,6 +237,10 @@
 
   function renderMemberList(){
     if(!els.memberListContainer)return;
+    if(isSoloMode&&!roomId){
+      els.memberListContainer.innerHTML='<div class="flex items-center gap-3 p-3 border border-brand-border rounded-xl bg-white"><div class="size-10 rounded-full border border-brand-border bg-surface-container flex items-center justify-center"><span class="material-icons text-[18px]">person</span></div><div><div class="text-sm font-medium">独自导览中</div><div class="text-xs text-text-secondary mt-0.5">未加入公共房间，问答不会广播给团队</div></div></div>';
+      return;
+    }
     if(!members.length){els.memberListContainer.innerHTML=comp.emptyState('group','暂无成员');return;}
     var h='';
     members.forEach(function(m){
@@ -220,9 +254,14 @@
   function sendPublicQuestion(text){
     if(text && typeof text !== 'string') text='';
     text=text||(els.publicChatInput?els.publicChatInput.value.trim():'');
-    if(!text||!roomId)return;
+    if(!text)return;
     if(els.publicChatInput)els.publicChatInput.value='';
     addMsg('user',text);
+
+    if(!roomId||isSoloMode){
+      sendSoloQuestion(text);
+      return;
+    }
 
     // Check if this is a private question
     var isPrivate=detectPrivateQuestion(text);
@@ -243,6 +282,43 @@
         }
       }
       else{addMsg('system','发送失败: '+(r.error&&r.error.message||'网络错误'));}
+    });
+  }
+
+  function sendSoloQuestion(text){
+    var isPrivate=detectPrivateQuestion(text);
+    if(isPrivate)addMsg('decision','独自导览模式下，你的问题不会进入公共频道；如需团长协助，请加入房间后使用私人服务');
+    showTyping();
+    buildSoloAnswer(text).then(function(answer){
+      removeTyping();
+      addMsg('ai',answer);
+      if(els.narrationText)els.narrationText.textContent=answer;
+      return api.post('/audio/tts',{text:answer,voice:'guide_female',speed:1.0});
+    }).then(function(r){
+      if(r&&r.ok&&r.data&&r.data.audioUrl)playTTS(r.data.audioUrl);
+    }).catch(function(){
+      removeTyping();
+      addMsg('ai','我可以继续陪你独自导览。你可以问景点介绍、路线安排、附近设施，也可以输入“播放讲解”让我朗读当前景点。');
+    });
+  }
+
+  function buildSoloAnswer(text){
+    var spotId=currentSpotId||routeSpots[0]||'lingshan_dazhaobi';
+    var wantsRoute=/路线|怎么走|下一站|下一个|行程|游览/.test(text);
+    var wantsHelp=/厕所|洗手间|休息|服务|出口|地图|附近|位置/.test(text);
+    if(wantsRoute){
+      return Promise.resolve('当前为独自导览模式。推荐你按路线顺序游览：'+(routeSpots.length?routeSpots.join(' → '):'从入口景点开始，逐步前往核心景点')+'。你也可以打开“路线规划”查看更完整的横屏导览方案。');
+    }
+    if(wantsHelp){
+      return Promise.resolve('你现在是独自导览模式，可以打开右侧“附近设施”查看景区 POI、服务点和周边位置。如果你需要团长处理身体不适、走散等情况，请先输入房间号加入团队。');
+    }
+    return api.get('/spots/'+spotId).then(function(r){
+      if(r.ok&&r.data){
+        var name=r.data.spotName||r.data.name||spotId;
+        var desc=r.data.description||'这里是本路线中的重要景点，适合边走边听讲解。';
+        return '当前景点是“'+name+'”。'+desc+' 你可以继续问我它的历史、文化背景、拍照建议或下一站怎么走。';
+      }
+      return '当前为独自导览模式。你可以直接和数字人对话，无需加入公共房间；如果想获得团队同步讲解，再输入团长分享的房间号即可。';
     });
   }
 
@@ -336,6 +412,11 @@
 
   function processAudioBlob(blob){
     isRecording=false;updateVoiceBtn();
+    if(!roomId||isSoloMode){
+      if(recognition){recognition.start();isRecording=true;updateVoiceBtn();ui.toast('独自导览使用浏览器语音识别，请继续说话','info');}
+      else ui.toast('独自导览暂不上传语音，请使用文字提问','warning');
+      return;
+    }
     ui.toast('正在上传音频并识别...','info');
 
     // Step 1: Upload audio file
@@ -377,9 +458,8 @@
   // === Function menu ===
   function handleFunction(type){
     els.functionOverlay.classList.add('hidden');
-    if(!roomId){ui.toast('请先加入房间','warning');return;}
     if(type==='knowledge'){
-      api.get('/spots/'+(currentSpotId||'bell_tower')).then(function(r){
+      api.get('/spots/'+(currentSpotId||routeSpots[0]||'lingshan_dazhaobi')).then(function(r){
         var h=r.ok&&r.data?(r.data.description||'暂无描述'):'加载失败';
         showResult('知识库',h);
       });
@@ -414,7 +494,7 @@
         showResult('景区地图数据',h);
       });
     }
-    if(type==='assistant') router.withParams('ai-assistant',{roomId:roomId});
+    if(type==='assistant') router.withParams('ai-assistant',roomId?{roomId:roomId}:{});
   }
 
   function showResult(title,content){

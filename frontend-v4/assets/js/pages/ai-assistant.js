@@ -5,7 +5,7 @@
   'use strict';
   var A = window.Aurelian, state = A.state, api = A.api, ui = A.ui, router = A.router;
 
-  var roomId, userId;
+  var roomId, userId, soloMode = false;
   var messages = [];
   var isRecording = false;
   var recognition = null;
@@ -16,13 +16,14 @@
     A.auth.guardRole('visitor', function(){
       roomId = state.get('roomId');
       userId = state.get('userId');
-      if (!roomId || !userId) { ui.toast('请先加入房间', 'error'); return; }
+      soloMode = !roomId;
+      if (!userId) { ui.toast('请先登录游客账号', 'error'); return; }
       initAfterAuth();
     });
     return;
   }
   function initAfterAuth() {
-    if (!roomId || !userId) { ui.toast('请先加入房间', 'error'); return; }
+    if (!userId) { ui.toast('请先登录游客账号', 'error'); return; }
 
     chatContainer = document.getElementById('chat-container');
     chatInput = document.getElementById('chat-input');
@@ -92,7 +93,7 @@
 
   function addWelcomeMessage() {
     messages.push({ role: 'system', text: '对话开始 · 私人模式' });
-    messages.push({ role: 'ai', text: '你好！这里是私人助手模式，你可以随时问我任何问题。你问的内容只有我们两个知道。' });
+    messages.push({ role: 'ai', text: soloMode ? '你好！你现在处于独自导览模式，可以问我路线、景点、休息点和个人需求；因为没有加入房间，我不会向团长发送消息。' : '你好！这里是私人助手模式，你可以随时问我任何问题。你问的内容只有我们两个知道。' });
     renderMessages();
   }
 
@@ -103,6 +104,19 @@
 
     addMessage('user', text);
     showTyping();
+
+    if (soloMode || !roomId) {
+      setTimeout(function() {
+        removeTyping();
+        var answer = buildSoloAssistantAnswer(text);
+        addMessage('ai', answer);
+        if (text.indexOf('累')!==-1 || text.indexOf('休息')!==-1 || text.indexOf('不舒服')!==-1 || text.indexOf('走不动')!==-1) {
+          addMessage('system', '独自导览模式下无法通知团长；如需团队协助，请返回导览页输入房间号加入团队。');
+        }
+        scrollToBottom();
+      }, 240);
+      return;
+    }
 
     api.post('/ai/public-question', {
       roomId: roomId,
@@ -128,6 +142,16 @@
   function addMessage(role, text, audioUrl) {
     messages.push({ role: role, text: text, time: new Date().toISOString(), audioUrl: audioUrl || null });
     renderMessages();
+  }
+
+  function buildSoloAssistantAnswer(text) {
+    if (/厕所|洗手间|休息|服务|出口|地图|附近|位置/.test(text)) {
+      return '你现在没有加入公共房间，但仍可以使用独自导览服务。建议返回实时导览页，打开“附近设施”查看景区 POI、服务点和周边位置；如果身体不适，请优先联系现场工作人员。';
+    }
+    if (/路线|怎么走|下一站|下一个|行程|游览/.test(text)) {
+      return '独自导览建议从入口景点开始，按推荐路线逐步游览核心景点。你可以返回“路线规划”选择轻松、经典或文化主题路线。';
+    }
+    return '我会按独自导览模式为你处理这个问题：不会广播到团队，也不会通知团长。你可以继续问我景点介绍、路线安排、附近设施或个人游览建议。';
   }
 
   function renderMessages() {

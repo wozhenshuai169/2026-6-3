@@ -37,7 +37,7 @@
     var ids = ['roomIdDisplay','routeNameDisplay','memberCount','memberStatusDot','currentSpotDisplay',
       'scenicAreaDisplay','progressDisplay','pendingRequestsRow','pendingRequestsText',
       'btnStart','btnSkip','btnCollect','btnPause','btnCopyRoom','btnShare','btnViewRequests',
-      'btnViewRequests2','requestsBadge','spotSelectorBtn','spotSelectorLabel','spotDropdown',
+      'btnViewRequests2','btnBack','requestsBadge','spotSelectorBtn','spotSelectorLabel','spotDropdown',
       'memberList','memberListTitle','tabAll','tabRequests',
       'routeModal','routeList','routeCancel','routeConfirm'];
     ids.forEach(function(id) {
@@ -54,6 +54,7 @@
     if (els.btnPause) els.btnPause.addEventListener('click', handlePause);
     if (els.btnCopyRoom) els.btnCopyRoom.addEventListener('click', handleCopyRoom);
     if (els.btnShare) els.btnShare.addEventListener('click', handleShare);
+    if (els.btnBack) els.btnBack.addEventListener('click', function(){ router.go('landing'); });
     if (els.spotSelectorBtn) els.spotSelectorBtn.addEventListener('click', toggleSpotDropdown);
     if (els.routeCancel) els.routeCancel.addEventListener('click', closeRouteModal);
     if (els.routeConfirm) els.routeConfirm.addEventListener('click', confirmCreateRoom);
@@ -232,10 +233,38 @@
 
   function handleCopyRoom() {
     if (!roomId) return;
-    navigator.clipboard.writeText(roomId).then(function() {
+    copyText(roomId).then(function() {
       ui.toast('房间号已复制', 'success');
     }).catch(function() {
-      ui.toast('复制失败，房间号: ' + roomId, 'info');
+      ui.toast('浏览器限制自动复制，请手动复制：' + roomId, 'warning');
+      try { window.prompt('请手动复制房间号', roomId); } catch (e) {}
+    });
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function(resolve, reject) {
+      var textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      textarea.style.top = '0';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+      try {
+        var ok = document.execCommand('copy');
+        ok ? resolve() : reject(new Error('execCommand copy failed'));
+      } catch (e) {
+        reject(e);
+      } finally {
+        document.body.removeChild(textarea);
+      }
     });
   }
 
@@ -246,7 +275,7 @@
       navigator.share({ title: 'Aurelian Guide', text: text }).catch(function(){});
     } else {
       ui.toast('房间号: ' + roomId + ' (已复制)', 'info');
-      navigator.clipboard.writeText(roomId).catch(function(){});
+      copyText(roomId).catch(function(){});
     }
   }
 

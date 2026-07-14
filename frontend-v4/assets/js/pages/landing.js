@@ -25,16 +25,12 @@
       }
     }
 
-    // Already logged in: validate the stored token before routing.
+    // Landing is the explicit main menu. Do not auto-route by stored role here;
+    // returning users should stay on this page until they choose an entry.
     if (state.isLoggedIn()) {
       auth.me().then(function(result) {
-        if (!result.ok) return;
-        var role = state.get('role');
-        if (role === 'visitor') { router.go('user-portal'); return; }
-        if (role === 'tour_leader') { router.go('guide-panel'); return; }
-        if (role === 'admin') { router.go('knowledge-base'); return; }
+        if (!result.ok) state.clear();
       });
-      return;
     }
 
     // Cache DOM refs

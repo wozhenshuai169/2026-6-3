@@ -135,7 +135,7 @@
     }).then(function(r){
       document.getElementById('loading-area').classList.add('hidden');
       btn.disabled=false;
-      btn.innerHTML='<span class="material-icons text-[18px]">route</span> 生成高德真实路线';
+      btn.innerHTML='<span class="material-icons text-[18px]">route</span> 生成路线';
 
       if(r.ok&&r.data){
         showResult(r.data);
