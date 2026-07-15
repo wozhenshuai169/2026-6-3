@@ -171,27 +171,56 @@ def rebuild_index() -> dict:
 
 
 def seed_scenic_chunks() -> None:
+    """Synchronize repository scenic knowledge without touching uploaded documents.
+
+    Built-in chunks have ``doc_id IS NULL``. Replacing the JSON file must therefore
+    replace those rows as a set; otherwise renamed or removed demo chunks remain in
+    SQLite and can still be retrieved. Administrator-uploaded chunks always carry a
+    document id and are deliberately preserved.
+    """
     path = DATA_DIR / "scenic_chunks.json"
     if not path.exists():
         return
     chunks = json.loads(path.read_text(encoding="utf-8"))
+    normalized: list[tuple[str, str | None, str, str | None, str, str]] = []
+    seen_ids: set[str] = set()
+    for item in chunks:
+        chunk_id = str(item.get("chunkId", "")).strip()
+        if not chunk_id:
+            continue
+        if chunk_id in seen_ids:
+            raise ValueError(f"Duplicate scenic knowledge chunk id: {chunk_id}")
+        seen_ids.add(chunk_id)
+        title = str(item.get("title", chunk_id)).strip() or chunk_id
+        content = str(item.get("content", "")).strip()
+        if not content:
+            raise ValueError(f"Scenic knowledge chunk has no content: {chunk_id}")
+        normalized.append(
+            (
+                chunk_id,
+                item.get("spotId"),
+                title,
+                item.get("topic"),
+                str(item.get("source", "景区资料")),
+                content,
+            )
+        )
+
     with database() as connection:
-        for item in chunks:
-            chunk_id = str(item.get("chunkId", ""))
-            if not chunk_id:
-                continue
-            exists = connection.execute("SELECT 1 FROM kb_chunks WHERE chunk_id = ?", (chunk_id,)).fetchone()
-            if exists:
-                continue
-            title = str(item.get("title", chunk_id))
-            source = str(item.get("source", "Scenic dataset"))
-            content = str(item.get("content", ""))
+        old_ids = [
+            row["chunk_id"]
+            for row in connection.execute("SELECT chunk_id FROM kb_chunks WHERE doc_id IS NULL")
+        ]
+        _delete_fts(connection, old_ids)
+        connection.execute("DELETE FROM kb_chunks WHERE doc_id IS NULL")
+        created_at = int(time())
+        for chunk_id, spot_id, title, topic, source, content in normalized:
             connection.execute(
                 """
                 INSERT INTO kb_chunks (chunk_id, spot_id, title, topic, source, content, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                (chunk_id, item.get("spotId"), title, item.get("topic"), source, content, int(time())),
+                (chunk_id, spot_id, title, topic, source, content, created_at),
             )
             connection.execute(
                 "INSERT INTO kb_chunks_fts (chunk_id, title, content, source) VALUES (?, ?, ?, ?)",

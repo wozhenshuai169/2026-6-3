@@ -33,6 +33,8 @@ class EvaluationHarness:
         private_leak_hits = 0
         low_confidence_total = 0
         low_confidence_hits = 0
+        factual_total = 0
+        factual_hits = 0
         for case in self.data.eval_cases:
             total += 1
             request = AlgorithmRequest(**case["request"])
@@ -85,6 +87,14 @@ class EvaluationHarness:
                 unsupported_total += 1
                 if answer and "没有查到可靠信息" not in answer and not response.citations:
                     unsupported_hits += 1
+            if expected.get("category") in {"事实问答", "历史文化", "景点特色", "易变信息", "参观规则"}:
+                factual_total += 1
+                contains_expected = not expected.get("answerContainsAny") or self._contains_any(
+                    answer, expected["answerContainsAny"]
+                )
+                grounded = not expected.get("needsCitation") or bool(response.citations)
+                if contains_expected and grounded and response.decision.decision == expected.get("decision"):
+                    factual_hits += 1
         vision_feature_hits = 0
         for spot in self.data.vision_spots:
             request = AlgorithmRequest(channel="public", text="介绍这张图", imageUrl=spot["images"][0])
@@ -102,7 +112,9 @@ class EvaluationHarness:
             "riskEscalationRecall": round(risk_recall / risk_total, 3) if risk_total else 1.0,
             "citationHitRate": round(citation_hits / rag_total, 3) if rag_total else 1.0,
             "under10sRate": round(sum(1 for latency in latencies if latency <= 10) / total, 3),
+            "localUnder5sRate": round(sum(1 for latency in latencies if latency <= 5) / total, 3),
             "avgLatencyMs": round(sum(latencies) / total * 1000, 2),
+            "factualAccuracy": round(factual_hits / factual_total, 3) if factual_total else 1.0,
             "lowAsrClarificationRate": round(low_asr_hits / low_asr_total, 3) if low_asr_total else 1.0,
             "answerMismatchRate": round(answer_mismatch_hits / answer_mismatch_total, 3) if answer_mismatch_total else 0.0,
             "unsupportedAnswerRate": round(unsupported_hits / unsupported_total, 3) if unsupported_total else 0.0,

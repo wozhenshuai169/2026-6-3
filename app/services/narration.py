@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.errors import AppError
 from app.providers.factory import get_llm
 from app.services.audio import tts_synthesize
+from app.services.avatar_settings import get_avatar_settings
 from app.services.knowledge import search_knowledge
 from app.services.rooms import get_room, save_room_narration
 from app.services.stats import record_event
@@ -18,11 +19,21 @@ logger = logging.getLogger(__name__)
 
 SPOT_NAMES = {
     "lingshan_dazhaobi": "灵山大照壁",
+    "wuming_bridge": "五明桥",
+    "buddha_foot_altar": "佛足坛",
+    "wuzhi_gate": "五智门",
+    "bodhi_avenue": "菩提大道",
     "jiulong_guanyu": "九龙灌浴",
+    "demon_relief": "降魔浮雕",
+    "ashoka_pillar": "阿育王柱",
+    "baizi_mile": "百子戏弥勒",
     "xiangfu_temple": "祥符禅寺",
     "lingshan_buddha": "灵山大佛",
+    "buddhist_museum": "佛教文化博览馆",
     "lingshan_palace": "灵山梵宫",
     "wuyin_mandala": "五印坛城",
+    "manfeilong_pagoda": "曼飞龙塔",
+    "wujinyi_house": "无尽意斋",
 }
 
 
@@ -37,7 +48,7 @@ async def generate_room_narration(
         if not settings.deepseek_api_key.strip():
             raise AppError(503, "LLM_NOT_CONFIGURED", "智能讲解服务未配置")
         if not settings.enable_tts or not settings.audio_provider_enabled:
-            raise AppError(503, "TTS_NOT_CONFIGURED", "TTS provider is not configured")
+            raise AppError(503, "TTS_NOT_CONFIGURED", "讲解语音服务未配置")
 
         room = get_room(room_id)
         if room is None:
@@ -54,7 +65,8 @@ async def generate_room_narration(
             context_text = "知识库暂无该景点的直接资料。"
 
         prompt = (
-            "你是灵山胜境的现场中文数字导游。请为团队生成一段可直接朗读的景点讲解词。"
+            "请以灵山胜境现场讲解员的口吻，为团队准备一段可直接朗读的景点讲解词。"
+            "成稿中不要提及人工智能、模型、生成过程或服务提供商。"
             "长度控制在100到160个汉字，开头自然欢迎游客，语言生动但不夸张，不使用Markdown。"
             "事实优先依据资料；资料不足时只介绍可靠的通用背景，不得编造精确年代、数字或实时安排。\n"
             f"景点：{spot_name}\n资料：\n{context_text}"
@@ -77,13 +89,19 @@ async def generate_room_narration(
         if not text:
             raise AppError(503, "LLM_EMPTY_RESPONSE", "智能讲解服务没有返回内容")
 
-        tts = await tts_synthesize(text, voice=voice, speed=1.0, room_id=room_id)
+        speech_settings = get_avatar_settings()
+        tts = await tts_synthesize(
+            text,
+            voice=voice,
+            speed=float(speech_settings["speed"]),
+            room_id=room_id,
+        )
         audio_url = tts.get("audioUrl", "")
         if not tts.get("success", True) or not audio_url:
             raise AppError(
                 503,
                 "TTS_UNAVAILABLE",
-                tts.get("error") or "TTS provider did not return playable audio",
+                "讲解语音暂时无法播放",
             )
 
         latest_room = get_room(room_id)

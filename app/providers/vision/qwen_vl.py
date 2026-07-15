@@ -36,7 +36,7 @@ class QwenVLVisionProvider(VisionProvider):
     async def recognize(self, image_url: str, hint: str = "") -> VisionResult:
         """调用 Qwen-VL 识别图片内容，景区优先，同时支持人物/物体/场景识别。"""
         system_prompt = (
-            "你是一个智能图片识别助手，服务于旅游景区导览场景。\n\n"
+            "请执行旅游景区导览场景的图片识别任务。不要在结果中提及模型、算法或服务提供商。\n\n"
             "## 识别优先级（从高到低）：\n"
             "1. **景区/建筑/地标**：优先识别图片中的景点、建筑、自然风光、历史遗迹等\n"
             "2. **人物**：如果图片的主体是人物（单人/多人/雕像/画像），如实描述人物特征\n"

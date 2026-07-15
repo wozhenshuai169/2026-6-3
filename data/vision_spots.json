@@ -1,42 +1,130 @@
 [
   {
-    "spotId": "bell_tower",
-    "spotName": "钟楼",
-    "visualFeatures": ["木结构", "重檐", "钟鼓建筑"],
-    "relatedSpots": ["鼓楼", "主展厅"],
-    "images": ["bell_tower_01.jpg", "bell_tower_02.jpg", "bell_tower_03.jpg", "zhonglou_front.jpg", "zhonglou_roof.jpg"],
-    "keywords": ["钟楼", "bell", "zhonglou", "重檐", "报时"]
+    "spotId": "lingshan_dazhaobi",
+    "spotName": "灵山大照壁",
+    "visualFeatures": ["大型照壁", "湖光万顷净琉璃题字", "入口轴线"],
+    "relatedSpots": ["五明桥", "五智门"],
+    "images": ["lingshan_dazhaobi.jpg"],
+    "keywords": ["灵山大照壁", "大照壁", "净琉璃"]
   },
   {
-    "spotId": "drum_tower",
-    "spotName": "鼓楼",
-    "visualFeatures": ["对称布局", "鼓形展陈", "传统楼阁"],
-    "relatedSpots": ["钟楼", "主展厅"],
-    "images": ["drum_tower_01.jpg", "drum_tower_02.jpg", "drum_tower_03.jpg", "gulou_front.jpg", "drum_display.jpg"],
-    "keywords": ["鼓楼", "drum", "gulou", "仪式", "报时器具"]
+    "spotId": "jiulong_guanyu",
+    "spotName": "九龙灌浴",
+    "visualFeatures": ["莲花装置", "太子像", "九条龙"],
+    "relatedSpots": ["菩提大道", "百子戏弥勒"],
+    "images": ["jiulong_guanyu.jpg"],
+    "keywords": ["九龙灌浴", "九龙", "莲花太子"]
   },
   {
-    "spotId": "main_hall",
-    "spotName": "主展厅",
-    "visualFeatures": ["灰瓦屋顶", "脊兽装饰", "中轴线建筑"],
-    "relatedSpots": ["钟楼", "中心庭院"],
-    "images": ["main_hall_01.jpg", "main_hall_02.jpg", "main_hall_roof.jpg", "exhibition_hall.jpg", "main_axis.jpg"],
-    "keywords": ["主展厅", "展厅", "main_hall", "exhibition", "屋顶", "脊兽"]
+    "spotId": "xiangfu_temple",
+    "spotName": "祥符禅寺",
+    "visualFeatures": ["寺院建筑", "传统殿宇", "古银杏"],
+    "relatedSpots": ["灵山大佛", "阿育王柱"],
+    "images": ["xiangfu_temple.jpg"],
+    "keywords": ["祥符禅寺", "祥符寺", "禅寺"]
   },
   {
-    "spotId": "stone_gallery",
-    "spotName": "石刻长廊",
-    "visualFeatures": ["碑刻", "长廊", "石质文字"],
-    "relatedSpots": ["主展厅", "中心庭院"],
-    "images": ["stone_gallery_01.jpg", "stone_gallery_02.jpg", "stone_tablet.jpg", "beike_01.jpg", "inscription.jpg"],
-    "keywords": ["石刻", "碑", "stone", "tablet", "碑刻", "题记"]
+    "spotId": "lingshan_buddha",
+    "spotName": "灵山大佛",
+    "visualFeatures": ["大型青铜佛像", "右手施无畏印", "莲花座"],
+    "relatedSpots": ["祥符禅寺", "登云道"],
+    "images": ["lingshan_buddha.jpg"],
+    "keywords": ["灵山大佛", "大佛", "青铜佛像"]
   },
   {
-    "spotId": "courtyard",
-    "spotName": "中心庭院",
-    "visualFeatures": ["开阔院落", "银杏海棠", "轴线视野"],
-    "relatedSpots": ["主展厅", "游客服务中心"],
-    "images": ["courtyard_01.jpg", "courtyard_02.jpg", "center_yard.jpg", "yingxing_yard.jpg", "garden_axis.jpg"],
-    "keywords": ["庭院", "院落", "courtyard", "yard", "银杏", "海棠"]
+    "spotId": "lingshan_palace",
+    "spotName": "灵山梵宫",
+    "visualFeatures": ["穹顶大厅", "木雕装饰", "大型文化建筑"],
+    "relatedSpots": ["佛教文化博览馆", "五印坛城"],
+    "images": ["lingshan_palace.jpg"],
+    "keywords": ["灵山梵宫", "梵宫", "穹顶"]
+  },
+  {
+    "spotId": "wuyin_mandala",
+    "spotName": "五印坛城",
+    "visualFeatures": ["藏式建筑", "白色外墙", "彩色装饰"],
+    "relatedSpots": ["灵山梵宫", "曼飞龙塔"],
+    "images": ["wuyin_mandala.jpg"],
+    "keywords": ["五印坛城", "坛城", "藏式"]
+  },
+  {
+    "spotId": "manfeilong_pagoda",
+    "spotName": "曼飞龙塔",
+    "visualFeatures": ["南传佛教塔式", "多层塔身", "金色装饰"],
+    "relatedSpots": ["五印坛城", "灵山大佛"],
+    "images": ["manfeilong_pagoda.jpg"],
+    "keywords": ["曼飞龙塔", "飞龙塔", "佛塔"]
+  },
+  {
+    "spotId": "baizi_mile",
+    "spotName": "百子戏弥勒",
+    "visualFeatures": ["弥勒造像", "儿童群像", "欢喜主题"],
+    "relatedSpots": ["九龙灌浴", "五智门"],
+    "images": ["baizi_mile.jpg"],
+    "keywords": ["百子戏弥勒", "弥勒", "儿童群像"]
+  },
+  {
+    "spotId": "ashoka_pillar",
+    "spotName": "阿育王柱",
+    "visualFeatures": ["石柱", "柱头造型", "佛教文化符号"],
+    "relatedSpots": ["降魔浮雕", "祥符禅寺"],
+    "images": ["ashoka_pillar.jpg"],
+    "keywords": ["阿育王柱", "石柱", "阿育王"]
+  },
+  {
+    "spotId": "bodhi_avenue",
+    "spotName": "菩提大道",
+    "visualFeatures": ["林荫步道", "中轴景观", "菩提主题"],
+    "relatedSpots": ["五智门", "九龙灌浴"],
+    "images": ["bodhi_avenue.jpg"],
+    "keywords": ["菩提大道", "大道", "林荫"]
+  },
+  {
+    "spotId": "wuming_bridge",
+    "spotName": "五明桥",
+    "visualFeatures": ["桥梁", "入口过渡空间", "五明文化主题"],
+    "relatedSpots": ["灵山大照壁", "佛足坛"],
+    "images": ["wuming_bridge.jpg"],
+    "keywords": ["五明桥", "五明"]
+  },
+  {
+    "spotId": "buddha_foot_altar",
+    "spotName": "佛足坛",
+    "visualFeatures": ["佛足印", "法轮图案", "石质坛面"],
+    "relatedSpots": ["五明桥", "五智门"],
+    "images": ["buddha_foot_altar.jpg"],
+    "keywords": ["佛足坛", "佛足印", "法轮"]
+  },
+  {
+    "spotId": "wuzhi_gate",
+    "spotName": "五智门",
+    "visualFeatures": ["石牌楼", "多门结构", "石刻装饰"],
+    "relatedSpots": ["佛足坛", "菩提大道"],
+    "images": ["wuzhi_gate.jpg"],
+    "keywords": ["五智门", "石牌楼"]
+  },
+  {
+    "spotId": "demon_relief",
+    "spotName": "降魔浮雕",
+    "visualFeatures": ["大型浮雕", "人物群像", "修行故事"],
+    "relatedSpots": ["九龙灌浴", "阿育王柱"],
+    "images": ["demon_relief.jpg"],
+    "keywords": ["降魔浮雕", "降魔", "浮雕"]
+  },
+  {
+    "spotId": "buddhist_museum",
+    "spotName": "佛教文化博览馆",
+    "visualFeatures": ["室内展馆", "佛教造像", "图文展陈"],
+    "relatedSpots": ["灵山大佛", "灵山梵宫"],
+    "images": ["buddhist_museum.jpg"],
+    "keywords": ["佛教文化博览馆", "博览馆", "展馆"]
+  },
+  {
+    "spotId": "wujinyi_house",
+    "spotName": "无尽意斋",
+    "visualFeatures": ["传统建筑", "文化陈设", "庭院空间"],
+    "relatedSpots": ["祥符禅寺", "灵山梵宫"],
+    "images": ["wujinyi_house.jpg"],
+    "keywords": ["无尽意斋", "意斋"]
   }
 ]

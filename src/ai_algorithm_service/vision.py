@@ -47,7 +47,7 @@ class VisionRecognizer:
 
     def recognize(self, request: AlgorithmRequest) -> VisionResult:
         provider_result = self.provider.recognize(request)
-        spot = provider_result or self._match_demo_library(request)
+        spot = provider_result or self._match_reference_library(request)
         if not spot:
             current = request.state.currentSpotId
             related = [item["spotName"] for item in self.data.vision_spots[:3]]
@@ -74,7 +74,7 @@ class VisionRecognizer:
             recommendedAction="rag_explain",
         )
 
-    def _match_demo_library(self, request: AlgorithmRequest) -> dict | None:
+    def _match_reference_library(self, request: AlgorithmRequest) -> dict | None:
         text = " ".join(part for part in [request.text, request.imageUrl or "", request.audioUrl or "", request.audioPath or ""] if part)
         lowered = text.lower()
         for spot in self.data.vision_spots:
@@ -94,19 +94,26 @@ class VisionRecognizer:
 
 def _spot_id_from_name(name: str) -> str:
     mapping = {
-        "钟楼": "bell_tower",
-        "bell tower": "bell_tower",
-        "鼓楼": "drum_tower",
-        "drum tower": "drum_tower",
-        "主展厅": "main_hall",
-        "大成殿": "main_hall",
-        "石刻长廊": "stone_gallery",
-        "石刻": "stone_gallery",
-        "中心庭院": "courtyard",
-        "庭院": "courtyard",
+        "灵山大照壁": "lingshan_dazhaobi",
+        "五明桥": "wuming_bridge",
+        "佛足坛": "buddha_foot_altar",
+        "五智门": "wuzhi_gate",
+        "菩提大道": "bodhi_avenue",
+        "九龙灌浴": "jiulong_guanyu",
+        "降魔浮雕": "demon_relief",
+        "阿育王柱": "ashoka_pillar",
+        "百子戏弥勒": "baizi_mile",
+        "祥符禅寺": "xiangfu_temple",
+        "祥符寺": "xiangfu_temple",
+        "灵山大佛": "lingshan_buddha",
+        "佛教文化博览馆": "buddhist_museum",
+        "灵山梵宫": "lingshan_palace",
+        "五印坛城": "wuyin_mandala",
+        "曼飞龙塔": "manfeilong_pagoda",
+        "无尽意斋": "wujinyi_house",
     }
     lowered = name.lower()
     for key, value in mapping.items():
         if key.lower() in lowered:
             return value
-    return "main_hall"
+    return "lingshan_dazhaobi"

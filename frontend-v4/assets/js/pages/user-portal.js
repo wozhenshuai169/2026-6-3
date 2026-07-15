@@ -13,12 +13,14 @@
   var isSoloMode=!roomId;
   var lastNarrationId=null,roomNarrationPaused=false;
   var selectedVoice=state.get('narrationVoice')||'guide_female';
+  var avatarSpeed=1.0;
+  var selectedFeedbackScore=0;
 
   var els={};
 
   function init(){
     A.auth.guardRole('visitor', function(){
-      cacheDom(); bindEvents();
+      cacheDom(); bindEvents(); loadAvatarSettings();
       initSpeechRecognition();
       if(roomId) startRoomMode();
       else showJoinOverlay();
@@ -33,7 +35,8 @@
      'fnKnowledge','fnMap','fnAi',
      'avatarMode','textMode','btnSwitchText','btnSwitchAvatar',
      'publicChatArea','publicChatInput','publicChatSend','narrationText',
-     'btnVoice','spotChip','spotChipName','ttsPlayer','pageBody','visitorVoice','roomVoiceSelect'
+     'btnVoice','spotChip','spotChipName','ttsPlayer','pageBody','visitorVoice','roomVoiceSelect',
+     'feedbackTag','feedbackComment','feedbackSubmit'
     ].forEach(function(id){
       var camel=id.replace(/-([a-z])/g,function(m,c){return c.toUpperCase();});
       var kebab=id.replace(/([A-Z])/g,'-$1').toLowerCase();
@@ -57,21 +60,46 @@
     if(els.btnSwitchAvatar) els.btnSwitchAvatar.addEventListener('click',switchToAvatarMode);
     if(els.publicChatSend) els.publicChatSend.addEventListener('click',function(){sendPublicQuestion();});
     if(els.publicChatInput) els.publicChatInput.addEventListener('keydown',function(e){if(e.key==='Enter')sendPublicQuestion();});
-    if(els.btnVoice) els.btnVoice.addEventListener('click',toggleRecording);
+    if(els.btnVoice){els.btnVoice.addEventListener('click',toggleRecording);updateVoiceBtn();}
     // Feedback stars
     document.querySelectorAll('.feedback-star').forEach(function(star){
       star.addEventListener('click', function(){
-        var score = parseInt(this.getAttribute('data-score'));
-        document.querySelectorAll('.feedback-star').forEach(function(s,i){s.style.color = i < score ? '#F59E0B' : '#E8E8E4';});
-        if(!roomId){
-          ui.toast('感谢评分: '+score+' 星！', 'success');
-          return;
-        }
-        api.post('/feedback', { score: score, roomId: roomId, userId: userId, scene: 'public-tour' }).then(function(r){
-          if(r.ok) ui.toast('感谢评分: '+score+' 星！', 'success');
-          else ui.toast('评分提交失败', 'error');
-        });
+        selectedFeedbackScore=parseInt(this.getAttribute('data-score'));
+        document.querySelectorAll('.feedback-star').forEach(function(s,i){s.style.color = i < selectedFeedbackScore ? '#F59E0B' : '#E8E8E4';});
       });
+    });
+    if(els.feedbackSubmit) els.feedbackSubmit.addEventListener('click',submitFeedback);
+  }
+
+  function loadAvatarSettings(){
+    api.get('/avatar-settings').then(function(result){
+      if(!result.ok||!result.data)return;
+      avatarSpeed=Number(result.data.speed)||1.0;
+      var image=els.avatarContainer&&els.avatarContainer.querySelector('img');
+      if(image&&result.data.imageUrl)image.src=result.data.imageUrl;
+      if(!state.get('narrationVoice'))setSelectedVoice(result.data.voice||'guide_female',false);
+    });
+  }
+
+  function submitFeedback(){
+    if(!selectedFeedbackScore){ui.toast('请先选择星级','warning');return;}
+    if(!roomId){ui.toast('加入导览房间后可以提交反馈','warning');return;}
+    var tag=els.feedbackTag?els.feedbackTag.value:'';
+    var comment=els.feedbackComment?els.feedbackComment.value.trim():'';
+    els.feedbackSubmit.disabled=true;
+    api.post('/feedback',{
+      score:selectedFeedbackScore,
+      roomId:roomId,
+      userId:userId,
+      scene:'public-tour',
+      comment:comment,
+      tags:tag?[tag]:[]
+    }).then(function(r){
+      els.feedbackSubmit.disabled=false;
+      if(r.ok){
+        ui.toast('感谢你的反馈','success');
+        if(els.feedbackComment)els.feedbackComment.value='';
+      }else ui.toast('反馈提交失败，请稍后重试','error');
     });
   }
 
@@ -107,7 +135,7 @@
     if(els.avatarStatusLabel)els.avatarStatusLabel.textContent='独自导览';
     if(els.spotChip){els.spotChip.classList.remove('hidden');}
     if(els.spotChipName)els.spotChipName.textContent='独自游览';
-    if(els.narrationText)els.narrationText.textContent='已进入独自导览模式。你可以直接向数字人提问，无需加入公共房间。';
+    if(els.narrationText)els.narrationText.textContent='已进入独自导览。你可以直接询问景点和路线，无需加入公共房间。';
     loadRouteData();
     if(!messages.length)addMsg('system','已进入独自导览模式，可直接提问或播放讲解');
     ui.toast('已进入独自导览', 'success');
@@ -271,24 +299,34 @@
   }
 
   // === Public chat ===
-  function sendPublicQuestion(text){
+  function sendPublicQuestion(text,inputMode,asrConfidence){
     if(text && typeof text !== 'string') text='';
     text=text||(els.publicChatInput?els.publicChatInput.value.trim():'');
     if(!text)return;
+    inputMode=inputMode==='voice'?'voice':'text';
+    asrConfidence=typeof asrConfidence==='number'?asrConfidence:null;
     if(els.publicChatInput)els.publicChatInput.value='';
     addMsg('user',text);
 
     if(!roomId||isSoloMode){
-      sendSoloQuestion(text);
+      sendSoloQuestion(text,inputMode,asrConfidence);
       return;
     }
 
     // Check if this is a private question
     var isPrivate=detectPrivateQuestion(text);
-    if(isPrivate){addMsg('decision','检测到私人问题，AI 将在公共频道隐去隐私内容后回答');}
+    if(isPrivate){addMsg('decision','这类问题将转到私人服务，不在公共频道显示具体内容');}
     showTyping();
 
-    api.post('/ai/public-question',{roomId:roomId,userId:userId,question:text,needAudio:true,voice:selectedVoice}).then(function(r){
+    api.post('/ai/public-question',{
+      roomId:roomId,
+      userId:userId,
+      question:text,
+      needAudio:true,
+      voice:selectedVoice,
+      inputMode:inputMode,
+      asrConfidence:asrConfidence
+    }).then(function(r){
       removeTyping();
       if(r.ok&&r.data){
         addMsg('ai',r.data.answer||'');
@@ -305,7 +343,7 @@
     });
   }
 
-  function sendSoloQuestion(text){
+  function sendSoloQuestion(text,inputMode,asrConfidence){
     var isPrivate=detectPrivateQuestion(text);
     if(isPrivate)addMsg('decision','独自导览模式下，你的问题不会进入公共频道；如需团长协助，请加入房间后使用私人服务');
     showTyping();
@@ -314,7 +352,9 @@
       question:text,
       currentSpotId:currentSpotId||routeSpots[0]||'lingshan_dazhaobi',
       needAudio:true,
-      voice:selectedVoice
+      voice:selectedVoice,
+      inputMode:inputMode==='voice'?'voice':'text',
+      asrConfidence:typeof asrConfidence==='number'?asrConfidence:null
     }).then(function(r){
       removeTyping();
       if(r.ok&&r.data){
@@ -322,11 +362,11 @@
         if(els.narrationText)els.narrationText.textContent=r.data.answer||'';
         playTTS(r.data.audioUrl);
       }else{
-        addMsg('system','AI 回答失败: '+(r.error&&r.error.message||'网络错误'));
+        addMsg('system','暂时无法回答，请稍后再试');
       }
     }).catch(function(){
       removeTyping();
-      addMsg('system','智能问答服务暂时无法连接，请稍后再试');
+      addMsg('system','问答服务暂时无法连接，请稍后再试');
     });
   }
 
@@ -351,7 +391,7 @@
   function addMsg(role,text){messages.push({role:role,text:text});renderMessages();}
   function renderMessages(){
     if(!els.publicChatArea)return;
-    var h='<div id="narration-banner" class="bg-[#FDF6F1] border border-[#E07B3C]/15 rounded-lg p-3 text-xs leading-relaxed msg-in"><div class="flex items-center gap-1.5 text-brand-accent font-medium mb-1"><span class="material-icons text-[14px]">volume_up</span> AI 正在讲解</div><p id="narration-text">'+(currentSpotId?'当前景点：'+ui.escapeHtml(currentSpotId):'等待 AI 开始讲解...')+'</p></div>';
+    var h='<div id="narration-banner" class="bg-[#FDF6F1] border border-[#E07B3C]/15 rounded-lg p-3 text-xs leading-relaxed msg-in"><div class="flex items-center gap-1.5 text-brand-accent font-medium mb-1"><span class="material-icons text-[14px]">volume_up</span> 导游讲解</div><p id="narration-text">'+(currentSpotId?'当前景点：'+ui.escapeHtml(currentSpotId):'等待讲解开始...')+'</p></div>';
     messages.forEach(function(m){
       if(m.role==='system')h+='<div class="text-center msg-in"><span class="text-[10px] text-[#A0A0A0] bg-[#F5F5F2] px-2 py-0.5 rounded-full">'+ui.escapeHtml(m.text)+'</span></div>';
       else if(m.role==='decision')h+='<div class="msg-in"><div class="bg-[#FFF8F0] border border-[#E07B3C]/25 rounded-lg px-3 py-2 text-[10px] text-[#E07B3C] flex items-center gap-1.5"><span class="material-icons text-[14px]">psychology</span>'+ui.escapeHtml(m.text)+'</div></div>';
@@ -365,7 +405,7 @@
   }
   function showTyping(){
     var el=document.createElement('div');el.id='typing-indicator';el.className='flex msg-in';
-    el.innerHTML='<div class="bg-[#F5F5F2] rounded-xl rounded-bl-sm px-3 py-2 border-l-2 border-brand-accent"><span class="text-xs text-[#A0A0A0]">AI 正在思考</span><span class="dot-anim" style="color:#E07B3C"> <span>.</span><span>.</span><span>.</span></span></div>';
+    el.innerHTML='<div class="bg-[#F5F5F2] rounded-xl rounded-bl-sm px-3 py-2 border-l-2 border-brand-accent"><span class="text-xs text-[#A0A0A0]">正在整理回答</span><span class="dot-anim" style="color:#E07B3C"> <span>.</span><span>.</span><span>.</span></span></div>';
     els.publicChatArea.appendChild(el);els.publicChatArea.scrollTop=els.publicChatArea.scrollHeight;
   }
   function removeTyping(){var el=document.getElementById('typing-indicator');if(el)el.remove();}
@@ -373,7 +413,7 @@
   // === TTS playback ===
   function playRoomNarration(data){
     if(!data||!data.text){playTTS(data&&data.audioUrl);return;}
-    api.post('/audio/tts',{text:data.text,voice:selectedVoice,speed:1.0,audioFormat:'mp3'}).then(function(r){
+    api.post('/audio/tts',{text:data.text,voice:selectedVoice,speed:avatarSpeed,audioFormat:'mp3'}).then(function(r){
       if(r.ok&&r.data&&r.data.audioUrl)playTTS(r.data.audioUrl);
       else playTTS(data.audioUrl);
     }).catch(function(){playTTS(data.audioUrl);});
@@ -386,29 +426,45 @@
     els.ttsPlayer.play().catch(function(){});
   }
 
-  // === Voice recording (MediaRecorder + Web Speech fallback) ===
+  // === Voice input ===
   var mediaRecorder=null,audioChunks=[],audioBlob=null;
 
   function initSpeechRecognition(){
     var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!SR){if(els.btnVoice)els.btnVoice.style.opacity='0.3';return;}
+    if(!SR)return;
     recognition=new SR();recognition.lang='zh-CN';recognition.interimResults=false;recognition.continuous=false;
-    recognition.onresult=function(e){var t=e.results[0][0].transcript;if(t){if(els.publicChatInput)els.publicChatInput.value=t;sendPublicQuestion(t);}};
-    recognition.onerror=function(e){isRecording=false;updateVoiceBtn();};
+    recognition.onresult=function(e){
+      var result=e.results[0][0],text=result.transcript;
+      if(text){
+        if(els.publicChatInput)els.publicChatInput.value=text;
+        sendPublicQuestion(text,'voice',Number.isFinite(result.confidence)?result.confidence:null);
+      }
+    };
+    recognition.onerror=function(e){
+      isRecording=false;updateVoiceBtn();
+      if(e.error!=='aborted'&&e.error!=='no-speech')ui.toast('没有听清，请再说一次','warning');
+    };
     recognition.onend=function(){isRecording=false;updateVoiceBtn();};
   }
 
   function toggleRecording(){
-    // Try MediaRecorder first (proper audio file → backend ASR)
     if(isRecording){stopMediaRecording();return;}
+    if(recognition){
+      try{
+        recognition.start();
+        isRecording=true;updateVoiceBtn();
+        ui.toast('请开始说话','info');
+      }catch(e){
+        isRecording=false;updateVoiceBtn();
+      }
+      return;
+    }
     startMediaRecording();
   }
 
   function startMediaRecording(){
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-      // Fallback to Web Speech
-      if(recognition){recognition.start();isRecording=true;updateVoiceBtn();ui.toast('正在聆听 (语音识别模式)...','info');}
-      else ui.toast('浏览器不支持录音','warning');
+      ui.toast('当前浏览器无法使用麦克风，请改用文字提问','warning');
       return;
     }
     navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
@@ -423,18 +479,15 @@
       mediaRecorder.start();
       isRecording=true;updateVoiceBtn();
       recSec=0;recTimer=setInterval(function(){recSec++;},1000);
-      ui.toast('🔴 正在录音...','info');
+      ui.toast('正在录音，再点一次结束','info');
     }).catch(function(){
-      // Fallback to Web Speech
-      if(recognition){recognition.start();isRecording=true;updateVoiceBtn();ui.toast('正在聆听 (文字模式)...','info');}
-      else ui.toast('无法访问麦克风','error');
+      ui.toast('无法访问麦克风，请检查浏览器权限','error');
     });
   }
 
   function stopMediaRecording(){
     if(recTimer){clearInterval(recTimer);recTimer=null;}
     if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();return;}
-    // If using Web Speech fallback
     if(recognition){recognition.stop();}
     isRecording=false;updateVoiceBtn();
   }
@@ -442,11 +495,10 @@
   function processAudioBlob(blob){
     isRecording=false;updateVoiceBtn();
     if(!roomId||isSoloMode){
-      if(recognition){recognition.start();isRecording=true;updateVoiceBtn();ui.toast('独自导览使用浏览器语音识别，请继续说话','info');}
-      else ui.toast('独自导览暂不上传语音，请使用文字提问','warning');
+      ui.toast('当前浏览器无法直接识别录音，请使用文字提问','warning');
       return;
     }
-    ui.toast('正在上传音频并识别...','info');
+    ui.toast('正在识别语音','info');
 
     // Step 1: Upload audio file
     var fd=new FormData();
@@ -464,11 +516,10 @@
           audioUrl: audioUrl, audioFormat: 'webm', voice: selectedVoice
         }).then(function(r){
           if(r.ok&&r.data){
-            if(r.data.asrText){addMsg('system','🎤 '+r.data.asrText);}
+            if(r.data.asrText){addMsg('system','你说：'+r.data.asrText);}
             if(r.data.answer){addMsg('ai',r.data.answer);playTTS(r.data.audioUrl);}
             if(r.data.resumeText&&els.narrationText)els.narrationText.textContent=r.data.resumeText;
           } else {
-            // Fallback: Web Speech
             ui.toast('语音识别失败，请用文字','warning');
           }
         });
@@ -480,8 +531,18 @@
 
   function updateVoiceBtn(){
     if(!els.btnVoice)return;
-    if(isRecording){els.btnVoice.style.background='#FEE2E2';els.btnVoice.querySelector('.material-icons').textContent='mic_off';els.btnVoice.querySelector('.material-icons').style.color='#EF4444';}
-    else{els.btnVoice.style.background='';els.btnVoice.querySelector('.material-icons').textContent='mic';els.btnVoice.querySelector('.material-icons').style.color='';}
+    var label=els.btnVoice.querySelector('span:last-child');
+    if(isRecording){
+      els.btnVoice.style.background='#FEE2E2';
+      els.btnVoice.querySelector('.material-icons').textContent='mic_off';
+      els.btnVoice.querySelector('.material-icons').style.color='#EF4444';
+      if(label)label.textContent='点击结束';
+    }else{
+      els.btnVoice.style.background='';
+      els.btnVoice.querySelector('.material-icons').textContent='mic';
+      els.btnVoice.querySelector('.material-icons').style.color='';
+      if(label)label.textContent='点击说话';
+    }
   }
 
   // === Function menu ===
@@ -489,16 +550,15 @@
     els.functionOverlay.classList.add('hidden');
     if(type==='knowledge'){
       var knowledgeSpotId=currentSpotId||routeSpots[0]||'lingshan_dazhaobi';
-      showResult('景点知识','<div class="text-sm text-text-secondary">正在读取当前景点资料...</div>');
+      showResult('景点资料','<div class="text-sm text-text-secondary">正在读取当前景点资料...</div>');
       api.get('/spots/'+knowledgeSpotId).then(function(r){
         if(r.ok&&r.data){
-          showResult('景点知识',renderKnowledgeResult(r.data));
+          showResult('景点资料',renderKnowledgeResult(r.data));
           return;
         }
-        var message=(r.error&&r.error.message)||'景点资料加载失败';
-        showResult('景点知识','<div class="border rounded-lg p-4 text-sm text-text-secondary">'+ui.escapeHtml(message)+'</div>');
+        showResult('景点资料','<div class="border rounded-lg p-4 text-sm text-text-secondary">景点资料暂时无法获取，请稍后重试。</div>');
       }).catch(function(){
-        showResult('景点知识','<div class="border rounded-lg p-4 text-sm text-text-secondary">知识库暂时无法连接，请稍后重试。</div>');
+        showResult('景点资料','<div class="border rounded-lg p-4 text-sm text-text-secondary">景点资料暂时无法获取，请稍后重试。</div>');
       });
     }
     if(type==='map'){
@@ -535,14 +595,14 @@
     h+='</div>';
     var chunks=Array.isArray(data.chunks)?data.chunks:[];
     if(chunks.length){
-      h+='<div class="text-xs font-medium mt-4 mb-2">知识条目 '+chunks.length+'</div>';
+      h+='<div class="text-xs font-medium mt-4 mb-2">相关资料 '+chunks.length+' 条</div>';
       chunks.forEach(function(chunk){
         h+='<article class="border rounded-lg p-3 mb-2"><div class="text-sm font-medium">'+ui.escapeHtml(chunk.title||'景点资料')+'</div>';
         if(chunk.source)h+='<div class="text-[10px] text-text-secondary mt-1">来源：'+ui.escapeHtml(chunk.source)+'</div>';
         h+='<p class="text-xs leading-relaxed mt-2">'+ui.escapeHtml(chunk.content||'暂无正文')+'</p></article>';
       });
     }else{
-      h+='<div class="border border-dashed rounded-lg p-4 mt-3 text-xs text-text-secondary">当前知识库还没有该景点的详细分段资料，已先展示路线中的基础信息。</div>';
+      h+='<div class="border border-dashed rounded-lg p-4 mt-3 text-xs text-text-secondary">暂时没有该景点的详细介绍，已先展示路线中的基础信息。</div>';
     }
     h+='</div>';
     return h;

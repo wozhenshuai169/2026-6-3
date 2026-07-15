@@ -11,6 +11,7 @@
   var adminModal, adminClose, adminPasscode, adminError, adminSubmit;
   var chosenRole = null;
   var demoAdmin = false;
+  var defaultAvatarVoice = 'guide_female';
 
   function init() {
     // Demo mode
@@ -52,6 +53,10 @@
     adminError = document.getElementById('admin-error');
     adminSubmit = document.getElementById('admin-submit');
 
+    api.get('/avatar-settings').then(function (result) {
+      if (result.ok && result.data && result.data.voice) defaultAvatarVoice = result.data.voice;
+    });
+
     // Bind events
     if (btnVisitor) btnVisitor.addEventListener('click', function () { openModal('visitor'); });
     if (btnLeader) btnLeader.addEventListener('click', function () { openModal('tour_leader'); });
@@ -73,7 +78,7 @@
     var label = role === 'visitor' ? '游客' : '团长';
     if (modalTitle) modalTitle.textContent = label + ' — 输入你的名字';
     if (modalVoiceGroup) modalVoiceGroup.classList.toggle('hidden', role !== 'visitor');
-    if (modalVoice && role === 'visitor') modalVoice.value = state.get('narrationVoice') || 'guide_female';
+    if (modalVoice && role === 'visitor') modalVoice.value = state.get('narrationVoice') || defaultAvatarVoice;
     if (modalName) { modalName.value = ''; modalName.focus(); }
     if (modalError) modalError.classList.add('hidden');
     if (modalSubmit) { modalSubmit.disabled = false; modalSubmit.textContent = '开始导览'; }

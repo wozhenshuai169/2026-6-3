@@ -67,6 +67,8 @@ async def ask(req: PublicQuestionRequest, user: dict = Depends(get_current_user)
         req.needAudio,
         user_id=user["userId"],
         voice=req.voice,
+        input_mode=req.inputMode,
+        asr_confidence=req.asrConfidence,
     )
     if result is None:
         raise AppError(404, "ROOM_NOT_FOUND", "Room not found")
@@ -88,6 +90,8 @@ async def ask_solo(req: SoloQuestionRequest, user: dict = Depends(get_current_us
         need_audio=req.needAudio,
         user_id=user["userId"],
         voice=req.voice,
+        input_mode=req.inputMode,
+        asr_confidence=req.asrConfidence,
     )
     return SoloQuestionResponse(**result)
 

@@ -41,6 +41,13 @@ def _spot_map() -> dict[str, dict]:
                         "stayMinutes": item.get("stayMinutes", 0),
                     },
                 )
+                current.setdefault("routeNames", [])
+                current.setdefault("stayMinutes", item.get("stayMinutes", 0))
+                current.setdefault("scenicAreaId", area.get("scenicAreaId", ""))
+                current.setdefault("scenicAreaName", area.get("scenicAreaName", ""))
+                current.setdefault("city", area.get("city", ""))
+                current.setdefault("district", area.get("district", ""))
+                current.setdefault("relatedSpots", [])
                 route_name = route.get("title", "")
                 if route_name and route_name not in current["routeNames"]:
                     current["routeNames"].append(route_name)

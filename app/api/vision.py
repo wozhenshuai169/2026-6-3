@@ -26,9 +26,9 @@ async def vision_recognize(req: VisionRecognizeRequest, user: dict = Depends(get
                 latency_ms=(perf_counter() - started) * 1000,
                 payload={"roomId": req.roomId, "error": "room_not_found"},
             )
-            raise AppError(404, "ROOM_NOT_FOUND", "Room not found")
+            raise AppError(404, "ROOM_NOT_FOUND", "导览房间不存在")
         if result.get("providerError"):
-            raise AppError(503, "VISION_UNAVAILABLE", "Vision provider is unavailable")
+            raise AppError(503, "VISION_UNAVAILABLE", "图片识别服务暂时不可用")
         record_event(
             "vision_recognize", success=True,
             latency_ms=(perf_counter() - started) * 1000,
@@ -47,4 +47,4 @@ async def vision_recognize(req: VisionRecognizeRequest, user: dict = Depends(get
             latency_ms=(perf_counter() - started) * 1000,
             payload={"roomId": req.roomId, "error": str(exc)},
         )
-        raise AppError(503, "VISION_UNAVAILABLE", "Vision provider is unavailable") from exc
+        raise AppError(503, "VISION_UNAVAILABLE", "图片识别服务暂时不可用") from exc

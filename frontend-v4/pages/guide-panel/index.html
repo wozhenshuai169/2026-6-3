@@ -23,18 +23,18 @@
     </aside>
 
     <section class="stage-pane">
-      <div class="guide-stage">
-        <img src="../../assets/images/digital-guide-main.webp" alt="数字人导游在天坛主展厅前进行讲解">
+      <div id="guide-stage" class="guide-stage" data-status="idle" data-emotion="friendly">
+        <img id="guide-avatar-image" src="../../assets/images/digital-guide-main.webp" alt="导游讲解画面">
         <div class="stage-status"><span class="speaking-dot"></span><span id="ai-status-badge">待命</span><span id="ai-action-display">等待开始讲解</span></div>
-        <p class="subtitle">等待团长点击“开始讲解”，讲解词将由 AI 实时生成。</p>
+        <p class="subtitle">点击“开始讲解”后，系统会根据当前景点资料准备讲解并播放。</p>
       </div>
       <div class="chapter-panel">
-        <div class="chapter-current"><small>当前章节</small><strong id="current-spot-display">主展厅</strong><span id="progress-display">第 1 段 / 共 5 段</span></div>
+        <div class="chapter-current"><small>当前章节</small><strong id="current-spot-display">灵山大照壁</strong><span id="progress-display">第 1 段 / 共 5 段</span></div>
         <ol class="chapter-track">
           <li class="done"><b>1</b><span>迎宾介绍</span></li>
-          <li class="active"><b>2</b><span>主展厅</span></li>
-          <li><b>3</b><span>文物精华</span></li>
-          <li><b>4</b><span>建筑结构</span></li>
+          <li class="active"><b>2</b><span>九龙灌浴</span></li>
+          <li><b>3</b><span>灵山大佛</span></li>
+          <li><b>4</b><span>灵山梵宫</span></li>
           <li><b>5</b><span>互动问答</span></li>
         </ol>
         <div class="chapter-time"><small>全程时长</small><strong>12:20</strong></div>
@@ -43,11 +43,10 @@
 
     <aside class="context-pane">
       <section class="context-block current-spot">
-        <p class="eyebrow">当前景点 · <span id="scenic-area-display">主展厅</span></p>
-        <img src="../../assets/images/main-hall.jpg" alt="主展厅">
-        <p>了解主展厅的历史背景与建筑特色，探索它的文化价值。</p>
+        <p class="eyebrow">当前景点 · <span id="scenic-area-display">灵山大照壁</span></p>
+        <p>查看当前景点的历史背景、文化寓意与参观提示。</p>
       </section>
-      <section class="context-block route-block"><h3>路线进度</h3><div class="route-list"><button class="route-step active">主展厅 <span>正在讲解</span></button><button class="route-step">文物精华 <span>待讲解</span></button><button class="route-step">建筑结构 <span>待讲解</span></button></div></section>
+      <section class="context-block route-block"><h3>路线进度</h3><div class="route-list"><button class="route-step active">灵山大照壁 <span>正在讲解</span></button><button class="route-step">九龙灌浴 <span>待讲解</span></button><button class="route-step">灵山大佛 <span>待讲解</span></button></div></section>
       <section class="context-block request-card"><button id="btn-view-requests2"><span><span class="material-icons">chat_bubble_outline</span>私人请求 <b id="requests-badge">0</b></span><span class="material-icons">chevron_right</span></button></section>
       <div class="spot-picker"><button id="spot-selector-btn" aria-expanded="false"><span id="spot-selector-label">切换景点</span><span class="material-icons">expand_more</span></button><div id="spot-dropdown" class="spot-dropdown hidden"></div></div>
       <label class="narration-voice-picker" for="narration-voice">
@@ -58,7 +57,7 @@
           <option value="guide_male">沉稳男声</option>
           <option value="xiaowei">专业男声</option>
         </select>
-        <small>下次生成讲解时生效</small>
+        <small>下次准备讲解时生效</small>
       </label>
       <span id="route-name-display" class="sr-only">—</span>
     </aside>
@@ -77,7 +76,6 @@
     </div>
     <audio id="guide-narration-player" preload="metadata" hidden></audio>
     <button id="btn-back" class="command compact"><span class="material-icons">arrow_back</span>切换身份</button>
-    <button id="btn-view-requests" class="hidden"></button>
   </footer>
 
   <div id="route-modal" class="modal-layer hidden"><div class="modal-card"><p class="eyebrow">创建导览房间</p><h2>选择今天的导览路线</h2><div id="route-list" class="route-options"></div><div class="modal-actions"><button id="route-cancel" class="command">取消</button><button id="route-confirm" class="command primary" disabled>确认并创建</button></div></div></div>

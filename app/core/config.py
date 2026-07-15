@@ -1,6 +1,7 @@
-"""应用配置 —— 通过环境变量加载，支持 Mock 降级。
+"""Application configuration loaded from environment variables.
 
-所有 API Key 均为可选：未设置时对应 Provider 自动降级到 Mock。
+Missing external credentials disable the corresponding feature and surface a
+clear configuration error; the product never substitutes fabricated results.
 """
 
 from pydantic_settings import BaseSettings

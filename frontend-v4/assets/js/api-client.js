@@ -87,7 +87,7 @@ Aurelian.api = (function () {
             if (err.name === 'AbortError') {
               resolve({ ok: false, error: { status: 0, message: '请求超时，请检查网络连接', code: 'TIMEOUT' } });
             } else {
-              resolve({ ok: false, error: { status: 0, message: '网络连接失败，请确认后端已启动', code: 'NETWORK_ERROR' } });
+              resolve({ ok: false, error: { status: 0, message: '暂时无法连接服务，请稍后再试', code: 'NETWORK_ERROR' } });
             }
           });
       });
@@ -120,6 +120,10 @@ Aurelian.api = (function () {
     return request('PATCH', endpoint, body || {}, false);
   }
 
+  function put(endpoint, body) {
+    return request('PUT', endpoint, body || {}, false);
+  }
+
   function remove(endpoint) {
     return request('DELETE', endpoint, null, false);
   }
@@ -132,6 +136,7 @@ Aurelian.api = (function () {
   return {
     get: get,
     post: post,
+    put: put,
     patch: patch,
     delete: remove,
     upload: upload,

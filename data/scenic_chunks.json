@@ -1,1485 +1,422 @@
 [
   {
-    "chunkId": "chunk_001",
-    "spotId": "main_hall",
-    "title": "主展厅历史介绍",
+    "chunkId": "ls_001",
+    "spotId": "lingshan_shengjing",
+    "title": "灵山胜境概况",
+    "topic": "overview",
+    "audience": "所有游客",
+    "type": "spot",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_nature", "lingshan_family"],
+    "content": "灵山胜境位于江苏省无锡市太湖西北部马山镇，地处秦履峰、青龙山、白虎山环抱之间，占地约30万平方米，是国家5A级旅游景区，集佛教文化、艺术展示、自然景观和游览体验于一体。"
+  },
+  {
+    "chunkId": "ls_002",
+    "spotId": "lingshan_shengjing",
+    "title": "小灵山佛教缘起",
     "topic": "history",
-    "audience": "大众游客",
+    "audience": "历史文化爱好者",
     "type": "spot",
-    "source": "灵境古苑讲解手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "主展厅始建于明代，清代曾进行修缮，是景区保存较完整的礼制建筑。"
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history", "lingshan_classic"],
+    "content": "资料记载，唐贞观年间玄奘法师西行取经归来途经马山，认为这里山水形胜与印度灵鹫山有渊源，命名为“小灵山”，并嘱弟子窥基法师在此兴建道场，为此地佛教文化奠定基础。"
   },
   {
-    "chunkId": "chunk_002",
-    "spotId": "main_hall",
-    "title": "主展厅屋顶装饰",
-    "topic": "architecture",
-    "audience": "建筑爱好者",
-    "type": "spot",
-    "source": "灵境古苑建筑资料",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "architecture"
-    ],
-    "content": "主展厅屋顶采用灰瓦和脊兽装饰，体现本地传统木作与瓦作工艺。"
-  },
-  {
-    "chunkId": "chunk_003",
-    "spotId": "main_hall",
-    "title": "主展厅参观动线",
-    "topic": "route",
-    "audience": "团队游客",
-    "type": "route",
-    "source": "景区路线说明",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic"
-    ],
-    "content": "主展厅参观后可从右侧廊道前往钟楼，步行约三分钟。"
-  },
-  {
-    "chunkId": "chunk_004",
-    "spotId": "main_hall",
-    "title": "主展厅右侧休息区",
-    "topic": "facility",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic"
-    ],
-    "content": "最近的休息区在主展厅右侧出口附近，步行约120米，旁边有饮水点。"
-  },
-  {
-    "chunkId": "chunk_005",
-    "spotId": "bell_tower",
-    "title": "钟楼介绍",
+    "chunkId": "ls_003",
+    "spotId": "lingshan_shengjing",
+    "title": "现代灵山胜境建设历程",
     "topic": "history",
-    "audience": "大众游客",
+    "audience": "所有游客",
     "type": "spot",
-    "source": "灵境古苑讲解手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "钟楼位于中轴线北侧，曾用于报时和礼仪活动，是景区内保存较完整的传统建筑之一。"
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history", "lingshan_classic"],
+    "content": "1994年“修复祥符禅寺、建造灵山大佛”工程奠基；1997年11月15日灵山大佛落成开光；2003年以九龙灌浴为主体的二期开放；2006至2009年灵山梵宫、五印坛城、曼飞龙塔等三期主体工程陆续建成。"
   },
   {
-    "chunkId": "chunk_006",
-    "spotId": "bell_tower",
-    "title": "钟楼建筑结构",
-    "topic": "architecture",
-    "audience": "建筑爱好者",
+    "chunkId": "ls_004",
+    "spotId": "lingshan_dazhaobi",
+    "title": "灵山大照壁",
+    "topic": "culture",
+    "audience": "所有游客",
     "type": "spot",
-    "source": "灵境古苑建筑资料",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "architecture"
-    ],
-    "content": "钟楼采用重檐结构，木构件连接处保留榫卯做法，适合观察传统建筑受力方式。"
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history"],
+    "content": "灵山大照壁位于景区入口，长39.8米、高7米，被称为“华夏第一壁”。正面“灵山胜境”四字由赵朴初先生题写，背面刻有《小灵山》诗，是景区的文化序章和入口标志。"
   },
   {
-    "chunkId": "chunk_007",
-    "spotId": "bell_tower",
-    "title": "钟楼安全提示",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic"
-    ],
-    "content": "钟楼台阶较窄，雨天或人流密集时应听从工作人员指引，不建议逆行。"
-  },
-  {
-    "chunkId": "chunk_008",
-    "spotId": "drum_tower",
-    "title": "鼓楼介绍",
-    "topic": "history",
-    "audience": "大众游客",
+    "chunkId": "ls_005",
+    "spotId": "wuming_bridge",
+    "title": "五明桥",
+    "topic": "culture",
+    "audience": "所有游客",
     "type": "spot",
-    "source": "灵境古苑讲解手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼与钟楼相对，承担仪式提示和空间标识功能，形成一钟一鼓的传统格局。"
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_easy", "lingshan_classic"],
+    "content": "五明桥位于大照壁北侧，由五座并列石拱桥组成，连接入口与核心朝圣区域。“五明”指声明、因明、内明、医方明和工巧明，象征语言、逻辑、哲学、医学与工艺五类智慧。"
   },
   {
-    "chunkId": "chunk_009",
-    "spotId": "drum_tower",
-    "title": "鼓楼展陈",
-    "topic": "exhibition",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "展陈说明",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history"
-    ],
-    "content": "鼓楼内展示传统报时器具复制件，可帮助游客理解古代城市生活节奏。"
-  },
-  {
-    "chunkId": "chunk_010",
-    "spotId": "courtyard",
-    "title": "中心庭院",
-    "topic": "landscape",
-    "audience": "团队游客",
-    "type": "spot",
-    "source": "灵境古苑讲解手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family"
-    ],
-    "content": "中心庭院连接主展厅、钟楼和鼓楼，视野开阔，适合团队短暂停留和合影。"
-  },
-  {
-    "chunkId": "chunk_011",
-    "spotId": "courtyard",
-    "title": "庭院植被",
-    "topic": "landscape",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "园林资料",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "family"
-    ],
-    "content": "庭院种植银杏和海棠，春季看花，秋季看叶，是路线中节奏较舒缓的一段。"
-  },
-  {
-    "chunkId": "chunk_012",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊",
-    "topic": "history",
+    "chunkId": "ls_006",
+    "spotId": "buddha_foot_altar",
+    "title": "佛足坛",
+    "topic": "culture",
     "audience": "文化爱好者",
     "type": "spot",
-    "source": "文物资料",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊保存多件碑刻复制件，内容涉及地方修建记录、捐资名单和诗文题记。"
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_nature", "lingshan_classic"],
+    "content": "佛足坛位于五明桥北侧、菩提大道起点，设一对青铜佛足印。足心包含千辐轮相、宝瓶、鱼纹等吉祥图案，用于表现佛教文化中的福德与智慧圆满。"
   },
   {
-    "chunkId": "chunk_013",
-    "spotId": "stone_gallery",
-    "title": "石刻观赏方式",
+    "chunkId": "ls_007",
+    "spotId": "wuzhi_gate",
+    "title": "五智门",
+    "topic": "architecture",
+    "audience": "建筑文化爱好者",
+    "type": "spot",
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history"],
+    "content": "五智门位于佛足坛北侧，是五门六柱的汉白玉牌坊，高16.8米、宽35米。五门象征五方五佛，六柱对应布施、持戒、忍辱、精进、禅定、般若六度，是核心景区的入口标志。"
+  },
+  {
+    "chunkId": "ls_008",
+    "spotId": "bodhi_avenue",
+    "title": "菩提大道",
+    "topic": "nature",
+    "audience": "自然风光爱好者",
+    "type": "spot",
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_nature", "lingshan_easy"],
+    "content": "菩提大道位于五智门北侧，长约250米、宽约10米，通往九龙灌浴广场。它既是景区中轴线上的通行步道，也以菩提树和林荫景观营造安静舒缓的游览氛围。"
+  },
+  {
+    "chunkId": "ls_009",
+    "spotId": "jiulong_guanyu",
+    "title": "九龙灌浴景观",
+    "topic": "culture",
+    "audience": "所有游客",
+    "type": "spot",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_nature", "lingshan_family", "lingshan_easy"],
+    "content": "九龙灌浴位于景区中轴线核心位置，是表现佛陀诞生故事的音乐动态群雕。资料记载景观总高约27.5米，中央为7.2米高的鎏金太子佛像；表演时莲花开启、太子佛升起，九龙喷水形成“花开见佛、九龙沐浴”的场景。"
+  },
+  {
+    "chunkId": "ls_010",
+    "spotId": "jiulong_guanyu",
+    "title": "九龙灌浴演出提示",
+    "topic": "operation",
+    "audience": "所有游客",
+    "type": "notice",
+    "source": "灵山胜境公开资料",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_nature", "lingshan_family", "lingshan_easy"],
+    "content": "公开资料列出的九龙灌浴常规演出参考时段包括10:00、11:30、13:30和15:00，周末及节假日可能增加场次。演出安排会临时调整，游览当天应以景区广播、官方小程序或现场公告为准。"
+  },
+  {
+    "chunkId": "ls_011",
+    "spotId": "demon_relief",
+    "title": "降魔浮雕",
+    "topic": "culture",
+    "audience": "亲子与文化爱好者",
+    "type": "spot",
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history", "lingshan_classic"],
+    "content": "降魔浮雕位于九龙灌浴北侧，长约26米、高约4.6米，以高浮雕和浅浮雕结合的方式表现佛陀在菩提树下修行、战胜诱惑与威胁并最终觉悟成佛的故事。"
+  },
+  {
+    "chunkId": "ls_012",
+    "spotId": "ashoka_pillar",
+    "title": "阿育王柱",
+    "topic": "history",
+    "audience": "历史文化爱好者",
+    "type": "spot",
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history", "lingshan_classic"],
+    "content": "阿育王柱位于降魔浮雕北侧、祥符禅寺前方，通高约16.9米。柱头四头狮子朝向不同方向，用于表现佛法向四方传播以及和平、包容的文化主题。"
+  },
+  {
+    "chunkId": "ls_013",
+    "spotId": "baizi_mile",
+    "title": "百子戏弥勒",
+    "topic": "family",
+    "audience": "亲子家庭",
+    "type": "spot",
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_family", "lingshan_easy"],
+    "content": "百子戏弥勒位于阿育王柱与祥符禅寺之间，是一组充满亲和力的青铜群雕。弥勒佛呈卧姿、笑容可掬，周围百名孩童姿态各异，表达欢喜、包容、家庭和睦的文化寓意。"
+  },
+  {
+    "chunkId": "ls_014",
+    "spotId": "xiangfu_temple",
+    "title": "祥符禅寺历史",
+    "topic": "history",
+    "audience": "历史文化爱好者",
+    "type": "spot",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history", "lingshan_classic"],
+    "content": "祥符禅寺的前身可追溯至唐贞观年间的小灵山庵。北宋大中祥符年间，宋真宗赐额“祥符禅寺”。寺院历经兴废，是连接小灵山历史渊源与现代灵山胜境的重要文化节点。"
+  },
+  {
+    "chunkId": "ls_015",
+    "spotId": "xiangfu_temple",
+    "title": "祥符禅寺历史遗存",
+    "topic": "culture",
+    "audience": "所有游客",
+    "type": "spot",
+    "source": "灵山胜境公开资料",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history", "lingshan_classic"],
+    "content": "祥符禅寺保留千年银杏、古井等历史遗存。公开资料还提到重约12.8吨的祥符禅钟。寺内属于宗教文化场所，游览时应保持安静并遵循现场礼仪和工作人员指引。"
+  },
+  {
+    "chunkId": "ls_016",
+    "spotId": "lingshan_buddha",
+    "title": "灵山大佛基本数据",
+    "topic": "architecture",
+    "audience": "所有游客",
+    "type": "spot",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_nature"],
+    "content": "灵山大佛佛像高88米，其中佛体79米、莲花瓣9米，含台基总高101.5米，总用铜量约725吨。工程于1994年奠基，1997年11月15日落成开光，是灵山胜境的核心地标。"
+  },
+  {
+    "chunkId": "ls_017",
+    "spotId": "lingshan_buddha",
+    "title": "灵山大佛手印与登云道",
+    "topic": "culture",
+    "audience": "文化爱好者",
+    "type": "spot",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history"],
+    "content": "灵山大佛右手作施无畏印，左手作与愿印。通往大佛的216级登云道常被解释为108烦恼与108愿望两段，前后各108级，表达“烦恼尽除、愿望圆满”的文化寓意。"
+  },
+  {
+    "chunkId": "ls_018",
+    "spotId": "buddhist_museum",
+    "title": "佛教文化博览馆",
     "topic": "education",
-    "audience": "研学游客",
+    "audience": "亲子与研学游客",
     "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history"
-    ],
-    "content": "观看石刻时可先看题额，再看正文布局，最后观察刻痕深浅和书体差异。"
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history", "lingshan_family"],
+    "content": "佛教文化博览馆位于灵山大佛座基内，共三层。一层介绍五方五佛与中国佛教名山，二层梳理世界佛教发展史，三层为万佛殿。展陈结合图文、实景沙盘、互动屏和沉浸式投影，适合科普与研学。"
   },
   {
-    "chunkId": "chunk_014",
-    "spotId": "service_center",
-    "title": "游客服务中心",
-    "topic": "facility",
-    "audience": "所有游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family"
-    ],
-    "content": "游客服务中心提供咨询、失物登记、简易急救包和轮椅借用服务。"
+    "chunkId": "ls_019",
+    "spotId": "lingshan_palace",
+    "title": "灵山梵宫建筑与文化地位",
+    "topic": "architecture",
+    "audience": "建筑与艺术爱好者",
+    "type": "spot",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_family"],
+    "content": "灵山梵宫建筑面积约7.2万平方米，外观以莲花圣塔为主要特征，融合中国传统佛教建筑、石窟艺术与现代建筑技术。梵宫曾作为世界佛教论坛的重要会场，是景区的佛教艺术展示中心。"
   },
   {
-    "chunkId": "chunk_015",
-    "spotId": "service_center",
-    "title": "卫生间位置",
-    "topic": "facility",
-    "audience": "所有游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family"
-    ],
-    "content": "卫生间位于游客服务中心东侧和主展厅右侧出口，两处均有清晰指示牌。"
+    "chunkId": "ls_020",
+    "spotId": "lingshan_palace",
+    "title": "灵山梵宫艺术看点",
+    "topic": "art",
+    "audience": "艺术爱好者",
+    "type": "spot",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history", "lingshan_family", "lingshan_classic"],
+    "content": "灵山梵宫内部汇集东阳木雕、琉璃、油画、景泰蓝、玉雕和漆画等工艺。代表性看点包括星空穹顶、东阳木雕飞天、琉璃作品《华藏世界》以及世界佛教传法主题油画。"
   },
   {
-    "chunkId": "chunk_016",
-    "spotId": "east_gate",
-    "title": "东门出口",
-    "topic": "facility",
-    "audience": "行动不便游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "东门出口靠近停车区，适合作为行动不便游客的提前集合点，但离队需团长确认。"
-  },
-  {
-    "chunkId": "chunk_017",
-    "spotId": "main_hall",
-    "title": "开放时间",
-    "topic": "notice",
+    "chunkId": "ls_021",
+    "spotId": "lingshan_palace",
+    "title": "灵山吉祥颂演出提示",
+    "topic": "operation",
     "audience": "所有游客",
     "type": "notice",
-    "source": "景区公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "short",
-      "history"
-    ],
-    "content": "景区常规开放时间为9:00至17:30，重大节假日以当日公告为准。"
+    "source": "灵山胜境公开资料",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_family"],
+    "content": "公开资料列出的《灵山吉祥颂》参考演出时段为10:35、11:30、14:00和16:00，每场约20分钟。演出时间、入场方式和临时加场可能变化，游览当天应以官方小程序、景区广播或现场公告为准。"
   },
   {
-    "chunkId": "chunk_018",
-    "spotId": "courtyard",
-    "title": "人流提醒",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic"
-    ],
-    "content": "中心庭院在上午10点至11点人流较集中，团队应靠右侧停留，避免堵塞主通道。"
-  },
-  {
-    "chunkId": "chunk_019",
-    "spotId": "bell_tower",
-    "title": "雨天路线提醒",
-    "topic": "safety",
-    "audience": "老人儿童",
-    "type": "notice",
-    "source": "景区公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "雨天可减少钟楼台阶停留时间，优先选择主展厅、庭院和服务中心的短线游览。"
-  },
-  {
-    "chunkId": "chunk_020",
-    "spotId": "main_hall",
-    "title": "儿童友好提示",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "family"
-    ],
-    "content": "带儿童游客可在主展厅右侧领取亲子任务卡，路线以庭院和服务中心为主要停留点。"
-  },
-  {
-    "chunkId": "chunk_021",
-    "spotId": "bell_tower",
-    "title": "钟楼与鼓楼关系",
-    "topic": "history",
-    "audience": "大众游客",
-    "type": "spot",
-    "source": "灵境古苑讲解手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "钟楼和鼓楼共同构成景区礼仪空间的节奏中心，一个偏报时，一个偏仪式提示。"
-  },
-  {
-    "chunkId": "chunk_022",
-    "spotId": "main_hall",
-    "title": "主展厅历史沿革",
-    "topic": "history",
-    "audience": "大众游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "主展厅的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
-  },
-  {
-    "chunkId": "chunk_023",
-    "spotId": "main_hall",
-    "title": "主展厅建筑看点",
-    "topic": "architecture",
-    "audience": "建筑爱好者",
-    "type": "spot",
-    "source": "建筑资料卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "主展厅适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
-  },
-  {
-    "chunkId": "chunk_024",
-    "spotId": "main_hall",
-    "title": "主展厅游览动线",
-    "topic": "route",
-    "audience": "团队游客",
-    "type": "route",
-    "source": "路线运营手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "从主展厅出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
-  },
-  {
-    "chunkId": "chunk_025",
-    "spotId": "main_hall",
-    "title": "主展厅安全提醒",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区安全提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "主展厅人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
-  },
-  {
-    "chunkId": "chunk_026",
-    "spotId": "main_hall",
-    "title": "主展厅附近设施",
-    "topic": "facility",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "主展厅附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
-  },
-  {
-    "chunkId": "chunk_027",
-    "spotId": "main_hall",
-    "title": "主展厅亲子讲解",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "亲子导览卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "带儿童参观主展厅时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
-  },
-  {
-    "chunkId": "chunk_028",
-    "spotId": "main_hall",
-    "title": "主展厅拍照建议",
-    "topic": "photo",
-    "audience": "拍照游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "主展厅拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
-  },
-  {
-    "chunkId": "chunk_029",
-    "spotId": "main_hall",
-    "title": "主展厅文化寓意",
+    "chunkId": "ls_022",
+    "spotId": "wuyin_mandala",
+    "title": "五印坛城",
     "topic": "culture",
-    "audience": "文化爱好者",
+    "audience": "文化与建筑爱好者",
     "type": "spot",
-    "source": "文史资料摘编",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "主展厅的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_family"],
+    "content": "五印坛城位于香水海中的圆岛上，采用藏式建筑风格，白墙、红边、金顶是其主要视觉特征。“五印”对应五方五佛的五种手印；内部包含主殿、文化展厅和转经筒长廊，用于展示藏传佛教艺术与文化。"
   },
   {
-    "chunkId": "chunk_030",
-    "spotId": "main_hall",
-    "title": "主展厅无障碍提示",
-    "topic": "accessibility",
-    "audience": "行动不便游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "主展厅附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
-  },
-  {
-    "chunkId": "chunk_031",
-    "spotId": "main_hall",
-    "title": "主展厅运营公告",
-    "topic": "operation",
-    "audience": "团长",
-    "type": "notice",
-    "source": "景区运营公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture",
-      "family"
-    ],
-    "content": "主展厅相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
-  },
-  {
-    "chunkId": "chunk_032",
-    "spotId": "bell_tower",
-    "title": "钟楼历史沿革",
-    "topic": "history",
-    "audience": "大众游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "钟楼的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
-  },
-  {
-    "chunkId": "chunk_033",
-    "spotId": "bell_tower",
-    "title": "钟楼建筑看点",
+    "chunkId": "ls_023",
+    "spotId": "manfeilong_pagoda",
+    "title": "曼飞龙塔",
     "topic": "architecture",
-    "audience": "建筑爱好者",
+    "audience": "自然与建筑爱好者",
     "type": "spot",
-    "source": "建筑资料卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "钟楼适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_nature", "lingshan_classic"],
+    "content": "曼飞龙塔位于香水海北岸，由一座主塔和八座小塔组成九塔组合，表现南传佛教和傣族建筑特色。它与代表汉传佛教艺术的灵山梵宫、代表藏传佛教文化的五印坛城共同展示佛教建筑的多样性。"
   },
   {
-    "chunkId": "chunk_034",
-    "spotId": "bell_tower",
-    "title": "钟楼游览动线",
-    "topic": "route",
-    "audience": "团队游客",
-    "type": "route",
-    "source": "路线运营手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "从钟楼出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
-  },
-  {
-    "chunkId": "chunk_035",
-    "spotId": "bell_tower",
-    "title": "钟楼安全提醒",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区安全提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "钟楼人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
-  },
-  {
-    "chunkId": "chunk_036",
-    "spotId": "bell_tower",
-    "title": "钟楼附近设施",
-    "topic": "facility",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "钟楼附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
-  },
-  {
-    "chunkId": "chunk_037",
-    "spotId": "bell_tower",
-    "title": "钟楼亲子讲解",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "亲子导览卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "带儿童参观钟楼时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
-  },
-  {
-    "chunkId": "chunk_038",
-    "spotId": "bell_tower",
-    "title": "钟楼拍照建议",
-    "topic": "photo",
-    "audience": "拍照游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "钟楼拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
-  },
-  {
-    "chunkId": "chunk_039",
-    "spotId": "bell_tower",
-    "title": "钟楼文化寓意",
-    "topic": "culture",
-    "audience": "文化爱好者",
-    "type": "spot",
-    "source": "文史资料摘编",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "钟楼的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
-  },
-  {
-    "chunkId": "chunk_040",
-    "spotId": "bell_tower",
-    "title": "钟楼无障碍提示",
-    "topic": "accessibility",
-    "audience": "行动不便游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "钟楼附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
-  },
-  {
-    "chunkId": "chunk_041",
-    "spotId": "bell_tower",
-    "title": "钟楼运营公告",
-    "topic": "operation",
-    "audience": "团长",
-    "type": "notice",
-    "source": "景区运营公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history",
-      "architecture"
-    ],
-    "content": "钟楼相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
-  },
-  {
-    "chunkId": "chunk_042",
-    "spotId": "drum_tower",
-    "title": "鼓楼历史沿革",
+    "chunkId": "ls_024",
+    "spotId": "wujinyi_house",
+    "title": "无尽意斋",
     "topic": "history",
-    "audience": "大众游客",
+    "audience": "人文与书法爱好者",
     "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
+    "source": "灵山胜境景点结构化数据集",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history"],
+    "content": "无尽意斋位于祥符禅寺西北侧，以赵朴初先生北京故居为原型，采用四合院格局。馆内通过生平事迹、与灵山的渊源和书法作品等内容，介绍赵朴初先生对佛教文化传承与灵山建设的贡献。"
   },
   {
-    "chunkId": "chunk_043",
-    "spotId": "drum_tower",
-    "title": "鼓楼建筑看点",
-    "topic": "architecture",
-    "audience": "建筑爱好者",
-    "type": "spot",
-    "source": "建筑资料卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
-  },
-  {
-    "chunkId": "chunk_044",
-    "spotId": "drum_tower",
-    "title": "鼓楼游览动线",
+    "chunkId": "ls_025",
+    "spotId": "lingshan_shengjing",
+    "title": "历史文化兴趣路线",
     "topic": "route",
-    "audience": "团队游客",
+    "audience": "历史文化爱好者",
     "type": "route",
-    "source": "路线运营手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "从鼓楼出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_history"],
+    "content": "资料推荐的历史文化深度路线依次覆盖灵山大照壁、祥符禅寺、灵山大佛、灵山梵宫、五印坛城等重点，讲解内容侧重小灵山历史、佛教造像、传统工艺和汉藏佛教建筑艺术。完整深度游约需6小时，程序可按游客可用时间选取其中的精华节点。"
   },
   {
-    "chunkId": "chunk_045",
-    "spotId": "drum_tower",
-    "title": "鼓楼安全提醒",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区安全提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
-  },
-  {
-    "chunkId": "chunk_046",
-    "spotId": "drum_tower",
-    "title": "鼓楼附近设施",
-    "topic": "facility",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
-  },
-  {
-    "chunkId": "chunk_047",
-    "spotId": "drum_tower",
-    "title": "鼓楼亲子讲解",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "亲子导览卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "带儿童参观鼓楼时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
-  },
-  {
-    "chunkId": "chunk_048",
-    "spotId": "drum_tower",
-    "title": "鼓楼拍照建议",
-    "topic": "photo",
-    "audience": "拍照游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
-  },
-  {
-    "chunkId": "chunk_049",
-    "spotId": "drum_tower",
-    "title": "鼓楼文化寓意",
-    "topic": "culture",
-    "audience": "文化爱好者",
-    "type": "spot",
-    "source": "文史资料摘编",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
-  },
-  {
-    "chunkId": "chunk_050",
-    "spotId": "drum_tower",
-    "title": "鼓楼无障碍提示",
-    "topic": "accessibility",
-    "audience": "行动不便游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
-  },
-  {
-    "chunkId": "chunk_051",
-    "spotId": "drum_tower",
-    "title": "鼓楼运营公告",
-    "topic": "operation",
-    "audience": "团长",
-    "type": "notice",
-    "source": "景区运营公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "history"
-    ],
-    "content": "鼓楼相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
-  },
-  {
-    "chunkId": "chunk_052",
-    "spotId": "courtyard",
-    "title": "中心庭院历史沿革",
-    "topic": "history",
-    "audience": "大众游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "中心庭院的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
-  },
-  {
-    "chunkId": "chunk_053",
-    "spotId": "courtyard",
-    "title": "中心庭院建筑看点",
-    "topic": "architecture",
-    "audience": "建筑爱好者",
-    "type": "spot",
-    "source": "建筑资料卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "中心庭院适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
-  },
-  {
-    "chunkId": "chunk_054",
-    "spotId": "courtyard",
-    "title": "中心庭院游览动线",
+    "chunkId": "ls_026",
+    "spotId": "lingshan_shengjing",
+    "title": "自然风光兴趣路线",
     "topic": "route",
-    "audience": "团队游客",
+    "audience": "自然与摄影爱好者",
     "type": "route",
-    "source": "路线运营手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "从中心庭院出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_nature"],
+    "content": "自然风光路线可选择佛足坛、菩提大道、九龙灌浴、灵山大佛、曼飞龙塔等节点，侧重林荫步道、香水海、太湖视野以及宗教建筑与自然环境的关系。完整游览约需5小时，程序可按时间提供精简方案。"
   },
   {
-    "chunkId": "chunk_055",
-    "spotId": "courtyard",
-    "title": "中心庭院安全提醒",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区安全提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "中心庭院人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
-  },
-  {
-    "chunkId": "chunk_056",
-    "spotId": "courtyard",
-    "title": "中心庭院附近设施",
-    "topic": "facility",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "中心庭院附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
-  },
-  {
-    "chunkId": "chunk_057",
-    "spotId": "courtyard",
-    "title": "中心庭院亲子讲解",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "亲子导览卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "带儿童参观中心庭院时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
-  },
-  {
-    "chunkId": "chunk_058",
-    "spotId": "courtyard",
-    "title": "中心庭院拍照建议",
-    "topic": "photo",
-    "audience": "拍照游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "中心庭院拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
-  },
-  {
-    "chunkId": "chunk_059",
-    "spotId": "courtyard",
-    "title": "中心庭院文化寓意",
-    "topic": "culture",
-    "audience": "文化爱好者",
-    "type": "spot",
-    "source": "文史资料摘编",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "中心庭院的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
-  },
-  {
-    "chunkId": "chunk_060",
-    "spotId": "courtyard",
-    "title": "中心庭院无障碍提示",
-    "topic": "accessibility",
-    "audience": "行动不便游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "中心庭院附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
-  },
-  {
-    "chunkId": "chunk_061",
-    "spotId": "courtyard",
-    "title": "中心庭院运营公告",
-    "topic": "operation",
-    "audience": "团长",
-    "type": "notice",
-    "source": "景区运营公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "中心庭院相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
-  },
-  {
-    "chunkId": "chunk_062",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊历史沿革",
-    "topic": "history",
-    "audience": "大众游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
-  },
-  {
-    "chunkId": "chunk_063",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊建筑看点",
-    "topic": "architecture",
-    "audience": "建筑爱好者",
-    "type": "spot",
-    "source": "建筑资料卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
-  },
-  {
-    "chunkId": "chunk_064",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊游览动线",
+    "chunkId": "ls_027",
+    "spotId": "lingshan_shengjing",
+    "title": "亲子家庭兴趣路线",
     "topic": "route",
-    "audience": "团队游客",
+    "audience": "亲子家庭",
     "type": "route",
-    "source": "路线运营手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "从石刻长廊出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_family"],
+    "content": "亲子路线可选择九龙灌浴、百子戏弥勒、灵山梵宫和五印坛城，讲解应减少生僻术语，用故事、色彩、造型和互动观察帮助儿童理解文化内容。完整轻松游约需4小时，程序可根据儿童年龄和体力缩短路线。"
   },
   {
-    "chunkId": "chunk_065",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊安全提醒",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区安全提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
-  },
-  {
-    "chunkId": "chunk_066",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊附近设施",
-    "topic": "facility",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
-  },
-  {
-    "chunkId": "chunk_067",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊亲子讲解",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "亲子导览卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "带儿童参观石刻长廊时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
-  },
-  {
-    "chunkId": "chunk_068",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊拍照建议",
-    "topic": "photo",
-    "audience": "拍照游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊拍照建议避开通道中央，团队合影应选择不阻挡通行的位置，并听从现场工作人员指引。"
-  },
-  {
-    "chunkId": "chunk_069",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊文化寓意",
-    "topic": "culture",
-    "audience": "文化爱好者",
-    "type": "spot",
-    "source": "文史资料摘编",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊的文化意义不只在单件展品，也在它与庭院、钟鼓建筑和参观节奏之间形成的空间关系。"
-  },
-  {
-    "chunkId": "chunk_070",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊无障碍提示",
-    "topic": "accessibility",
-    "audience": "行动不便游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
-  },
-  {
-    "chunkId": "chunk_071",
-    "spotId": "stone_gallery",
-    "title": "石刻长廊运营公告",
-    "topic": "operation",
-    "audience": "团长",
-    "type": "notice",
-    "source": "景区运营公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "architecture"
-    ],
-    "content": "石刻长廊相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
-  },
-  {
-    "chunkId": "chunk_072",
-    "spotId": "service_center",
-    "title": "游客服务中心历史沿革",
-    "topic": "history",
-    "audience": "大众游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "游客服务中心的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
-  },
-  {
-    "chunkId": "chunk_073",
-    "spotId": "service_center",
-    "title": "游客服务中心建筑看点",
-    "topic": "architecture",
-    "audience": "建筑爱好者",
-    "type": "spot",
-    "source": "建筑资料卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "游客服务中心适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
-  },
-  {
-    "chunkId": "chunk_074",
-    "spotId": "service_center",
-    "title": "游客服务中心游览动线",
-    "topic": "route",
-    "audience": "团队游客",
-    "type": "route",
-    "source": "路线运营手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "从游客服务中心出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
-  },
-  {
-    "chunkId": "chunk_075",
-    "spotId": "service_center",
-    "title": "游客服务中心安全提醒",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区安全提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "游客服务中心人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
-  },
-  {
-    "chunkId": "chunk_076",
-    "spotId": "service_center",
-    "title": "游客服务中心附近设施",
-    "topic": "facility",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "游客服务中心附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
-  },
-  {
-    "chunkId": "chunk_077",
-    "spotId": "service_center",
-    "title": "游客服务中心亲子讲解",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "亲子导览卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "带儿童参观游客服务中心时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
-  },
-  {
-    "chunkId": "chunk_078",
-    "spotId": "service_center",
-    "title": "游客服务中心无障碍提示",
-    "topic": "accessibility",
-    "audience": "行动不便游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "游客服务中心附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
-  },
-  {
-    "chunkId": "chunk_079",
-    "spotId": "service_center",
-    "title": "游客服务中心运营公告",
-    "topic": "operation",
-    "audience": "团长",
-    "type": "notice",
-    "source": "景区运营公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "游客服务中心相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
-  },
-  {
-    "chunkId": "chunk_080",
-    "spotId": "east_gate",
-    "title": "东门出口历史沿革",
-    "topic": "history",
-    "audience": "大众游客",
-    "type": "spot",
-    "source": "讲解员手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "东门出口的形成与景区中轴线布局有关，讲解时可先说明年代背景，再连接到当前可见的建筑形态。"
-  },
-  {
-    "chunkId": "chunk_081",
-    "spotId": "east_gate",
-    "title": "东门出口建筑看点",
-    "topic": "architecture",
-    "audience": "建筑爱好者",
-    "type": "spot",
-    "source": "建筑资料卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "东门出口适合观察屋顶、梁架、台基和装饰细部，导游可用近看构件、远看比例的顺序讲解。"
-  },
-  {
-    "chunkId": "chunk_082",
-    "spotId": "east_gate",
-    "title": "东门出口游览动线",
-    "topic": "route",
-    "audience": "团队游客",
-    "type": "route",
-    "source": "路线运营手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "从东门出口出发应优先沿主路或右侧廊道行进，团队需要在转弯处放慢速度并确认人数。"
-  },
-  {
-    "chunkId": "chunk_083",
-    "spotId": "east_gate",
-    "title": "东门出口安全提醒",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区安全提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "东门出口人流集中时应靠边停留，雨天注意防滑，遇到身体不适应就近联系工作人员。"
-  },
-  {
-    "chunkId": "chunk_084",
-    "spotId": "east_gate",
-    "title": "东门出口附近设施",
-    "topic": "facility",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "东门出口附近可按指示牌寻找卫生间、饮水点和休息座椅，行动不便游客建议提前告知团长。"
-  },
-  {
-    "chunkId": "chunk_085",
-    "spotId": "east_gate",
-    "title": "东门出口亲子讲解",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "亲子导览卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "带儿童参观东门出口时，可把讲解压缩成一个观察任务，例如找屋顶装饰、看碑文字形或辨认树木。"
-  },
-  {
-    "chunkId": "chunk_086",
-    "spotId": "east_gate",
-    "title": "东门出口无障碍提示",
-    "topic": "accessibility",
-    "audience": "行动不便游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "东门出口附近若遇到台阶或湿滑路面，建议选择坡道或短线绕行，必要时向游客服务中心申请协助。"
-  },
-  {
-    "chunkId": "chunk_087",
-    "spotId": "east_gate",
-    "title": "东门出口运营公告",
-    "topic": "operation",
-    "audience": "团长",
-    "type": "notice",
-    "source": "景区运营公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "东门出口相关开放、限流和临时调整以当日公告为准，团队变更路线前应由团长统一确认。"
-  },
-  {
-    "chunkId": "chunk_088",
-    "spotId": "service_center",
-    "title": "服务中心失物登记",
-    "topic": "facility",
+    "chunkId": "ls_028",
+    "spotId": "lingshan_shengjing",
+    "title": "门票信息使用说明",
+    "topic": "ticket",
     "audience": "所有游客",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "游客遗失物品可到游客服务中心登记，登记时需说明遗失位置、时间和物品特征。"
-  },
-  {
-    "chunkId": "chunk_089",
-    "spotId": "service_center",
-    "title": "服务中心急救包",
-    "topic": "safety",
-    "audience": "老人儿童",
-    "type": "facility",
-    "source": "游客服务信息",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family",
-      "short"
-    ],
-    "content": "游客服务中心备有简易急救包，严重不适仍应联系景区工作人员或拨打急救电话。"
-  },
-  {
-    "chunkId": "chunk_090",
-    "spotId": "courtyard",
-    "title": "庭院团队集合点",
-    "topic": "route",
-    "audience": "团长",
-    "type": "route",
-    "source": "团队游览手册",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "family"
-    ],
-    "content": "中心庭院适合作为阶段性集合点，团长应选择靠边区域点名，避免阻塞主通道。"
-  },
-  {
-    "chunkId": "chunk_091",
-    "spotId": "main_hall",
-    "title": "主展厅研学提示",
-    "topic": "education",
-    "audience": "研学游客",
-    "type": "spot",
-    "source": "研学任务卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history",
-      "family"
-    ],
-    "content": "研学团队可围绕主展厅年代、屋顶构件和参观动线设置三个观察问题。"
-  },
-  {
-    "chunkId": "chunk_092",
-    "spotId": "bell_tower",
-    "title": "钟楼拍摄秩序",
-    "topic": "photo",
-    "audience": "拍照游客",
     "type": "notice",
-    "source": "景区公告",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic"
-    ],
-    "content": "钟楼前拍照请避开台阶口和通行线，团队合影不宜长时间占用入口。"
+    "source": "灵山胜境公开资料",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_nature", "lingshan_family"],
+    "content": "用户提供的公开资料中列有成人票、学生与老年人优惠、儿童及特定人群免票等参考政策，也列有观光车选项。票价和优惠政策属于易变信息，程序回答时必须提示游客以景区官方售票页面、当日公告和有效证件要求为准，不应把资料中的旧价格当成实时价格。"
   },
   {
-    "chunkId": "chunk_093",
-    "spotId": "drum_tower",
-    "title": "鼓楼亲子观察",
-    "topic": "family",
-    "audience": "亲子游客",
-    "type": "spot",
-    "source": "亲子导览卡",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "family",
-      "history"
-    ],
-    "content": "儿童可观察鼓楼中鼓形展陈和对称布局，理解声音与城市时间管理的关系。"
+    "chunkId": "ls_029",
+    "spotId": "lingshan_shengjing",
+    "title": "游览季节与时间安排",
+    "topic": "travel_tip",
+    "audience": "所有游客",
+    "type": "notice",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_nature", "lingshan_family"],
+    "content": "春秋季通常更适合户外步行。景区面积较大，建议穿舒适的鞋并预留休息时间；计划观看九龙灌浴或梵宫演出时，应在入园后先核对当日时刻表，再围绕演出时间调整路线。"
   },
   {
-    "chunkId": "chunk_094",
-    "spotId": "stone_gallery",
-    "title": "石刻保护提示",
+    "chunkId": "ls_030",
+    "spotId": "lingshan_shengjing",
+    "title": "行动不便与低体力游览建议",
+    "topic": "accessibility",
+    "audience": "老年人与行动不便游客",
+    "type": "facility",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_easy"],
+    "content": "景区步行距离较长。老人、儿童或体力有限的游客应优先选择较短路线，减少连续登阶，合理利用观光车并预留休息时间。观光车站点、无障碍通道和临时封闭情况应以现场标识和工作人员指引为准。"
+  },
+  {
+    "chunkId": "ls_031",
+    "spotId": "lingshan_shengjing",
+    "title": "文明参观与拍摄提示",
     "topic": "safety",
     "audience": "所有游客",
     "type": "notice",
-    "source": "文物保护提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "history"
-    ],
-    "content": "参观石刻长廊时不要触摸拓片和碑面，不要使用强光贴近照射。"
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_nature", "lingshan_family"],
+    "content": "灵山胜境包含宗教活动和艺术展陈空间。参观时应保持安静、尊重宗教礼仪，不触摸佛像和展品；梵宫、坛城、寺院等区域的拍摄和通行要求可能不同，应遵循现场标识和工作人员指引。"
   },
   {
-    "chunkId": "chunk_095",
-    "spotId": "east_gate",
-    "title": "东门离队确认",
-    "topic": "safety",
-    "audience": "团长",
-    "type": "notice",
-    "source": "团队安全规范",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "short"
-    ],
-    "content": "东门靠近停车区，但游客提前离队必须由团长确认，AI 助手不能单独批准。"
+    "chunkId": "ls_032",
+    "spotId": "lingshan_shengjing",
+    "title": "餐饮信息使用说明",
+    "topic": "facility",
+    "audience": "所有游客",
+    "type": "facility",
+    "source": "灵山胜境历史文化与游览指南",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_family"],
+    "content": "公开资料提到景区内可体验素斋、素面等餐饮。餐厅营业状态、菜品、价格和预约要求会变化，程序可介绍餐饮类型，但实时营业与价格应引导游客查看官方小程序或咨询现场工作人员。"
   },
   {
-    "chunkId": "chunk_096",
-    "spotId": "courtyard",
-    "title": "庭院天气变化",
-    "topic": "safety",
-    "audience": "团队游客",
-    "type": "notice",
-    "source": "景区安全提示",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic",
-      "short"
-    ],
-    "content": "庭院开阔，遇到雷电、暴雨或大风时应减少停留并转入室内区域。"
+    "chunkId": "ls_033",
+    "spotId": "lingshan_shengjing",
+    "title": "位置不准确时的处理建议",
+    "topic": "navigation",
+    "audience": "所有游客",
+    "type": "facility",
+    "source": "景区导览服务规范",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_nature", "lingshan_family", "lingshan_easy"],
+    "content": "景区内建筑、树木和人流可能影响手机定位。定位不准确时，应让游客根据最近的景点名称、路牌或明显建筑校准位置；涉及走失、身体不适或封路时，不依赖定位推断，优先联系现场工作人员或团队负责人。"
   },
   {
-    "chunkId": "chunk_097",
-    "spotId": "main_hall",
-    "title": "主展厅无依据问题处理",
+    "chunkId": "ls_034",
+    "spotId": "lingshan_shengjing",
+    "title": "资料不足时的回答规则",
     "topic": "qa_policy",
-    "audience": "讲解员",
+    "audience": "讲解服务",
     "type": "notice",
-    "source": "AI回答规范",
-    "updatedAt": "2026-05-01",
-    "routeIds": [
-      "classic"
-    ],
-    "content": "资料未覆盖的问题应明确说明没有查到可靠信息，不应编造年代、人物或文物细节。"
+    "source": "景区导览服务规范",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_nature", "lingshan_family", "lingshan_easy"],
+    "content": "景区资料未覆盖的问题应明确说明暂时没有可靠依据，不能编造人物、年代、尺寸、票价、演出时间或实时开放状态。易变信息必须提示游客以景区官方渠道和现场公告为准。"
+  },
+  {
+    "chunkId": "ls_035",
+    "spotId": "lingshan_shengjing",
+    "title": "厕所、卫生间、饮水与休息设施",
+    "topic": "facility",
+    "audience": "所有游客",
+    "type": "facility",
+    "source": "景区导览服务规范",
+    "updatedAt": "2026-07-15",
+    "routeIds": ["lingshan_classic", "lingshan_history", "lingshan_nature", "lingshan_family", "lingshan_easy"],
+    "content": "厕所、卫生间、饮水点和休息区的具体位置及开放状态可能随现场调整。游客可以在导览页打开“附近设施”查看当前位置周边信息，或根据最近的路牌、游客服务点和工作人员指引前往；身体不适时应先在安全位置休息并联系现场工作人员。"
   }
 ]

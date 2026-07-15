@@ -15,6 +15,7 @@ from app.core.errors import AppError
 from app.core.logging import Timer
 from app.providers.factory import get_llm
 from app.services.algorithm_facade import algorithm_facade
+from app.services.avatar_settings import get_avatar_settings
 from app.services.audio import asr_transcribe, tts_synthesize
 from app.services.knowledge import search_knowledge
 from app.services.rooms import get_room
@@ -23,7 +24,22 @@ from app.services.users import get_user_memory_tags, merge_user_memory_tags
 
 logger = logging.getLogger(__name__)
 
-TTS_WARNING = "TTS failed, text answer returned only."
+TTS_WARNING = "语音暂时无法播放，已保留文字回答。"
+
+
+def _analytics_topic(text: str) -> str:
+    categories = [
+        ("历史文化", ["历史", "玄奘", "文化", "佛教", "故事"]),
+        ("景点特色", ["建筑", "特色", "多高", "面积", "材料", "看点"]),
+        ("路线推荐", ["路线", "怎么走", "下一站", "少走路"]),
+        ("服务设施", ["厕所", "卫生间", "饮水", "休息", "出口"]),
+        ("票务与开放", ["门票", "票价", "开放", "几点", "演出"]),
+        ("安全协助", ["走失", "走丢", "不舒服", "头晕", "封路"]),
+    ]
+    for topic, words in categories:
+        if any(word in text for word in words):
+            return topic
+    return "其他咨询"
 
 
 def _avatar_state(status: str, action: str = "answer", mouth_open: bool | None = None) -> dict:
@@ -84,7 +100,7 @@ async def _answer_with_llm(
         raise AppError(422, "QUESTION_EMPTY", "Question must not be empty")
 
     # Group Q&A is always backed by the configured real DeepSeek provider.
-    # Do not silently return canned text or fall through to MockLLMProvider.
+    # Provider failures must remain visible instead of returning canned text.
     if not settings.deepseek_api_key.strip():
         raise AppError(503, "LLM_NOT_CONFIGURED", "智能问答服务未配置")
 
@@ -95,7 +111,9 @@ async def _answer_with_llm(
         else "知识库未检索到与问题直接相关的资料。"
     )
     system_prompt = (
-        "你是灵山胜境的专业中文 AI 导游。请直接、友好、简洁地回答游客的问题，"
+        "你负责灵山胜境的中文导览问答。请像景区讲解员一样直接、友好、简洁地回答游客的问题。"
+        "除非游客明确询问系统身份，否则不要主动提及人工智能、模型、算法或服务提供商，也不要使用夸张的科技宣传语。"
+        "如果游客询问身份，应如实说明“我是云游智导的导览助手”，不得冒充真人。"
         "不能只回复“继续当前导览”或其他占位话术。景点历史、人物、年代和设施位置"
         "等事实应优先依据知识库；知识库没有依据时要明确说明不确定，不得编造精确事实。"
         "安全、路线和一般游览建议可以依据常识回答，紧急情况建议联系现场工作人员。\n"
@@ -118,7 +136,7 @@ async def _answer_with_llm(
             )
         except Exception as exc:
             logger.error("LLM question failed: %s", exc)
-            raise AppError(503, "LLM_UNAVAILABLE", "LLM provider is unavailable") from exc
+            raise AppError(503, "LLM_UNAVAILABLE", "智能问答服务暂时不可用") from exc
 
     answer = (response.content or "").strip()
     if not answer:
@@ -140,7 +158,13 @@ async def _with_tts(
 ) -> tuple[str | None, float, dict, str | None]:
     if not need_audio:
         return None, 0.0, _avatar_state("idle", mouth_open=False), None
-    tts = await tts_synthesize(answer, voice=voice, room_id=room_id)
+    speech_settings = get_avatar_settings()
+    tts = await tts_synthesize(
+        answer,
+        voice=voice,
+        speed=float(speech_settings["speed"]),
+        room_id=room_id,
+    )
     if _tts_failed(tts):
         return None, 0.0, _avatar_state("idle", mouth_open=False), TTS_WARNING
     return (
@@ -157,15 +181,18 @@ async def solo_question(
     need_audio: bool = True,
     user_id: str = "",
     voice: str = "guide_female",
+    input_mode: str = "text",
+    asr_confidence: float | None = None,
 ) -> dict:
     """Answer a tourist privately without requiring or notifying a room."""
     started = perf_counter()
     clean_question = question.strip()
     spot = current_spot_id.strip()
     has_knowledge = False
+    event_type = "solo_voice_question" if input_mode == "voice" else "solo_question"
     try:
         # Solo mode is explicitly a real-AI flow.  Never let the provider
-        # factory silently fall back to MockLLMProvider for this endpoint.
+        # Solo mode always requires a configured real model provider.
         if not settings.deepseek_api_key.strip():
             raise AppError(
                 503,
@@ -183,7 +210,9 @@ async def solo_question(
             context_text = "知识库未检索到与问题直接相关的资料。"
 
         system_prompt = (
-            "你是灵山胜境的专业中文 AI 独自导览助手。回答要友好、简洁、实用。"
+            "你负责灵山胜境的独自导览问答。回答要友好、简洁、实用，像景区服务人员一样自然。"
+            "除非游客明确询问系统身份，否则不要主动提及人工智能、模型、算法或服务提供商。"
+            "如果游客询问身份，应如实说明“我是云游智导的导览助手”，不得冒充真人。"
             "游客当前未加入旅行团；本次对话是私人的，不会广播，也不能通知团长。"
             "景点历史、人物、年代和设施位置等事实应优先依据下方知识库。"
             "知识库没有依据时，要明确说明不确定，不得编造精确事实或实时状态；"
@@ -234,7 +263,7 @@ async def solo_question(
             "provider": "deepseek",
         }
         record_event(
-            "solo_question",
+            event_type,
             success=True,
             latency_ms=(perf_counter() - started) * 1000,
             payload={
@@ -243,12 +272,14 @@ async def solo_question(
                 "hasKnowledge": has_knowledge,
                 "hasAudio": bool(audio_url),
                 "provider": "deepseek",
+                "topic": _analytics_topic(clean_question),
+                "asrConfidence": asr_confidence,
             },
         )
         return result
     except Exception as exc:
         record_event(
-            "solo_question",
+            event_type,
             success=False,
             latency_ms=(perf_counter() - started) * 1000,
             payload={
@@ -267,6 +298,8 @@ async def public_question(
     need_audio: bool = True,
     user_id: str = "",
     voice: str = "guide_female",
+    input_mode: str = "text",
+    asr_confidence: float | None = None,
 ) -> dict | None:
     started = perf_counter()
     try:
@@ -274,7 +307,14 @@ async def public_question(
         if room is None:
             return None
         memory_tags = get_user_memory_tags(user_id) if user_id else {}
-        request = algorithm_facade.request(room, user_id or "guest", text=question, memory_tags=memory_tags)
+        request = algorithm_facade.request(
+            room,
+            user_id or "guest",
+            text=question,
+            input_mode=input_mode,
+            asr_confidence=asr_confidence,
+            memory_tags=memory_tags,
+        )
         decision = algorithm_facade.decide(request)
         extracted_tags = algorithm_facade.extract_memory(question)
         if user_id:
@@ -329,8 +369,9 @@ async def public_question(
             "_events": events,
             "_memoryTags": memory_tags,
         }
+        event_type = "public_voice_question" if input_mode == "voice" else "public_question"
         record_event(
-            "public_question",
+            event_type,
             success=True,
             latency_ms=(perf_counter() - started) * 1000,
             payload={
@@ -340,12 +381,16 @@ async def public_question(
                 "hasAudio": bool(audio_url),
                 "algorithm": "unified",
                 "provider": "deepseek",
+                "question": question if input_mode == "text" and decision.channel == "public" else "",
+                "asrText": question if input_mode == "voice" and decision.channel == "public" else "",
+                "asrConfidence": asr_confidence,
+                "topic": _analytics_topic(question),
             },
         )
         return result
     except Exception as exc:
         record_event(
-            "public_question", success=False,
+            "public_voice_question" if input_mode == "voice" else "public_question", success=False,
             latency_ms=(perf_counter() - started) * 1000,
             payload={"roomId": room_id, "error": str(exc)},
         )
@@ -362,13 +407,13 @@ async def public_voice_question(
     voice: str = "guide_female",
 ) -> dict | None:
     started = perf_counter()
-    warning = None if settings.audio_provider_enabled else "Mock audio mode is active."
+    warning = None if settings.audio_provider_enabled else "语音识别服务未配置。"
     try:
         room = get_room(room_id)
         if room is None:
             return None
         if not settings.enable_asr:
-            raise AppError(503, "ASR_DISABLED", "ASR is disabled")
+            raise AppError(503, "ASR_DISABLED", "语音识别服务未启用")
         asr_result = await asr_transcribe(
             room_id, user_id, channel, audio_url, audio_format=audio_format, text_hint=text_hint
         )
@@ -482,6 +527,8 @@ async def public_voice_question(
                 "asrConfidence": confidence,
                 "hasAudio": bool(answer_audio_url),
                 "algorithm": "unified",
+                "asrText": asr_text if decision.channel == "public" else "",
+                "topic": _analytics_topic(asr_text),
             },
         )
         return result

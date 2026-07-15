@@ -10,29 +10,68 @@
       "isPrimary": true,
       "routeTemplates": [
         {
-          "routeId": "lingshan_short",
-          "title": "灵山胜境轻松体验线",
-          "maxMinutes": 60,
+          "routeId": "lingshan_easy",
+          "title": "轻松初览线",
+          "maxMinutes": 30,
           "difficulty": "low",
-          "tags": ["less_walking", "family_friendly"],
+          "tags": ["less_walking", "family", "family_friendly"],
           "spots": [
-            {"spotId": "lingshan_dazhaobi", "name": "灵山大照壁", "stayMinutes": 10},
-            {"spotId": "jiulong_guanyu", "name": "九龙灌浴", "stayMinutes": 20}
+            {"spotId": "lingshan_dazhaobi", "name": "灵山大照壁", "stayMinutes": 8},
+            {"spotId": "jiulong_guanyu", "name": "九龙灌浴", "stayMinutes": 12}
           ]
         },
         {
           "routeId": "lingshan_classic",
-          "title": "灵山胜境经典礼佛线",
+          "title": "一小时经典线",
+          "maxMinutes": 60,
+          "difficulty": "medium",
+          "tags": ["history", "architecture", "culture", "photography"],
+          "spots": [
+            {"spotId": "lingshan_dazhaobi", "name": "灵山大照壁", "stayMinutes": 8},
+            {"spotId": "jiulong_guanyu", "name": "九龙灌浴", "stayMinutes": 12},
+            {"spotId": "lingshan_buddha", "name": "灵山大佛", "stayMinutes": 18}
+          ]
+        },
+        {
+          "routeId": "lingshan_history",
+          "title": "历史文化深读线",
           "maxMinutes": 180,
           "difficulty": "medium",
-          "tags": ["history", "architecture", "culture"],
+          "tags": ["history", "architecture", "culture", "deep_explanation"],
           "spots": [
             {"spotId": "lingshan_dazhaobi", "name": "灵山大照壁", "stayMinutes": 10},
-            {"spotId": "jiulong_guanyu", "name": "九龙灌浴", "stayMinutes": 15},
             {"spotId": "xiangfu_temple", "name": "祥符禅寺", "stayMinutes": 20},
             {"spotId": "lingshan_buddha", "name": "灵山大佛", "stayMinutes": 25},
+            {"spotId": "buddhist_museum", "name": "佛教文化博览馆", "stayMinutes": 20},
             {"spotId": "lingshan_palace", "name": "灵山梵宫", "stayMinutes": 30},
             {"spotId": "wuyin_mandala", "name": "五印坛城", "stayMinutes": 25}
+          ]
+        },
+        {
+          "routeId": "lingshan_nature",
+          "title": "自然风光漫游线",
+          "maxMinutes": 180,
+          "difficulty": "medium",
+          "tags": ["nature", "photography", "less_walking"],
+          "spots": [
+            {"spotId": "buddha_foot_altar", "name": "佛足坛", "stayMinutes": 10},
+            {"spotId": "jiulong_guanyu", "name": "九龙灌浴", "stayMinutes": 15},
+            {"spotId": "bodhi_avenue", "name": "菩提大道", "stayMinutes": 15},
+            {"spotId": "lingshan_buddha", "name": "灵山大佛", "stayMinutes": 25},
+            {"spotId": "manfeilong_pagoda", "name": "曼飞龙塔", "stayMinutes": 15}
+          ]
+        },
+        {
+          "routeId": "lingshan_family",
+          "title": "亲子趣味探索线",
+          "maxMinutes": 180,
+          "difficulty": "low",
+          "tags": ["family", "family_friendly", "culture", "photography"],
+          "spots": [
+            {"spotId": "jiulong_guanyu", "name": "九龙灌浴", "stayMinutes": 20},
+            {"spotId": "baizi_mile", "name": "百子戏弥勒", "stayMinutes": 15},
+            {"spotId": "lingshan_palace", "name": "灵山梵宫", "stayMinutes": 25},
+            {"spotId": "wuyin_mandala", "name": "五印坛城", "stayMinutes": 20}
           ]
         }
       ]

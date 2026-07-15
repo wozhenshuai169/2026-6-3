@@ -68,7 +68,7 @@
     var values = {
       'room-id-display': '839201', 'route-name-display': '经典路线', 'member-count': '8 人',
       'current-spot-display': '九龙灌浴', 'scenic-area-display': '灵山胜境', 'progress-display': '第2段/共6段',
-      'pending-requests-text': '2 条私人请求待处理', 'spot-selector-label': '主展厅', 'requests-badge': '2'
+      'pending-requests-text': '2 条私人请求待处理', 'spot-selector-label': '九龙灌浴', 'requests-badge': '2'
     };
     Object.keys(values).forEach(function (id) {
       var el = document.getElementById(id); if (el) el.textContent = values[id];

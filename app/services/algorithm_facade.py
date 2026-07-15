@@ -36,6 +36,11 @@ _INTEREST_ALIASES = {
     "深度讲解": "deep_explanation",
     "少走路": "less_walking",
     "亲子": "family_friendly",
+    "家庭": "family_friendly",
+    "自然": "nature",
+    "自然风光": "nature",
+    "摄影": "photography",
+    "佛教文化": "culture",
 }
 
 
@@ -66,8 +71,8 @@ class AlgorithmFacade:
     ) -> AlgorithmRequest:
         state = TourState(
             roomId=room["roomId"],
-            currentSpotId=room.get("currentSpot") or "main_hall",
-            currentRouteId=room.get("routeId") or "classic",
+            currentSpotId=room.get("currentSpot") or "lingshan_dazhaobi",
+            currentRouteId=room.get("routeId") or "lingshan_classic",
             isExplaining=room.get("status") == "active",
             phase=room.get("status", "active"),
         )
@@ -160,6 +165,9 @@ class AlgorithmFacade:
         names = {item.get("spotId"): item.get("spotName") for item in self.data.vision_spots}
         for node in self.data.path_nodes:
             names.setdefault(node.get("spotId"), node.get("nodeName"))
+        for chunk in self.data.chunks:
+            if chunk.get("spotId") == spot_id:
+                names.setdefault(spot_id, chunk.get("title"))
         return {
             "spotId": spot_id,
             "spotName": names.get(spot_id) or spot_id,

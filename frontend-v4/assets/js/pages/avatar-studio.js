@@ -4,6 +4,7 @@
   var A = window.Aurelian;
   var api = A.api;
   var ui = A.ui;
+  var currentImageUrl = '/assets/images/digital-guide-main.webp';
 
   function byId(id) {
     return document.getElementById(id);
@@ -13,13 +14,54 @@
     return {
       role: byId('avatar-role').value,
       outfit: byId('avatar-outfit').value,
+      imageUrl: currentImageUrl,
       voice: byId('avatar-voice').value,
       speed: Number(byId('avatar-speed').value),
       emotion: byId('avatar-emotion').value,
-      lipSync: byId('lip-sync').checked,
+      lipSync: false,
       emotionSync: byId('emotion-sync').checked,
       idleMotion: byId('idle-motion').checked
     };
+  }
+
+  function applyConfig(c) {
+    if (!c) return;
+    byId('avatar-role').value = c.role || 'xiaoyun';
+    byId('avatar-outfit').value = c.outfit || 'modern_black';
+    byId('avatar-voice').value = c.voice || 'guide_female';
+    byId('avatar-speed').value = c.speed || 1;
+    byId('avatar-emotion').value = c.emotion || 'friendly';
+    byId('emotion-sync').checked = c.emotionSync !== false;
+    byId('idle-motion').checked = c.idleMotion !== false;
+    currentImageUrl = c.imageUrl || currentImageUrl;
+    byId('avatar-preview-image').src = currentImageUrl;
+    refreshPreview();
+  }
+
+  function refreshPreview() {
+    var roleNames = { xiaoyun: '小云', yunchuan: '云川', tongtong: '童童' };
+    var role = byId('avatar-role').value;
+    byId('speed-output').textContent = byId('avatar-speed').value + '×';
+    byId('preview-line').textContent = '你好，我是' + (roleNames[role] || '讲解员') + '。欢迎来到灵山胜境，让我陪你了解这里的故事。';
+    byId('avatar-preview-image').dataset.role = role;
+    byId('avatar-preview-image').dataset.outfit = byId('avatar-outfit').value;
+  }
+
+  function uploadImage(file) {
+    if (!file) return;
+    var data = new FormData();
+    data.append('file', file);
+    byId('preview-status').textContent = '上传中';
+    api.upload('/avatar-settings/image', data).then(function (result) {
+      if (result.ok) {
+        applyConfig(result.data);
+        ui.toast('讲解形象图片已更新', 'success');
+      } else {
+        ui.toast((result.error && result.error.message) || '图片上传失败', 'error');
+      }
+      byId('preview-status').textContent = '待命';
+      byId('avatar-image-file').value = '';
+    });
   }
 
   function boot() {
@@ -27,28 +69,28 @@
   }
 
   function init() {
-    var saved = localStorage.getItem('aurelian_avatar_config');
-    if (saved) {
-      try {
-        var c = JSON.parse(saved);
-        byId('avatar-voice').value = c.voice || 'guide_female';
-        byId('avatar-speed').value = c.speed || 1;
-        byId('lip-sync').checked = c.lipSync !== false;
-        byId('emotion-sync').checked = c.emotionSync !== false;
-        byId('idle-motion').checked = c.idleMotion !== false;
-      } catch (e) {
-        // Ignore malformed local preview settings.
-      }
-    }
+    ['avatar-role', 'avatar-outfit', 'avatar-emotion'].forEach(function (id) {
+      byId(id).addEventListener('change', refreshPreview);
+    });
+    byId('avatar-speed').addEventListener('input', refreshPreview);
+    byId('avatar-image-file').addEventListener('change', function () {
+      uploadImage(this.files && this.files[0]);
+    });
 
-    byId('speed-output').textContent = byId('avatar-speed').value + 'x';
-    byId('avatar-speed').addEventListener('input', function () {
-      byId('speed-output').textContent = this.value + 'x';
+    api.get('/avatar-settings').then(function (result) {
+      if (result.ok) applyConfig(result.data);
+      else ui.toast('讲解形象设置暂时无法读取', 'warning');
     });
 
     byId('btn-save').addEventListener('click', function () {
-      localStorage.setItem('aurelian_avatar_config', JSON.stringify(config()));
-      ui.toast('数字人配置已保存', 'success');
+      api.put('/avatar-settings', config()).then(function (result) {
+        if (result.ok) {
+          applyConfig(result.data);
+          ui.toast('讲解形象设置已保存', 'success');
+        } else {
+          ui.toast((result.error && result.error.message) || '设置保存失败', 'error');
+        }
+      });
     });
 
     byId('btn-test').addEventListener('click', function () {
@@ -58,17 +100,13 @@
         text: byId('preview-line').textContent,
         voice: c.voice,
         speed: c.speed
-      }).then(function (r) {
-        if (r.ok && r.data && r.data.audioUrl) {
-          var audio = new Audio(r.data.audioUrl);
-          audio.play().catch(function () {});
-          ui.toast('正在试听当前音色', 'info');
+      }).then(function (result) {
+        if (result.ok && result.data && result.data.audioUrl) {
+          new Audio(result.data.audioUrl).play().catch(function () {});
         } else {
-          ui.toast('已切换到本地预览模式', 'info');
+          ui.toast('试听暂时不可用，请稍后重试', 'warning');
         }
-        setTimeout(function () {
-          byId('preview-status').textContent = '待命';
-        }, 1800);
+        setTimeout(function () { byId('preview-status').textContent = '待命'; }, 1800);
       });
     });
   }

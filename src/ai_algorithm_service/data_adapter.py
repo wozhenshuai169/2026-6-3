@@ -7,10 +7,10 @@ from typing import Any
 
 
 class ScenicDataAdapter:
-    """Local first-stage scenic data adapter.
+    """Local scenic data adapter.
 
     The interface mirrors future scenic management data sources, while the
-    implementation uses static demo JSON so the service runs on a laptop.
+    implementation reads the verified repository knowledge set.
     """
 
     def __init__(self, data_dir: str | Path | None = None) -> None:
@@ -39,10 +39,6 @@ class ScenicDataAdapter:
     @cached_property
     def eval_cases(self) -> list[dict[str, Any]]:
         return self._load_json("eval_cases.json")
-
-    @cached_property
-    def vision_spots(self) -> list[dict[str, Any]]:
-        return self._load_json("vision_spots.json")
 
     @cached_property
     def operation_events(self) -> list[dict[str, Any]]:

@@ -97,11 +97,27 @@ def _select_route_template(area: dict, preferences: dict) -> dict:
     if not templates:
         raise AppError(422, "SCENIC_ROUTE_MISSING", "该景区尚未配置路线模板")
     time_limit = int(preferences.get("timeLimit") or 60)
-    low_intensity = preferences.get("physicalStrength") == "low" or preferences.get("withElderly")
-    if low_intensity:
-        return templates[0]
     eligible = [item for item in templates if int(item.get("maxMinutes", 999)) <= time_limit]
-    return eligible[-1] if eligible else templates[0]
+    candidates = eligible or [templates[0]]
+    interests = set(preferences.get("interest") or [])
+    if "family_friendly" in interests:
+        interests.add("family")
+    low_intensity = preferences.get("physicalStrength") == "low" or preferences.get("withElderly")
+    with_children = bool(preferences.get("withChildren"))
+
+    def score(template: dict) -> tuple[int, int]:
+        tags = set(template.get("tags") or [])
+        value = len(tags & interests) * 6
+        if low_intensity:
+            value += 8 if template.get("difficulty") == "low" else 0
+            value += 3 if "less_walking" in tags else 0
+            value += 5 if int(template.get("maxMinutes", 999)) <= 60 else 0
+        if with_children:
+            value += 10 if {"family", "family_friendly"} & tags else 0
+        # When preferences are otherwise equal, make fuller use of the chosen time.
+        return value, int(template.get("maxMinutes", 0))
+
+    return max(candidates, key=score)
 
 
 async def recommend_scenic_route(scenic_area_id: str, preferences: dict) -> dict:
@@ -110,11 +126,15 @@ async def recommend_scenic_route(scenic_area_id: str, preferences: dict) -> dict
     provider = _real_map_provider()
     stops = template.get("spots", [])
     stop_metadata = {item["name"]: item for item in stops}
-    interests = preferences.get("interest", [])
-    matched = list(template.get("tags", []))
+    interests = set(preferences.get("interest") or [])
+    if preferences.get("withChildren"):
+        interests.add("family")
+    if preferences.get("physicalStrength") == "low" or preferences.get("withElderly"):
+        interests.add("less_walking")
+    matched = sorted(interests & set(template.get("tags", [])))
     reason = (
-        f"按你的游览时间和体力偏好生成“{template['title']}”。"
-        "景点坐标、相邻步行距离与导航步骤均来自高德地图 Web 服务；拈花湾作为独立景区，没有混入本路线。"
+        f"结合你的兴趣、游览时间和同行情况，推荐“{template['title']}”。"
+        "路线仅安排灵山胜境内的景点，途中请留意现场指引和临时通行提示。"
     )
     try:
         planned = await provider.plan_route(
@@ -133,7 +153,7 @@ async def recommend_scenic_route(scenic_area_id: str, preferences: dict) -> dict
 
     time_limit = int(preferences.get("timeLimit") or 60)
     breakdown = {
-        "interestScore": 3 if interests else 0,
+        "interestScore": min(4, len(matched) * 2),
         "timeScore": 2 if planned.estimated_time <= time_limit else 0,
         "staminaScore": 2 if preferences.get("physicalStrength") == "low" and planned.difficulty == "low" else 0,
         "companionScore": 2 if preferences.get("withChildren") or preferences.get("withElderly") else 0,

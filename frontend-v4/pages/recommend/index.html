@@ -31,11 +31,11 @@
   <main class="workspace route-workspace">
     <div class="page-head">
       <div>
-        <span class="eyebrow">LINGSHAN ROUTE</span>
+        <span class="eyebrow">灵山胜境路线</span>
         <h1>灵山胜境个性化路线</h1>
-        <p>根据你的偏好选择景点顺序，再由高德 Web 服务计算真实 POI、距离和步行路线。</p>
+        <p>根据游览时间、兴趣和体力安排景点顺序，并查看预计步行距离。</p>
       </div>
-      <div id="map-status" class="status map-status-loading">正在连接高德地图</div>
+      <div id="map-status" class="status map-status-loading">正在读取景区路线</div>
     </div>
 
     <div class="two-col route-columns">
@@ -45,7 +45,7 @@
             <div class="loading-spinner"></div>
             <div>
               <strong>正在读取灵山胜境</strong>
-              <p>后端正在调用高德 Web 服务，Key 不会发送到浏览器。</p>
+              <p>正在整理景点、出入口与周边信息。</p>
             </div>
           </div>
         </div>
@@ -87,26 +87,26 @@
           </div>
         </div>
         <button id="btn-generate" class="btn primary generate-btn">
-          <span class="material-icons">route</span>生成路线
+          <span class="material-icons">route</span>查看推荐路线
         </button>
       </section>
 
       <section class="surface route-preview">
         <div id="route-placeholder" class="route-placeholder">
           <span class="material-icons">map</span>
-          <h2>真实路线将在这里生成</h2>
-          <p>路线只包含灵山胜境内部 POI；拈花湾按独立景区展示，不会混入步行线路。</p>
+          <h2>路线将在这里显示</h2>
+          <p>路线只安排灵山胜境内部景点；拈花湾作为独立景区，不会混入园内步行路线。</p>
         </div>
         <div id="loading-area" class="hidden empty">
           <div>
             <div class="loading-spinner" style="margin:auto"></div>
-            <p>正在查询高德 POI 和园内步行路线…</p>
+            <p>正在计算景点之间的步行路线…</p>
           </div>
         </div>
         <div id="result-area" class="hidden enter result-layout">
           <div class="result-head">
             <div>
-              <span class="eyebrow">AMAP VERIFIED ROUTE</span>
+              <span class="eyebrow">路线建议</span>
               <h2 id="result-route-name"></h2>
             </div>
             <span id="result-score" class="score"></span>

@@ -51,7 +51,7 @@
       }).then(function(r){
         document.getElementById('loading-area').classList.add('hidden');
         if(r.ok&&r.data) showResult(r.data);
-        else showError((r.error&&r.error.message)||'识别失败');
+        else showError('暂时无法识别，请换一张清晰照片或稍后再试');
       });
     };
     reader.readAsDataURL(file);
@@ -60,8 +60,9 @@
   function showResult(data){
     var spot=data.recognizedSpot||{};
     document.getElementById('result-spot-name').textContent=spot.spotName||data.spotName||'未知景点';
-    document.getElementById('result-confidence').textContent='置信度：'+((spot.confidence||data.confidence||0)*100).toFixed(0)+'%';
-    document.getElementById('result-category').textContent=data.category||'spot';
+    document.getElementById('result-confidence').textContent='匹配程度：'+((spot.confidence||data.confidence||0)*100).toFixed(0)+'%';
+    var categoryLabels={spot:'景点',building:'建筑',artifact:'文物',scene:'场景',unknown:'暂未分类'};
+    document.getElementById('result-category').textContent=categoryLabels[data.category]||'景点';
     document.getElementById('result-description').textContent=data.description||'暂无讲解';
     var features=data.visualFeatures||[];
     document.getElementById('result-features').innerHTML=features.map(function(f){

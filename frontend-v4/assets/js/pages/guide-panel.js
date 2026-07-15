@@ -25,7 +25,7 @@
 
   function init() {
     A.auth.guardRole('tour_leader', function(){
-      cacheDom(); bindEvents(); loadRoutes();
+      cacheDom(); bindEvents(); loadAvatarSettings(); loadRoutes();
     });
     window.addEventListener('pagehide', stopPolling);
     document.addEventListener('visibilitychange', function () {
@@ -43,7 +43,7 @@
       'memberList','memberListTitle','tabAll','tabRequests',
       'routeModal','routeList','routeCancel','routeConfirm','guideNarrationPlayer',
       'guideAudioControls','guideAudioToggle','guideAudioCurrent','guideAudioSeek','guideAudioDuration',
-      'narrationVoice'];
+      'narrationVoice','guideAvatarImage','guideStage'];
     ids.forEach(function(id) {
       var camel = id.replace(/-([a-z])/g, function(m,c){ return c.toUpperCase(); });
       var kebab = id.replace(/([A-Z])/g, '-$1').toLowerCase();
@@ -78,7 +78,7 @@
       }
       els.narrationVoice.addEventListener('change', function(){
         state.set('narrationVoice', els.narrationVoice.value);
-        ui.toast('讲解音色已切换，下次生成时生效', 'success');
+        ui.toast('讲解音色已切换，下次讲解时生效', 'success');
       });
     }
     bindAudioControls();
@@ -209,18 +209,30 @@
     }
   }
 
+  function loadAvatarSettings() {
+    api.get('/avatar-settings').then(function(result) {
+      if (!result.ok || !result.data) return;
+      if (els.guideAvatarImage && result.data.imageUrl) {
+        els.guideAvatarImage.src = result.data.imageUrl;
+      }
+      if (!state.get('narrationVoice') && els.narrationVoice) {
+        els.narrationVoice.value = result.data.voice || 'guide_female';
+      }
+    });
+  }
+
   function beginNarration(spotId) {
     if (!roomId || narrationRequestPending) return Promise.resolve(false);
     narrationRequestPending = true;
     if (els.btnStart) {
       els.btnStart.disabled = true;
-      els.btnStart.innerHTML = '<span class="loading-spinner"></span> 生成讲解中...';
+      els.btnStart.innerHTML = '<span class="loading-spinner"></span> 正在准备讲解...';
     }
     var voice = els.narrationVoice ? els.narrationVoice.value : 'guide_female';
     state.set('narrationVoice', voice);
     return api.post('/rooms/' + roomId + '/narration/start', { spotId: spotId, voice: voice }).then(function(r) {
       if (!r.ok || !r.data) {
-        ui.toast('讲解生成失败: ' + (r.error && r.error.message || '服务暂时不可用'), 'error');
+        ui.toast('讲解暂时无法准备，请稍后再试', 'error');
         return false;
       }
       selectedSpotId = r.data.spotId;
@@ -231,7 +243,7 @@
       if (subtitle) subtitle.textContent = r.data.text || '';
       updateRoomDisplay();
       playGuideNarration(r.data.audioUrl);
-      ui.toast('讲解已生成并开始播放', 'success');
+      ui.toast('讲解已准备好并开始播放', 'success');
       return true;
     }).catch(function() {
       ui.toast('讲解服务连接失败，请稍后再试', 'error');
@@ -252,7 +264,7 @@
     if (els.guideAudioControls) els.guideAudioControls.classList.remove('hidden');
     updateAudioProgress();
     els.guideNarrationPlayer.play().catch(function() {
-      ui.toast('音频已生成，请点击底部播放器开始播放', 'warning');
+      ui.toast('讲解音频已准备好，请点击底部播放器开始播放', 'warning');
     });
   }
 
@@ -357,7 +369,7 @@
       });
     }
     api.patch('/rooms/' + roomId + '/status', { status: isPaused ? 'paused' : 'active' }).then(function(){});
-    ui.toast(isPaused ? '讲解已暂停 · AI 将停止播报' : '讲解已继续 · AI 将恢复播报', 'info');
+    ui.toast(isPaused ? '讲解已暂停' : '讲解已继续播放', 'info');
   }
 
   function updateCurrentSpot(spotId) {
@@ -558,17 +570,20 @@
     api.get('/rooms/' + roomId + '/avatar-state').then(function(r) {
       if (r.ok && r.data) {
         var st=r.data.aiStatus||'idle';
-        var labels={idle:'待命',listening:'聆听中',speaking:'讲解中',thinking:'思考中',paused:'已暂停',resuming:'续讲中'};
+        if (els.guideStage && (els.guideNarrationPlayer.paused || st !== 'speaking')) {
+          els.guideStage.setAttribute('data-status', st);
+        }
+        var labels={idle:'待命',listening:'正在听取问题',speaking:'讲解中',thinking:'正在准备',paused:'已暂停',resuming:'继续讲解'};
         var colors={idle:'#F5F5F2',listening:'#ECFDF5',speaking:'#FDF6F1',thinking:'#FFFBEB',paused:'#FEF2F2',resuming:'#EFF6FF'};
         var textColors={idle:'#6B7280',listening:'#059669',speaking:'#E07B3C',thinking:'#D97706',paused:'#DC2626',resuming:'#2563EB'};
 
-        // Update AI status badge
+        // Update guide status badge
         var badge=document.getElementById('ai-status-badge');
         if(badge){badge.textContent=labels[st]||st;badge.style.background=colors[st]||colors.idle;badge.style.color=textColors[st]||textColors.idle;}
 
-        // Update AI action display
+        // Keep internal state names out of the visible status text.
         var action=document.getElementById('ai-action-display');
-        if(action)action.textContent=r.data.action||r.data.text||(labels[st]||st);
+        if(action)action.textContent=r.data.text||(labels[st]||'等待操作');
 
         // Update status dot
         var statusDot = document.getElementById('member-status-dot');

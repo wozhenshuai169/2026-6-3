@@ -29,21 +29,14 @@
     });
   }
 
-  function coordinateText(longitude,latitude){
-    if(typeof longitude!=='number'||typeof latitude!=='number') return '坐标未返回';
-    return longitude.toFixed(6)+', '+latitude.toFixed(6);
-  }
-
   function loadScenicContext(){
     var card=document.getElementById('scenic-context');
     var status=document.getElementById('map-status');
     api.get('/map/scenic-areas/current').then(function(r){
       if(!r.ok||!r.data||!r.data.current){
         status.className='status map-status-error';
-        status.textContent='高德地图连接失败';
-        card.innerHTML='<div class="scenic-error"><strong>未取得真实地图数据</strong><p>'+
-          ui.escapeHtml((r.error&&r.error.message)||'请确认后端网络和高德 Key。')+
-          '</p><small>系统不会改用 Mock 数据。</small></div>';
+        status.textContent='景区信息暂时无法获取';
+        card.innerHTML='<div class="scenic-error"><strong>暂时无法读取景区信息</strong><p>请稍后重试，或先返回导览页继续使用其他功能。</p></div>';
         return;
       }
 
@@ -52,13 +45,12 @@
       var related=data.relatedScenicAreas||[];
       var pois=(data.pois||[]).slice(0,5);
       status.className='status';
-      status.textContent='高德真实数据已连接';
+      status.textContent='景区信息已更新';
 
       var relatedHtml=related.map(function(area){
-        var closed=area.temporarilyClosed?'<span class="poi-warning">高德标注：暂停开放</span>':'';
+        var closed=area.temporarilyClosed?'<span class="poi-warning">当前暂停开放</span>':'';
         return '<div class="related-area"><div><small>独立景区，不加入本路线</small><strong>'+
-          ui.escapeHtml(area.scenicAreaName)+'</strong></div><span>'+
-          ui.escapeHtml(coordinateText(area.longitude,area.latitude))+'</span>'+closed+'</div>';
+          ui.escapeHtml(area.scenicAreaName)+'</strong></div>'+closed+'</div>';
       }).join('');
 
       var poiHtml=pois.map(function(poi){
@@ -67,15 +59,12 @@
       }).join('');
 
       card.innerHTML='<div class="scenic-card-head"><div><small>当前主景区</small><h3>'+
-        ui.escapeHtml(current.scenicAreaName)+'</h3></div><span class="verified-badge">高德已核验</span></div>'+
+        ui.escapeHtml(current.scenicAreaName)+'</h3></div><span class="verified-badge">景区资料</span></div>'+
         '<p class="scenic-address"><span class="material-icons">location_on</span>'+
         ui.escapeHtml(current.city+current.district+' · '+current.address)+'</p>'+
-        '<div class="coordinate-grid"><div><small>景区中心</small><strong>'+
-        ui.escapeHtml(coordinateText(current.longitude,current.latitude))+'</strong></div><div><small>导航入口</small><strong>'+
-        ui.escapeHtml(current.entranceLocation||'高德未返回')+'</strong></div></div>'+
+        '<div class="coordinate-grid"><div><small>所在区域</small><strong>'+ui.escapeHtml(current.district||'滨湖区')+'</strong></div><div><small>参观入口</small><strong>'+ui.escapeHtml(current.entranceLocation||current.address||'请以现场指引为准')+'</strong></div></div>'+
         '<div class="live-poi-list">'+poiHtml+'</div>'+relatedHtml+
-        '<p class="source-note">数据来源：'+ui.escapeHtml(data.dataSource||'高德地图 Web 服务')+
-        '；Key 仅保存在后端。</p>';
+        '<p class="source-note">开放情况和入口位置可能临时调整，请以景区现场指引为准。</p>';
     });
   }
 
@@ -118,7 +107,7 @@
     document.getElementById('result-area').classList.add('hidden');
     document.getElementById('loading-area').classList.remove('hidden');
     btn.disabled=true;
-    btn.innerHTML='<div class="loading-spinner"></div> 分析中...';
+    btn.innerHTML='<div class="loading-spinner"></div> 正在安排...';
 
     api.post('/recommend/route',{
       roomId:st.get('roomId')||'demo',
@@ -135,13 +124,13 @@
     }).then(function(r){
       document.getElementById('loading-area').classList.add('hidden');
       btn.disabled=false;
-      btn.innerHTML='<span class="material-icons text-[18px]">route</span> 生成路线';
+      btn.innerHTML='<span class="material-icons text-[18px]">route</span> 查看推荐路线';
 
       if(r.ok&&r.data){
         showResult(r.data);
       }else{
         if(placeholder) placeholder.classList.remove('hidden');
-        ui.toast((r.error&&r.error.message)||'推荐失败，请重试','error');
+        ui.toast('暂时无法安排路线，请稍后重试','error');
       }
     });
   }
@@ -150,39 +139,35 @@
     document.getElementById('result-route-name').textContent=data.routeName||'灵山胜境推荐路线';
     document.getElementById('result-time').innerHTML='<span class="material-icons text-[14px]">schedule</span> 约'+(data.estimatedTime||0)+'分钟';
     document.getElementById('result-distance').innerHTML='<span class="material-icons text-[14px]">directions_walk</span> '+Number(data.distance||0).toFixed(2)+'公里';
-    document.getElementById('result-difficulty').textContent='难度：'+(data.difficulty||'medium');
-    document.getElementById('result-source').textContent=data.mapProvider==='amap'?'高德实时路线':'来源未确认';
-    document.getElementById('result-score').textContent='★ '+Number(data.score||0).toFixed(1);
+    var difficultyLabels={low:'轻松',medium:'适中',high:'较多步行'};
+    document.getElementById('result-difficulty').textContent='步行强度：'+(difficultyLabels[data.difficulty]||'适中');
+    document.getElementById('result-source').textContent='园内步行路线';
+    document.getElementById('result-score').textContent='已按你的偏好安排';
 
     var spotsEl=document.getElementById('result-spots');
     var spots=data.spots||[];
     spotsEl.innerHTML=spots.map(function(s,i){
       var isLast=i===spots.length-1;
-      var coordinate=coordinateText(s.longitude,s.latitude);
-      var amapName=s.amapPoiName&&s.amapPoiName!==s.spotName?
-        '<div class="poi-amap-name">高德名称：'+ui.escapeHtml(s.amapPoiName)+'</div>':'';
       var closed=s.temporarilyClosed?
-        '<span class="poi-warning">高德当前标注：暂停开放</span>':'';
+        '<span class="poi-warning">当前暂停开放</span>':'';
       return '<div class="relative"><div class="absolute -left-[29px] w-4 h-4 rounded-full bg-primary border-2 border-white"></div>'+
         '<div class="route-poi-card"><div class="route-poi-title"><span>'+(i+1)+'. '+
         ui.escapeHtml(s.spotName||s.spotId)+'</span>'+closed+'</div>'+
-        '<div class="route-poi-meta"><span>停留约 '+Number(s.stayMinutes||0)+' 分钟</span><span>'+
-        ui.escapeHtml(coordinate)+'</span><span>POI '+ui.escapeHtml(s.poiId||'未返回')+'</span></div>'+
-        amapName+'<p>'+ui.escapeHtml(s.address||'高德未返回详细地址')+'</p></div>'+
+        '<div class="route-poi-meta"><span>建议停留约 '+Number(s.stayMinutes||0)+' 分钟</span></div>'+
+        '<p>'+ui.escapeHtml(s.address||'具体位置请以园内指引为准')+'</p></div>'+
         (isLast?'':'<div class="h-4 border-l-2 border-orange-soft ml-[-21px]"></div>')+'</div>';
     }).join('');
 
     var legs=data.instructions||[];
     var evidence=document.getElementById('result-map-note');
-    evidence.innerHTML='<div class="map-evidence-head"><strong>高德路线证据</strong><span>'+
-      ui.escapeHtml(String((data.routePolyline||[]).length))+' 个折线坐标点</span></div>'+
+    evidence.innerHTML='<div class="map-evidence-head"><strong>分段步行参考</strong><span>预计时间可能受现场人流影响</span></div>'+
       (legs.length?legs.map(function(leg){
         return '<div class="route-leg"><span>'+ui.escapeHtml(leg.fromSpot)+' → '+
           ui.escapeHtml(leg.toSpot)+'</span><strong>'+Number(leg.distanceMeters||0)+' 米 · 约 '+
           Number(leg.durationMinutes||0)+' 分钟</strong></div>';
       }).join(''):'<p>当前路线没有需要计算的相邻路段。</p>');
 
-    document.getElementById('result-reason').innerHTML='<span class="material-icons text-[16px] text-primary align-text-bottom mr-1">lightbulb</span> '+ui.escapeHtml(data.reason||'该路线根据你的偏好生成。');
+    document.getElementById('result-reason').innerHTML='<span class="material-icons text-[16px] text-primary align-text-bottom mr-1">lightbulb</span> '+ui.escapeHtml(data.reason||'该路线根据你的时间、兴趣和体力安排。');
 
     var matched=data.matchedPreferences||[];
     var matchedEl=document.getElementById('result-matched');
