@@ -1,0 +1,53 @@
+.visitor-voice-field {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.visitor-voice-field > span,
+.join-voice-field > span {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.visitor-voice-field select,
+.join-voice-field select {
+  cursor: pointer;
+}
+
+.visitor-voice-field small {
+  color: var(--p-muted);
+  font-size: 10px;
+}
+
+.visitor-voice-control {
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--p-line);
+  border-radius: 9px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.visitor-voice-control .material-icons {
+  color: var(--p-accent);
+  font-size: 17px;
+}
+
+.visitor-voice-control select {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--p-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.join-voice-field {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0;
+}

@@ -37,22 +37,25 @@ set DASHSCOPE_API_KEY=your-dashscope-key
 set DEEPSEEK_API_KEY=your-deepseek-key
 ```
 
-Start the backend first:
+Start the main backend first. The deployed service must have a public base URL
+when the ASR Provider needs to fetch an uploaded `/uploads/audio/...` file:
 
 ```bash
-uvicorn ai_algorithm_service.api:app --app-dir src --reload
+set DASHSCOPE_API_KEY=your-dashscope-key
+set PUBLIC_BASE_URL=https://your-public-backend.example
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
 ```
 
-Then run:
+Then run the product-path validator against that deployed backend:
 
 ```bash
-python tools/run_real_model_validation.py
+python tools/run_real_model_validation.py --base-url https://your-public-backend.example
 ```
 
 If voice recordings are not ready yet, run image/TTS validation and skip missing voice cases:
 
 ```bash
-python tools/run_real_model_validation.py --skip-missing-audio
+python tools/run_real_model_validation.py --base-url https://your-public-backend.example --skip-missing-audio
 ```
 
 For another backend address:

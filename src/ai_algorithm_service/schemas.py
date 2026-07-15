@@ -29,8 +29,8 @@ class Citation(BaseModel):
 
 class TourState(BaseModel):
     roomId: str = "demo-room"
-    currentSpotId: str = "main_hall"
-    currentRouteId: str = "classic"
+    currentSpotId: str = "lingshan_dazhaobi"
+    currentRouteId: str = "lingshan_classic"
     currentSegmentId: str = "segment_01"
     isExplaining: bool = True
     phase: str = "explaining"

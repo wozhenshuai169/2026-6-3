@@ -1,0 +1,26 @@
+:root{--ink:#10221d;--forest:#153f35;--forest-2:#1f5b4d;--copper:#c96f3b;--paper:#f4f7f5;--line:rgba(21,63,53,.12);--shadow:0 22px 70px rgba(15,47,39,.09)}
+html{scroll-behavior:smooth;background:var(--paper)}
+body{background:radial-gradient(circle at 8% 0,rgba(201,111,59,.08),transparent 28rem),radial-gradient(circle at 96% 18%,rgba(21,63,53,.08),transparent 32rem),var(--paper)!important;color:var(--ink)!important}
+button,a,input,select,textarea{transition:color .2s ease,background-color .2s ease,border-color .2s ease,box-shadow .2s ease,transform .2s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
+button:not(:disabled):active{transform:scale(.985)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(201,111,59,.28)!important;outline-offset:3px}
+button:disabled{cursor:not-allowed;opacity:.48}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Guide room: calm command-centre hierarchy without changing its API hooks. */
+body:has(#room-id-display){max-width:1280px!important;padding:0 20px 48px;background:linear-gradient(180deg,#eef3f0 0,#f8faf9 420px)!important}
+body:has(#room-id-display) nav{height:72px!important;margin:16px 0 0;border:1px solid var(--line)!important;border-radius:18px;background:rgba(255,255,255,.84)!important;backdrop-filter:blur(18px);box-shadow:0 12px 40px rgba(15,47,39,.06)}
+body:has(#room-id-display) main{padding:26px 0!important;gap:20px!important}
+body:has(#room-id-display) main>section{border-color:var(--line)!important;box-shadow:0 14px 50px rgba(15,47,39,.055);overflow:hidden}
+body:has(#room-id-display) main>section:first-child{position:relative;padding:28px!important;background:linear-gradient(135deg,#123d33,#1e5b4c)!important;color:white!important;border:0!important;box-shadow:var(--shadow)}
+body:has(#room-id-display) main>section:first-child::after{content:"";position:absolute;right:-80px;top:-120px;width:330px;height:330px;border:1px solid rgba(255,255,255,.12);border-radius:50%;box-shadow:0 0 0 42px rgba(255,255,255,.025),0 0 0 88px rgba(255,255,255,.018);pointer-events:none}
+body:has(#room-id-display) main>section:first-child .text-on-surface,body:has(#room-id-display) main>section:first-child .text-on-surface-variant{color:rgba(255,255,255,.72)!important}
+body:has(#room-id-display) main>section:first-child #room-id-display,body:has(#room-id-display) main>section:first-child #route-name-display,body:has(#room-id-display) main>section:first-child #member-count,body:has(#room-id-display) main>section:first-child #scenic-area-display{color:#fff!important}
+body:has(#room-id-display) main>section:first-child hr{border-color:rgba(255,255,255,.14)!important}
+body:has(#room-id-display) #current-spot-display,body:has(#room-id-display) #ai-action-display{color:#ffd1b4!important}
+body:has(#room-id-display) #btn-start{background:var(--forest)!important;box-shadow:0 12px 30px rgba(21,63,53,.18);border:1px solid transparent}
+body:has(#room-id-display) #btn-start:hover{background:var(--forest-2)!important;transform:translateY(-2px)}
+body:has(#room-id-display) #btn-skip:hover,body:has(#room-id-display) #btn-collect:hover,body:has(#room-id-display) #btn-pause:hover{border-color:rgba(21,63,53,.3)!important;background:#edf4f1!important;transform:translateY(-1px)}
+body:has(#room-id-display) #member-list li{border-radius:12px;margin:2px 10px}
+body:has(#room-id-display) #member-list li:hover{background:#f0f5f2!important}
+@media(max-width:700px){body:has(#room-id-display){padding:0 12px 32px}body:has(#room-id-display) nav{height:60px!important;margin-top:8px}body:has(#room-id-display) main>section:first-child{padding:20px!important}}

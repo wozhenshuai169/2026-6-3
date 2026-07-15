@@ -1,0 +1,45 @@
+.feedback-field {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.feedback textarea {
+  min-height: 58px;
+  resize: vertical;
+}
+
+.feedback #feedback-submit {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.spot-card > img {
+  display: none;
+}
+
+.avatar-text-switch {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 8px;
+  background: rgba(38, 35, 31, .72);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.avatar-text-switch:hover {
+  background: rgba(38, 35, 31, .88);
+}
+
+.avatar-text-switch .material-icons {
+  font-size: 16px;
+}

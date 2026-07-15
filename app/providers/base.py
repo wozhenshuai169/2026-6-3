@@ -30,10 +30,14 @@ class RouteResult:
     estimated_time: int          # 分钟
     spots: list[dict]            # [{spotId, spotName, stayMinutes}]
     reason: str
-    distance: float = 0.0        # 公里，Mock 为 0
+    distance: float = 0.0        # 公里
     difficulty: str = ""         # low / medium / high
     matched_preferences: list[str] = field(default_factory=list)
     score_breakdown: dict[str, float] = field(default_factory=dict)
+    route_polyline: list[str] = field(default_factory=list)
+    instructions: list[dict] = field(default_factory=list)
+    map_provider: str = ""
+    data_source: str = ""
 
 
 # ── 抽象 Provider ───────────────────────────────────────

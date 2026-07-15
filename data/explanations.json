@@ -1,13 +1,18 @@
 [
-  {"segmentId":"segment_01","spotId":"main_hall","text":"大家现在看到的是主展厅，它位于景区中轴线的核心位置，也是理解整座古苑历史的起点。"},
-  {"segmentId":"segment_02","spotId":"main_hall","text":"主展厅始建于明代，清代修缮后保留了较完整的空间格局，所以我们能同时看到历史层次和地方工艺。"},
-  {"segmentId":"segment_03","spotId":"main_hall","text":"请抬头看屋顶，灰瓦、脊兽和木构件的组合，体现了本地传统建筑对礼制和实用性的平衡。"},
-  {"segmentId":"segment_04","spotId":"courtyard","text":"从主展厅出来后，我们会进入中心庭院，这里视野开阔，适合观察整组建筑的轴线关系。"},
-  {"segmentId":"segment_05","spotId":"bell_tower","text":"前方是钟楼，它不仅承担报时功能，也在游览动线中提示空间节奏的变化。"},
-  {"segmentId":"segment_06","spotId":"bell_tower","text":"钟楼的重檐结构和榫卯连接，是观察传统木构建筑受力方式的好位置。"},
-  {"segmentId":"segment_07","spotId":"drum_tower","text":"鼓楼与钟楼相对，形成一钟一鼓的格局，让这片空间具有更强的仪式感。"},
-  {"segmentId":"segment_08","spotId":"stone_gallery","text":"石刻长廊保存了多件碑刻复制件，文字内容能补充我们对地方修建历史的理解。"},
-  {"segmentId":"segment_09","spotId":"service_center","text":"游客服务中心提供咨询、失物登记和简易急救支持，也是团队集合时的重要辅助点。"},
-  {"segmentId":"segment_10","spotId":"east_gate","text":"东门靠近停车区，如果有行动不便的游客，后续可由团长确认是否在这里调整集合安排。"}
+  {"segmentId":"segment_01","spotId":"lingshan_dazhaobi","text":"各位朋友，我们从灵山大照壁开始。照壁正面的“灵山胜境”四字由赵朴初先生题写，背面刻有《小灵山》诗，是景区的文化序章。"},
+  {"segmentId":"segment_02","spotId":"wuming_bridge","text":"前方五明桥的名称来自佛教所说的五种学问。经过这里，也象征从世俗空间走向文化与心灵体验。"},
+  {"segmentId":"segment_03","spotId":"buddha_foot_altar","text":"佛足坛以佛足印为核心。早期佛教艺术常用足印、法轮等象征来表达佛陀的存在，适合从图案细节慢慢观察。"},
+  {"segmentId":"segment_04","spotId":"wuzhi_gate","text":"五智门采用石牌楼形式，门名与佛教智慧观念有关。请留意它的门楼层次和石刻装饰。"},
+  {"segmentId":"segment_05","spotId":"bodhi_avenue","text":"菩提大道连接多处核心景观，树木与开阔轴线让步行过程更有层次。体力有限的游客可以放慢速度并留意休息提示。"},
+  {"segmentId":"segment_06","spotId":"jiulong_guanyu","text":"九龙灌浴以佛陀诞生传说为主题，中心是莲花与太子像，周围九龙环绕。表演时间会调整，请以当天公告为准。"},
+  {"segmentId":"segment_07","spotId":"demon_relief","text":"降魔浮雕表现佛陀修行中降伏内外烦恼的故事。观看时可留意人物动作、表情和画面的层次。"},
+  {"segmentId":"segment_08","spotId":"ashoka_pillar","text":"阿育王柱让人联想到古印度佛教传播史。这里适合把灵山的现场景观与更广阔的佛教文化交流联系起来理解。"},
+  {"segmentId":"segment_09","spotId":"baizi_mile","text":"百子戏弥勒用活泼的儿童形象表现欢喜与包容，造型生动，是亲子游客很适合一起观察和讲故事的一站。"},
+  {"segmentId":"segment_10","spotId":"xiangfu_temple","text":"祥符禅寺是灵山历史脉络的重要组成部分。资料将它的古代源流与唐代玄奘途经马山的传说相联系。"},
+  {"segmentId":"segment_11","spotId":"lingshan_buddha","text":"灵山大佛佛体高79米，莲花座高9米，合计88米；连同基座总高约101.5米。登云道216级台阶，也被赋予消除烦恼、成就愿心的文化解释。"},
+  {"segmentId":"segment_12","spotId":"buddhist_museum","text":"佛教文化博览馆通过造像、图文和展陈帮助游客理解佛教艺术与传播历史，适合希望系统了解文化背景的游客。"},
+  {"segmentId":"segment_13","spotId":"lingshan_palace","text":"灵山梵宫建筑面积约7.2万平方米，内部汇集木雕、壁画等多种艺术形式，也曾承办重要文化交流活动。"},
+  {"segmentId":"segment_14","spotId":"wuyin_mandala","text":"五印坛城是藏式风格文化景观，建筑面积约5000平方米。参观时请尊重现场礼仪，并按标识确认拍摄要求。"},
+  {"segmentId":"segment_15","spotId":"manfeilong_pagoda","text":"曼飞龙塔借鉴南传佛教建筑风格，塔身层次和装饰色彩鲜明，与周围山水形成独特的视觉对照。"},
+  {"segmentId":"segment_16","spotId":"wujinyi_house","text":"无尽意斋与近现代文化人物相关，是理解灵山文脉延续的一处补充。具体开放情况请以现场公告为准。"}
 ]
-

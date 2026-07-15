@@ -7,3 +7,5 @@ class AvatarStateResponse(BaseModel):
     action: str     # "idle" | "listening" | "speaking" | "thinking" | "paused" | "resuming"
     text: str
     audioUrl: str
+    narrationId: str = ""
+    duration: float = 0.0

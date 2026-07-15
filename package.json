@@ -1,0 +1,8 @@
+{
+	"scripts": {
+		"build:css": "tailwindcss -c tailwind.config.js -i frontend-v4/assets/css/tailwind-input.css -o frontend-v4/assets/css/tailwind.generated.css --minify"
+	},
+	"devDependencies": {
+		"tailwindcss": "3.4.17"
+	}
+}

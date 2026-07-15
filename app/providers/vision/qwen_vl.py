@@ -36,7 +36,7 @@ class QwenVLVisionProvider(VisionProvider):
     async def recognize(self, image_url: str, hint: str = "") -> VisionResult:
         """调用 Qwen-VL 识别图片内容，景区优先，同时支持人物/物体/场景识别。"""
         system_prompt = (
-            "你是一个智能图片识别助手，服务于旅游景区导览场景。\n\n"
+            "请执行旅游景区导览场景的图片识别任务。不要在结果中提及模型、算法或服务提供商。\n\n"
             "## 识别优先级（从高到低）：\n"
             "1. **景区/建筑/地标**：优先识别图片中的景点、建筑、自然风光、历史遗迹等\n"
             "2. **人物**：如果图片的主体是人物（单人/多人/雕像/画像），如实描述人物特征\n"
@@ -104,19 +104,11 @@ class QwenVLVisionProvider(VisionProvider):
                     category="unknown",
                 )
             logger.error("[Qwen-VL] API error: %s — %s", e, resp_body[:300])
-            # 其他HTTP错误降级到 Mock
-            from app.providers.vision.mock import MockVisionProvider
-            logger.warning("[Qwen-VL] Falling back to Mock vision")
-            mock = MockVisionProvider()
-            return await mock.recognize(image_url, hint=hint)
+            raise RuntimeError("Vision provider request failed") from e
 
         except (httpx.HTTPError, json.JSONDecodeError, KeyError) as e:
             logger.error("[Qwen-VL] API error: %s", e)
-            # 降级到 Mock
-            from app.providers.vision.mock import MockVisionProvider
-            logger.warning("[Qwen-VL] Falling back to Mock vision")
-            mock = MockVisionProvider()
-            return await mock.recognize(image_url, hint=hint)
+            raise RuntimeError("Vision provider response is invalid") from e
 
     def _parse_response(self, content: str, hint: str = "") -> VisionResult:
         """解析 Qwen-VL 返回的 JSON 或文本。"""

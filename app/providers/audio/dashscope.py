@@ -31,17 +31,11 @@ VOICE_MAP = {
     "xiaowei":      "zh-CN-YunyangNeural",     # 新闻男声
 }
 
-SPEED_MAP = {
-    0.5: "-50%", 0.75: "-25%", 1.0: "+0%",
-    1.25: "+25%", 1.5: "+50%", 2.0: "+100%",
-}
-
-
 class DashScopeAudioProvider:
     """音频 Provider —— edge-tts (TTS) + DashScope Paraformer (ASR)。"""
 
     def __init__(self) -> None:
-        self._api_key = settings.vision_api_key  # 复用百炼 Key（ASR用）
+        self._api_key = settings.dashscope_api_key or settings.vision_api_key
         self._asr_headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
@@ -73,7 +67,8 @@ class DashScopeAudioProvider:
                     "format": audio_format, "success": False}
 
         edge_voice = VOICE_MAP.get(voice, "zh-CN-XiaoxiaoNeural")
-        rate = SPEED_MAP.get(speed, "+0%")
+        rate_percent = max(-50, min(100, round((float(speed) - 1.0) * 100)))
+        rate = f"{rate_percent:+d}%"
 
         try:
             import edge_tts
@@ -126,10 +121,6 @@ class DashScopeAudioProvider:
 
         要求: 百炼 API Key 需开通 Paraformer 权限 + 音频文件公网 URL。
         """
-        if text_hint and text_hint.strip():
-            return {"text": text_hint.strip(), "confidence": 0.88,
-                    "success": True, "format": audio_format}
-
         if not (audio_url.startswith("http://") or audio_url.startswith("https://")):
             return {"text": "", "confidence": 0.0, "success": False,
                     "format": audio_format,
