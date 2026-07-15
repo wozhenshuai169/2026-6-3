@@ -1,4 +1,9 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
+
+VoiceName = Literal["guide_female", "xiaomei", "guide_male", "xiaowei"]
 
 
 class ASRRequest(BaseModel):
@@ -18,7 +23,7 @@ class ASRResponse(BaseModel):
 
 class TTSRequest(BaseModel):
     text: str
-    voice: str = "guide_female"
+    voice: VoiceName = "guide_female"
     speed: float = Field(default=1.0, ge=0.5, le=2.0)
     audioFormat: str = "mp3"  # "wav" | "mp3"
 

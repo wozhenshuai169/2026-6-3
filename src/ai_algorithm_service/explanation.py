@@ -32,7 +32,7 @@ class TourExplanation:
 
     def _bridge(self, question: str, answer: str) -> str:
         summary = self._answer_summary(answer)
-        if any(word in question for word in ["历史", "建于", "年代", "建的", "什么时候建"]):
+        if any(word in question for word in ["历史", "建于", "年代", "建的", "什么时候建", "落成", "开光"]):
             return f"{summary}了解了这个年代背景后，我们再看它和眼前建筑细节之间的关系。"
         if any(word in question for word in ["结构", "榫卯", "重檐"]):
             return f"{summary}结构问题很适合边看边理解，接下来请留意建筑的层次和受力方式。"

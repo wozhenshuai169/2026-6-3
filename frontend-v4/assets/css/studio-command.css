@@ -92,7 +92,7 @@ button { cursor: pointer; }
 .sc-guide > main > section:first-child > div:last-child { min-height: 48px; padding: 0 22px; }
 .sc-guide > main > section:nth-of-type(2) { position: relative; padding: 24px !important; display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px !important; }
 .sc-guide > main > section:nth-of-type(2)::before {
-  content: "当前讲解\A 主展厅"; white-space: pre;
+  content: "当前讲解\A 九龙灌浴"; white-space: pre;
   grid-column: 1 / -1; margin-bottom: 12px; padding-bottom: 22px;
   color: var(--sc-ink); font: 500 28px/1.75 var(--sc-serif); border-bottom: 1px solid var(--sc-line);
 }

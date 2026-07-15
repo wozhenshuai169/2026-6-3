@@ -9,7 +9,7 @@ Aurelian.state = (function () {
   'use strict';
 
   // Keys that get persisted to sessionStorage
-  var PERSIST_KEYS = ['userId', 'userName', 'token', 'role', 'expiresAt', 'roomId', 'currentSpotId', 'routeId'];
+  var PERSIST_KEYS = ['userId', 'userName', 'token', 'role', 'expiresAt', 'roomId', 'currentSpotId', 'routeId', 'narrationVoice'];
   var _store = {};
 
   /** Save persistable keys to sessionStorage */

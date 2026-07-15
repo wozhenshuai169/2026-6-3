@@ -10,6 +10,8 @@ from app.schemas.rooms import (
     JoinRoomResponse,
     MemberActionResponse,
     RoomStatusResponse,
+    StartNarrationRequest,
+    StartNarrationResponse,
     TransferLeaderRequest,
     UpdateRoomStatusRequest,
     UpdateRoomStatusResponse,
@@ -17,6 +19,7 @@ from app.schemas.rooms import (
     UpdateSpotResponse,
 )
 from app.services.messages import create_message
+from app.services.narration import generate_room_narration
 from app.services.realtime import room_connections
 from app.services.rooms import (
     create_room,
@@ -141,6 +144,39 @@ async def update_spot(roomId: str, req: UpdateSpotRequest, user: dict = Depends(
 async def avatar_state(roomId: str, user: dict = Depends(get_current_user)):
     require_room_member(roomId, user)
     return AvatarStateResponse(**get_avatar_state(roomId))
+
+
+@router.post(
+    "/rooms/{roomId}/narration/start",
+    response_model=StartNarrationResponse,
+)
+async def start_narration(
+    roomId: str,
+    req: StartNarrationRequest,
+    user: dict = Depends(get_current_user),
+):
+    room = require_room_member(roomId, user, leader_only=True)
+    if room["status"] != "active":
+        raise AppError(409, "ROOM_NOT_ACTIVE", "Only active rooms can start narration")
+    update_current_spot(roomId, req.spotId)
+    await room_connections.broadcast(
+        roomId,
+        {"type": "room.spot", "data": {"currentSpot": req.spotId}},
+    )
+    result = await generate_room_narration(roomId, req.spotId, req.voice)
+    await room_connections.broadcast(
+        roomId,
+        {
+            "type": "room.narration",
+            "data": {
+                "spotId": result["spotId"],
+                "narrationId": result["narrationId"],
+                "audioUrl": result["audioUrl"],
+                "duration": result["duration"],
+            },
+        },
+    )
+    return StartNarrationResponse(**result)
 
 
 @router.patch("/rooms/{roomId}/status", response_model=UpdateRoomStatusResponse)

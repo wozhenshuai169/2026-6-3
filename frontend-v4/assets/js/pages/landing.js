@@ -7,10 +7,11 @@
   var A = window.Aurelian, state = A.state, auth = A.auth, api = A.api, ui = A.ui, router = A.router;
 
   var btnVisitor, btnLeader, btnAdmin;
-  var modal, dialog, modalTitle, modalClose, modalName, modalError, modalSubmit;
+  var modal, dialog, modalTitle, modalClose, modalName, modalVoiceGroup, modalVoice, modalError, modalSubmit;
   var adminModal, adminClose, adminPasscode, adminError, adminSubmit;
   var chosenRole = null;
   var demoAdmin = false;
+  var defaultAvatarVoice = 'guide_female';
 
   function init() {
     // Demo mode
@@ -25,16 +26,12 @@
       }
     }
 
-    // Already logged in: validate the stored token before routing.
+    // Landing is the explicit main menu. Do not auto-route by stored role here;
+    // returning users should stay on this page until they choose an entry.
     if (state.isLoggedIn()) {
       auth.me().then(function(result) {
-        if (!result.ok) return;
-        var role = state.get('role');
-        if (role === 'visitor') { router.go('user-portal'); return; }
-        if (role === 'tour_leader') { router.go('guide-panel'); return; }
-        if (role === 'admin') { router.go('knowledge-base'); return; }
+        if (!result.ok) state.clear();
       });
-      return;
     }
 
     // Cache DOM refs
@@ -46,6 +43,8 @@
     modalTitle = document.getElementById('modal-title');
     modalClose = document.getElementById('modal-close');
     modalName = document.getElementById('modal-name');
+    modalVoiceGroup = document.getElementById('modal-voice-group');
+    modalVoice = document.getElementById('modal-voice');
     modalError = document.getElementById('modal-error');
     modalSubmit = document.getElementById('modal-submit');
     adminModal = document.getElementById('admin-modal');
@@ -53,6 +52,10 @@
     adminPasscode = document.getElementById('admin-passcode');
     adminError = document.getElementById('admin-error');
     adminSubmit = document.getElementById('admin-submit');
+
+    api.get('/avatar-settings').then(function (result) {
+      if (result.ok && result.data && result.data.voice) defaultAvatarVoice = result.data.voice;
+    });
 
     // Bind events
     if (btnVisitor) btnVisitor.addEventListener('click', function () { openModal('visitor'); });
@@ -74,6 +77,8 @@
     chosenRole = role;
     var label = role === 'visitor' ? '游客' : '团长';
     if (modalTitle) modalTitle.textContent = label + ' — 输入你的名字';
+    if (modalVoiceGroup) modalVoiceGroup.classList.toggle('hidden', role !== 'visitor');
+    if (modalVoice && role === 'visitor') modalVoice.value = state.get('narrationVoice') || defaultAvatarVoice;
     if (modalName) { modalName.value = ''; modalName.focus(); }
     if (modalError) modalError.classList.add('hidden');
     if (modalSubmit) { modalSubmit.disabled = false; modalSubmit.textContent = '开始导览'; }
@@ -97,6 +102,7 @@
 
     auth.guest(name, chosenRole).then(function (result) {
       if (result.ok) {
+        if (chosenRole === 'visitor' && modalVoice) state.set('narrationVoice', modalVoice.value);
         ui.toast('注册成功，欢迎！', 'success');
         if (chosenRole === 'visitor') router.go('user-portal');
         else router.go('guide-panel');

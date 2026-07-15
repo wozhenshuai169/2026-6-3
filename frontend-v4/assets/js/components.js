@@ -95,12 +95,12 @@ Aurelian.components = (function () {
 
   /** Help prompt card (for AI assistant) */
   function helpPromptCard(question, onNotify, onDismiss) {
-    return '<div class="bg-[#FDF6F1] border border-[#E07B3C]/20 rounded-xl p-4 mx-4 mb-4"><p class="text-sm text-[#1A1A1C] mb-3">检测到你可能需要帮助，是否通知团长？</p><div class="flex gap-2"><button class="help-dismiss px-4 py-2 border border-[#E8E8E4] rounded-lg text-sm">暂不通知</button><button class="help-notify px-4 py-2 bg-[#E07B3C] text-white rounded-lg text-sm">通知团长</button></div></div>';
+    return '<div class="bg-[#FDF6F1] border border-[#E07B3C]/20 rounded-xl p-4 mx-4 mb-4"><p class="text-sm text-[#1A1A1C] mb-3">如果需要团队协助，可以通知团长。</p><div class="flex gap-2"><button class="help-dismiss px-4 py-2 border border-[#E8E8E4] rounded-lg text-sm">暂不通知</button><button class="help-notify px-4 py-2 bg-[#E07B3C] text-white rounded-lg text-sm">通知团长</button></div></div>';
   }
 
   /** Typing indicator bubble */
   function typingIndicator() {
-    return '<div class="flex mb-4" id="typing-indicator"><div class="bg-[#F5F5F2] rounded-xl rounded-bl-sm px-4 py-3 border-l-2 border-[#E07B3C]"><span class="text-sm text-[#A0A0A0]">AI 正在思考</span><span class="typing-dots">...</span></div></div>';
+    return '<div class="flex mb-4" id="typing-indicator"><div class="bg-[#F5F5F2] rounded-xl rounded-bl-sm px-4 py-3 border-l-2 border-[#E07B3C]"><span class="text-sm text-[#A0A0A0]">正在整理回答</span><span class="typing-dots">...</span></div></div>';
   }
 
   return {

@@ -84,12 +84,12 @@ async def asr(req: ASRRequest, user: dict = Depends(get_current_user)):
         audio_format=req.audioFormat, text_hint=req.textHint,
     )
     if result is None:
-        raise AppError(404, "ROOM_NOT_FOUND", "Room not found")
+        raise AppError(404, "ROOM_NOT_FOUND", "导览房间不存在")
     if not result.get("success", True):
         error = str(result.get("error", "ASR failed"))
         if "Unsupported audio format" in error:
-            raise AppError(422, "UNSUPPORTED_AUDIO_FORMAT", error)
-        raise AppError(503, "ASR_UNAVAILABLE", error)
+            raise AppError(422, "UNSUPPORTED_AUDIO_FORMAT", "暂不支持这种录音格式")
+        raise AppError(503, "ASR_UNAVAILABLE", "语音识别服务暂时不可用")
     return ASRResponse(
         text=result["text"], confidence=result["confidence"], warning=result.get("warning")
     )
@@ -102,8 +102,8 @@ async def tts(req: TTSRequest, user: dict = Depends(get_current_user)):
     if not result.get("success", True):
         error = str(result.get("error", "TTS failed"))
         if "Unsupported audio format" in error or "Text is empty" in error:
-            raise AppError(422, "INVALID_TTS_REQUEST", error)
-        raise AppError(503, "TTS_UNAVAILABLE", error)
+            raise AppError(422, "INVALID_TTS_REQUEST", "讲解内容或音频格式不正确")
+        raise AppError(503, "TTS_UNAVAILABLE", "讲解语音暂时无法播放")
     return TTSResponse(
         audioUrl=result["audioUrl"], duration=result["duration"], warning=result.get("warning")
     )

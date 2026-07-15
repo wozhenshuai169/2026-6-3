@@ -124,7 +124,49 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 """
 
-MIGRATIONS = ((1, _MIGRATION_1), (2, _MIGRATION_2), (3, _MIGRATION_3))
+_MIGRATION_4 = """
+ALTER TABLE rooms ADD COLUMN narration_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE rooms ADD COLUMN narration_text TEXT NOT NULL DEFAULT '';
+ALTER TABLE rooms ADD COLUMN narration_audio_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE rooms ADD COLUMN narration_duration REAL NOT NULL DEFAULT 0;
+"""
+
+_MIGRATION_5 = """
+ALTER TABLE feedback ADD COLUMN comment TEXT NOT NULL DEFAULT '';
+ALTER TABLE feedback ADD COLUMN tags_json TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE feedback ADD COLUMN emotion TEXT NOT NULL DEFAULT 'neutral';
+CREATE TABLE IF NOT EXISTS avatar_settings (
+    config_id TEXT PRIMARY KEY,
+    role TEXT NOT NULL,
+    outfit TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    voice TEXT NOT NULL,
+    speed REAL NOT NULL,
+    emotion TEXT NOT NULL,
+    lip_sync INTEGER NOT NULL,
+    emotion_sync INTEGER NOT NULL,
+    idle_motion INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+INSERT OR IGNORE INTO avatar_settings (
+    config_id, role, outfit, image_url, voice, speed, emotion,
+    lip_sync, emotion_sync, idle_motion, updated_at
+) VALUES (
+    'default', 'xiaoyun', 'modern_black', '/assets/images/digital-guide-main.webp',
+    'guide_female', 1.0, 'friendly',
+    1, 1, 1, strftime('%s','now')
+);
+CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at);
+CREATE INDEX IF NOT EXISTS idx_events_created ON operation_events(created_at);
+"""
+
+MIGRATIONS = (
+    (1, _MIGRATION_1),
+    (2, _MIGRATION_2),
+    (3, _MIGRATION_3),
+    (4, _MIGRATION_4),
+    (5, _MIGRATION_5),
+)
 
 
 def _open(path: str) -> sqlite3.Connection:

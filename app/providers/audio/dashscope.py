@@ -31,12 +31,6 @@ VOICE_MAP = {
     "xiaowei":      "zh-CN-YunyangNeural",     # 新闻男声
 }
 
-SPEED_MAP = {
-    0.5: "-50%", 0.75: "-25%", 1.0: "+0%",
-    1.25: "+25%", 1.5: "+50%", 2.0: "+100%",
-}
-
-
 class DashScopeAudioProvider:
     """音频 Provider —— edge-tts (TTS) + DashScope Paraformer (ASR)。"""
 
@@ -73,7 +67,8 @@ class DashScopeAudioProvider:
                     "format": audio_format, "success": False}
 
         edge_voice = VOICE_MAP.get(voice, "zh-CN-XiaoxiaoNeural")
-        rate = SPEED_MAP.get(speed, "+0%")
+        rate_percent = max(-50, min(100, round((float(speed) - 1.0) * 100)))
+        rate = f"{rate_percent:+d}%"
 
         try:
             import edge_tts

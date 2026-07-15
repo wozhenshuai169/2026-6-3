@@ -9,6 +9,7 @@ from app.services.stats import (
     get_overview,
     get_satisfaction,
     get_system_metrics,
+    get_visitor_report,
 )
 from app.services.users import count_users
 
@@ -41,3 +42,8 @@ async def satisfaction():
 @router.get("/system-metrics")
 async def system_metrics():
     return get_system_metrics()
+
+
+@router.get("/visitor-report")
+async def visitor_report():
+    return get_visitor_report()

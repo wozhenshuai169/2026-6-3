@@ -30,6 +30,10 @@ def _row_to_room(connection, row) -> dict | None:
         "members": _load_members(connection, row["room_id"]),
         "currentSpot": row["current_spot"],
         "status": row["status"],
+        "narrationId": row["narration_id"],
+        "narrationText": row["narration_text"],
+        "narrationAudioUrl": row["narration_audio_url"],
+        "narrationDuration": float(row["narration_duration"] or 0.0),
     }
 
 
@@ -135,8 +139,35 @@ def transfer_leader(room_id: str, user_id: str) -> dict | None:
 def update_current_spot(room_id: str, spot_id: str) -> dict | None:
     with database() as connection:
         cursor = connection.execute(
-            "UPDATE rooms SET current_spot = ?, updated_at = ? WHERE room_id = ?",
+            """
+            UPDATE rooms
+            SET current_spot = ?, narration_id = '', narration_text = '',
+                narration_audio_url = '', narration_duration = 0, updated_at = ?
+            WHERE room_id = ?
+            """,
             (spot_id.strip(), int(time()), room_id),
+        )
+        if cursor.rowcount == 0:
+            return None
+    return get_room(room_id)
+
+
+def save_room_narration(
+    room_id: str,
+    narration_id: str,
+    text: str,
+    audio_url: str,
+    duration: float,
+) -> dict | None:
+    with database() as connection:
+        cursor = connection.execute(
+            """
+            UPDATE rooms
+            SET narration_id = ?, narration_text = ?, narration_audio_url = ?,
+                narration_duration = ?, updated_at = ?
+            WHERE room_id = ?
+            """,
+            (narration_id, text, audio_url, float(duration), int(time()), room_id),
         )
         if cursor.rowcount == 0:
             return None
@@ -181,29 +212,47 @@ def get_avatar_state(room_id: str) -> dict | None:
             "aiStatus": "paused",
             "emotion": "neutral",
             "action": "paused",
-            "text": "The tour is paused.",
-            "audioUrl": "",
+            "text": "讲解已暂停。",
+            "audioUrl": room.get("narrationAudioUrl", ""),
+            "narrationId": room.get("narrationId", ""),
+            "duration": room.get("narrationDuration", 0.0),
         }
     if member_count == 0:
         return {
             "aiStatus": "idle",
             "emotion": "neutral",
             "action": "idle",
-            "text": "Waiting for visitors to join the room.",
+            "text": "等待游客加入房间。",
             "audioUrl": "",
+            "narrationId": "",
+            "duration": 0.0,
         }
-    if current_spot:
+    if room.get("narrationId") and room.get("narrationAudioUrl"):
         return {
             "aiStatus": "speaking",
             "emotion": "friendly",
             "action": "speaking",
-            "text": f"Welcome to {current_spot}. Let me introduce its history and culture.",
+            "text": room.get("narrationText", ""),
+            "audioUrl": room.get("narrationAudioUrl", ""),
+            "narrationId": room.get("narrationId", ""),
+            "duration": room.get("narrationDuration", 0.0),
+        }
+    if current_spot:
+        return {
+            "aiStatus": "idle",
+            "emotion": "friendly",
+            "action": "idle",
+            "text": "当前景点已就绪，等待团长点击“开始讲解”生成 AI 讲解词。",
             "audioUrl": "",
+            "narrationId": "",
+            "duration": 0.0,
         }
     return {
         "aiStatus": "idle",
         "emotion": "friendly",
         "action": "idle",
-        "text": "Hello, I am your intelligent tour guide.",
+        "text": "等待团长点击“开始讲解”，讲解词将由 DeepSeek 实时生成。",
         "audioUrl": "",
+        "narrationId": "",
+        "duration": 0.0,
     }

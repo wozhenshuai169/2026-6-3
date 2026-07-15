@@ -4,10 +4,12 @@
 (function(){
   'use strict';
   var A=window.Aurelian,api=A.api,ui=A.ui,st=A.state;
+  var SCENIC_AREA_ID='lingshan_shengjing';
   var preferences={interests:[],timeLimit:60,physicalStrength:'medium',elderly:false,children:false,avoidCrowd:false};
 
   function init(){
     A.auth.guardRole('visitor', function(){
+      loadScenicContext();
       // Tag toggle handlers
       bindTagGroup('interest-tags',function(active){
         preferences.interests=active;
@@ -24,6 +26,45 @@
         preferences.avoidCrowd=active.indexOf('crowd')!==-1;
       });
       document.getElementById('btn-generate').addEventListener('click',generateRoute);
+    });
+  }
+
+  function loadScenicContext(){
+    var card=document.getElementById('scenic-context');
+    var status=document.getElementById('map-status');
+    api.get('/map/scenic-areas/current').then(function(r){
+      if(!r.ok||!r.data||!r.data.current){
+        status.className='status map-status-error';
+        status.textContent='景区信息暂时无法获取';
+        card.innerHTML='<div class="scenic-error"><strong>暂时无法读取景区信息</strong><p>请稍后重试，或先返回导览页继续使用其他功能。</p></div>';
+        return;
+      }
+
+      var data=r.data;
+      var current=data.current;
+      var related=data.relatedScenicAreas||[];
+      var pois=(data.pois||[]).slice(0,5);
+      status.className='status';
+      status.textContent='景区信息已更新';
+
+      var relatedHtml=related.map(function(area){
+        var closed=area.temporarilyClosed?'<span class="poi-warning">当前暂停开放</span>':'';
+        return '<div class="related-area"><div><small>独立景区，不加入本路线</small><strong>'+
+          ui.escapeHtml(area.scenicAreaName)+'</strong></div>'+closed+'</div>';
+      }).join('');
+
+      var poiHtml=pois.map(function(poi){
+        return '<span class="live-poi-chip"><span class="material-icons">place</span>'+
+          ui.escapeHtml(poi.name)+'</span>';
+      }).join('');
+
+      card.innerHTML='<div class="scenic-card-head"><div><small>当前主景区</small><h3>'+
+        ui.escapeHtml(current.scenicAreaName)+'</h3></div><span class="verified-badge">景区资料</span></div>'+
+        '<p class="scenic-address"><span class="material-icons">location_on</span>'+
+        ui.escapeHtml(current.city+current.district+' · '+current.address)+'</p>'+
+        '<div class="coordinate-grid"><div><small>所在区域</small><strong>'+ui.escapeHtml(current.district||'滨湖区')+'</strong></div><div><small>参观入口</small><strong>'+ui.escapeHtml(current.entranceLocation||current.address||'请以现场指引为准')+'</strong></div></div>'+
+        '<div class="live-poi-list">'+poiHtml+'</div>'+relatedHtml+
+        '<p class="source-note">开放情况和入口位置可能临时调整，请以景区现场指引为准。</p>';
     });
   }
 
@@ -66,11 +107,12 @@
     document.getElementById('result-area').classList.add('hidden');
     document.getElementById('loading-area').classList.remove('hidden');
     btn.disabled=true;
-    btn.innerHTML='<div class="loading-spinner"></div> 分析中...';
+    btn.innerHTML='<div class="loading-spinner"></div> 正在安排...';
 
     api.post('/recommend/route',{
       roomId:st.get('roomId')||'demo',
       userId:st.get('userId')||'demo',
+      scenicAreaId:SCENIC_AREA_ID,
       preferences:{
         interest:preferences.interests,
         timeLimit:preferences.timeLimit,
@@ -82,35 +124,51 @@
     }).then(function(r){
       document.getElementById('loading-area').classList.add('hidden');
       btn.disabled=false;
-      btn.innerHTML='<span class="material-icons text-[18px]">route</span> 生成推荐路线';
+      btn.innerHTML='<span class="material-icons text-[18px]">route</span> 查看推荐路线';
 
       if(r.ok&&r.data){
         showResult(r.data);
       }else{
         if(placeholder) placeholder.classList.remove('hidden');
-        ui.toast((r.error&&r.error.message)||'推荐失败，请重试','error');
+        ui.toast('暂时无法安排路线，请稍后重试','error');
       }
     });
   }
 
   function showResult(data){
-    document.getElementById('result-route-name').textContent=data.routeName||'推荐路线';
+    document.getElementById('result-route-name').textContent=data.routeName||'灵山胜境推荐路线';
     document.getElementById('result-time').innerHTML='<span class="material-icons text-[14px]">schedule</span> 约'+(data.estimatedTime||0)+'分钟';
-    document.getElementById('result-difficulty').textContent='难度：'+(data.difficulty||'medium');
-    document.getElementById('result-score').textContent='★ '+(data.score||0).toFixed(1);
+    document.getElementById('result-distance').innerHTML='<span class="material-icons text-[14px]">directions_walk</span> '+Number(data.distance||0).toFixed(2)+'公里';
+    var difficultyLabels={low:'轻松',medium:'适中',high:'较多步行'};
+    document.getElementById('result-difficulty').textContent='步行强度：'+(difficultyLabels[data.difficulty]||'适中');
+    document.getElementById('result-source').textContent='园内步行路线';
+    document.getElementById('result-score').textContent='已按你的偏好安排';
 
-    // Timeline
     var spotsEl=document.getElementById('result-spots');
     var spots=data.spots||[];
     spotsEl.innerHTML=spots.map(function(s,i){
       var isLast=i===spots.length-1;
-      return '<div class="relative"><div class="absolute -left-[29px] w-4 h-4 rounded-full bg-primary border-2 border-white"></div><div class="bg-background border border-border rounded-lg p-3 ml-3"><div class="text-sm font-medium">'+(i+1)+'. '+ui.escapeHtml(s.spotName||s.spotId)+'</div><div class="text-xs text-text-secondary mt-1">停留约 '+s.stayMinutes+' 分钟</div></div>'+(isLast?'':'<div class="h-4 border-l-2 border-orange-soft ml-[-21px]"></div>')+'</div>';
+      var closed=s.temporarilyClosed?
+        '<span class="poi-warning">当前暂停开放</span>':'';
+      return '<div class="relative"><div class="absolute -left-[29px] w-4 h-4 rounded-full bg-primary border-2 border-white"></div>'+
+        '<div class="route-poi-card"><div class="route-poi-title"><span>'+(i+1)+'. '+
+        ui.escapeHtml(s.spotName||s.spotId)+'</span>'+closed+'</div>'+
+        '<div class="route-poi-meta"><span>建议停留约 '+Number(s.stayMinutes||0)+' 分钟</span></div>'+
+        '<p>'+ui.escapeHtml(s.address||'具体位置请以园内指引为准')+'</p></div>'+
+        (isLast?'':'<div class="h-4 border-l-2 border-orange-soft ml-[-21px]"></div>')+'</div>';
     }).join('');
 
-    // Reason
-    document.getElementById('result-reason').innerHTML='<span class="material-icons text-[16px] text-primary align-text-bottom mr-1">lightbulb</span> '+ui.escapeHtml(data.reason||'该路线根据你的偏好生成。');
+    var legs=data.instructions||[];
+    var evidence=document.getElementById('result-map-note');
+    evidence.innerHTML='<div class="map-evidence-head"><strong>分段步行参考</strong><span>预计时间可能受现场人流影响</span></div>'+
+      (legs.length?legs.map(function(leg){
+        return '<div class="route-leg"><span>'+ui.escapeHtml(leg.fromSpot)+' → '+
+          ui.escapeHtml(leg.toSpot)+'</span><strong>'+Number(leg.distanceMeters||0)+' 米 · 约 '+
+          Number(leg.durationMinutes||0)+' 分钟</strong></div>';
+      }).join(''):'<p>当前路线没有需要计算的相邻路段。</p>');
 
-    // Matched
+    document.getElementById('result-reason').innerHTML='<span class="material-icons text-[16px] text-primary align-text-bottom mr-1">lightbulb</span> '+ui.escapeHtml(data.reason||'该路线根据你的时间、兴趣和体力安排。');
+
     var matched=data.matchedPreferences||[];
     var matchedEl=document.getElementById('result-matched');
     matchedEl.innerHTML=matched.length?matched.map(function(p){

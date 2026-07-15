@@ -1,6 +1,7 @@
-"""应用配置 —— 通过环境变量加载，支持 Mock 降级。
+"""Application configuration loaded from environment variables.
 
-所有 API Key 均为可选：未设置时对应 Provider 自动降级到 Mock。
+Missing external credentials disable the corresponding feature and surface a
+clear configuration error; the product never substitutes fabricated results.
 """
 
 from pydantic_settings import BaseSettings
@@ -35,6 +36,10 @@ class Settings(BaseSettings):
     # ═══════════════════════════════════════════════════
     map_api_key: str = ""
     map_provider: str = "amap"
+    map_base_url: str = "https://restapi.amap.com"
+    map_timeout: int = 20
+    map_cache_ttl_seconds: int = 600
+    map_min_request_interval_ms: int = 300
 
     # ═══════════════════════════════════════════════════
     # ISI（已废弃，保留兼容）

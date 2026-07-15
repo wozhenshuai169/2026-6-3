@@ -5,7 +5,7 @@
   'use strict';
   var A = window.Aurelian, state = A.state, api = A.api, ui = A.ui, router = A.router;
 
-  var roomId, userId;
+  var roomId, userId, soloMode = false;
   var messages = [];
   var isRecording = false;
   var recognition = null;
@@ -16,13 +16,14 @@
     A.auth.guardRole('visitor', function(){
       roomId = state.get('roomId');
       userId = state.get('userId');
-      if (!roomId || !userId) { ui.toast('请先加入房间', 'error'); return; }
+      soloMode = !roomId;
+      if (!userId) { ui.toast('请先登录游客账号', 'error'); return; }
       initAfterAuth();
     });
     return;
   }
   function initAfterAuth() {
-    if (!roomId || !userId) { ui.toast('请先加入房间', 'error'); return; }
+    if (!userId) { ui.toast('请先登录游客账号', 'error'); return; }
 
     chatContainer = document.getElementById('chat-container');
     chatInput = document.getElementById('chat-input');
@@ -92,23 +93,58 @@
 
   function addWelcomeMessage() {
     messages.push({ role: 'system', text: '对话开始 · 私人模式' });
-    messages.push({ role: 'ai', text: '你好！这里是私人助手模式，你可以随时问我任何问题。你问的内容只有我们两个知道。' });
+    messages.push({ role: 'ai', text: soloMode ? '你好。你正在独自导览，可以询问路线、景点、休息点和个人需求；因为没有加入房间，这里的消息不会发送给团长。' : '你好。这里是私人服务，你可以询问路线、设施或个人需求，内容不会在公共房间显示。' });
     renderMessages();
   }
 
-  function sendMessage(text) {
+  function sendMessage(text, inputMode, asrConfidence) {
     text = text || (chatInput ? chatInput.value.trim() : '');
     if (!text) return;
+    inputMode = inputMode === 'voice' ? 'voice' : 'text';
+    asrConfidence = typeof asrConfidence === 'number' ? asrConfidence : null;
     if (chatInput) chatInput.value = '';
 
     addMessage('user', text);
     showTyping();
 
+    if (soloMode || !roomId) {
+      api.post('/ai/solo-question', {
+        userId: userId,
+        question: text,
+        currentSpotId: state.get('currentSpotId') || 'lingshan_dazhaobi',
+        needAudio: true,
+        voice: state.get('narrationVoice') || 'guide_female',
+        inputMode: inputMode,
+        asrConfidence: asrConfidence
+      }).then(function(r) {
+        removeTyping();
+        if (r.ok && r.data) {
+          addMessage('ai', r.data.answer || '', r.data.audioUrl);
+          if (text.indexOf('累')!==-1 || text.indexOf('休息')!==-1 || text.indexOf('不舒服')!==-1 || text.indexOf('走不动')!==-1) {
+            addMessage('system', '独自导览模式下无法通知团长；如需团队协助，请返回导览页输入房间号加入团队。');
+          }
+        } else {
+          var soloErr = '问答服务暂时无法连接，请稍后再试';
+          addMessage('system', soloErr);
+          ui.toast(soloErr, 'error');
+        }
+        scrollToBottom();
+      }).catch(function() {
+        removeTyping();
+        addMessage('system', '问答服务暂时无法连接，请稍后再试');
+        scrollToBottom();
+      });
+      return;
+    }
+
     api.post('/ai/public-question', {
       roomId: roomId,
       userId: userId,
       question: text,
-      needAudio: true
+      needAudio: true,
+      voice: state.get('narrationVoice') || 'guide_female',
+      inputMode: inputMode,
+      asrConfidence: asrConfidence
     }).then(function(r) {
       removeTyping();
       if (r.ok && r.data) {
@@ -117,7 +153,7 @@
           addHelpPrompt(text);
         }
       } else {
-        var errMsg = (r.error && r.error.message) || '网络连接失败，请确认后端已启动';
+        var errMsg = '暂时无法回答，请稍后再试';
         addMessage('system', errMsg);
         ui.toast(errMsg, 'error');
       }
@@ -142,7 +178,7 @@
       } else if (m.role === 'user') {
         html += '<div class="flex flex-col gap-1 items-end w-full msg-animate"><div class="bg-white border border-chat-border rounded-l-xl rounded-tr-xl p-4 max-w-[65%] text-[15px] leading-[1.6]">' + ui.escapeHtml(m.text) + '</div></div>';
       } else if (m.role === 'help') {
-        html += '<div class="flex flex-col gap-1 items-start w-full msg-animate" id="help-card"><div class="bg-chat-bubble-gray border-l-[3px] border-chat-accent rounded-r-xl rounded-bl-xl p-4 max-w-[85%]"><p class="text-[14px] font-medium mb-3">检测到你可能需要帮助，是否通知团长？</p><div class="flex gap-2 justify-end"><button class="help-dismiss px-4 py-2 text-[13px] bg-transparent border border-chat-border text-chat-text-dark rounded-lg hover:bg-chat-border/50 transition-colors">暂不通知</button><button class="help-notify px-4 py-2 text-[13px] bg-chat-accent text-white rounded-lg hover:opacity-90 transition-opacity">通知团长</button></div></div></div>';
+        html += '<div class="flex flex-col gap-1 items-start w-full msg-animate" id="help-card"><div class="bg-chat-bubble-gray border-l-[3px] border-chat-accent rounded-r-xl rounded-bl-xl p-4 max-w-[85%]"><p class="text-[14px] font-medium mb-3">如果需要团队协助，可以通知团长。</p><div class="flex gap-2 justify-end"><button class="help-dismiss px-4 py-2 text-[13px] bg-transparent border border-chat-border text-chat-text-dark rounded-lg hover:bg-chat-border/50 transition-colors">暂不通知</button><button class="help-notify px-4 py-2 text-[13px] bg-chat-accent text-white rounded-lg hover:opacity-90 transition-opacity">通知团长</button></div></div></div>';
       }
     });
     chatContainer.innerHTML = html;
@@ -152,7 +188,7 @@
     var el = document.createElement('div');
     el.id = 'typing-indicator';
     el.className = 'flex mb-1 msg-animate';
-    el.innerHTML = '<div class="bg-chat-bubble-gray rounded-r-xl rounded-bl-xl px-4 py-3 border-l-[3px] border-chat-accent"><span class="text-sm text-chat-text-muted">AI 正在思考</span><span class="text-chat-accent">...</span></div>';
+    el.innerHTML = '<div class="bg-chat-bubble-gray rounded-r-xl rounded-bl-xl px-4 py-3 border-l-[3px] border-chat-accent"><span class="text-sm text-chat-text-muted">正在整理回答</span><span class="text-chat-accent">...</span></div>';
     if (chatContainer) chatContainer.appendChild(el);
   }
 
@@ -189,12 +225,16 @@
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.onresult = function(e) {
-      var t = e.results[0][0].transcript;
-      if (t) { if (chatInput) chatInput.value = t; sendMessage(t); }
+      var result = e.results[0][0];
+      var text = result.transcript;
+      if (text) {
+        if (chatInput) chatInput.value = text;
+        sendMessage(text, 'voice', Number.isFinite(result.confidence) ? result.confidence : null);
+      }
     };
     recognition.onerror = function(e) {
       isRecording = false; updateMicButton();
-      if (e.error !== 'aborted' && e.error !== 'not-allowed') ui.toast('语音识别: ' + e.error, 'error');
+      if (e.error !== 'aborted' && e.error !== 'not-allowed' && e.error !== 'no-speech') ui.toast('没有听清，请再说一次', 'warning');
     };
     recognition.onend = function(){ isRecording = false; updateMicButton(); };
   }
@@ -204,7 +244,7 @@
     isRecording ? recognition.stop() : recognition.start();
     isRecording = !isRecording;
     updateMicButton();
-    if (isRecording) ui.toast('正在聆听...', 'info');
+    if (isRecording) ui.toast('请开始说话', 'info');
   }
 
   function updateMicButton() {

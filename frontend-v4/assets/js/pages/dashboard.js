@@ -1,6 +1,6 @@
 /**
  * Dashboard — Data Overview Screen (Dark Theme)
- * Week 1 KPIs: 今日问答次数, 知识库命中率, 公共问题数, 私人问题数
+ * Operational dashboard backed by persisted service and feedback records.
  */
 (function () {
   'use strict';
@@ -41,15 +41,17 @@
       api.get('/dashboard/hot-spots'),
       api.get('/dashboard/satisfaction'),
       api.get('/dashboard/system-metrics'),
-      api.get('/kb/docs')
+      api.get('/kb/docs'),
+      api.get('/dashboard/visitor-report')
     ]).then(function (results) {
       updateKPI(results[0].value, results[4].value);
       updateHotQuestions(results[1].value);
       updateRooms(results[0].value, results[2].value);
-      updateSentiment(results[3].value);
+      updateSentiment(results[3].value, results[6].value);
       updateLog(results[0].value, results[4].value);
       updateSplitChart(results[0].value);
-      updateTrendChart();
+      updateTrendChart(results[0].value);
+      updateFeedbackReport(results[6].value);
       updateFooter(results[5].value);
       lastUpdateTime = new Date();
     });
@@ -59,23 +61,18 @@
     var overview = (overviewR && overviewR.ok) ? overviewR.data : {};
     var metrics = (metricsR && metricsR.ok) ? metricsR.data : {};
 
-    var totalQA = overview.questionCount || 0;
+    var totalQA = (overview.questionCount || 0) + (overview.voiceQuestionCount || 0);
     var voiceCount = overview.voiceQuestionCount || 0;
     var visionCount = overview.visionRecognizeCount || 0;
     var recommendCount = overview.routeRecommendCount || 0;
     var kbHitRate = metrics.successRate ? (metrics.successRate * 100).toFixed(1) + '%' : '—';
-    var pubCount = Math.max(0, totalQA - voiceCount); // approximate: total minus voice = text public
+    var pubCount = overview.questionCount || 0;
 
-    renderKPICard('kpi-1', '今日问答总次数', totalQA, '次', '文字+语音');
-    renderKPICard('kpi-2', '公共/私人问题', pubCount + ' / ' + voiceCount, '', '公共·左 | 私人·右');
+    renderKPICard('kpi-1', '今日服务次数', overview.todayServiceCount || 0, '次', '本周 ' + (overview.weekServiceCount || 0) + ' 次');
+    renderKPICard('kpi-2', '文字/语音提问', pubCount + ' / ' + voiceCount, '', '文字·左 | 语音·右');
     renderKPICard('kpi-3', '图片识景次数', visionCount, '次', '今日累计');
     renderKPICard('kpi-4', '路线推荐次数', recommendCount, '次', '今日累计');
 
-    // Accumulate chart data point
-    var now = new Date();
-    var hour = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
-    chartData.push({ hour: hour, publicCount: pubCount, privateCount: voiceCount });
-    if (chartData.length > 12) chartData.shift();
   }
 
   function renderKPICard(id, label, value, unit, subtitle) {
@@ -88,7 +85,11 @@
       (subtitle ? '<div class="text-xs mt-2 text-on-surface-variant">' + ui.escapeHtml(subtitle) + '</div>' : '');
   }
 
-  function updateTrendChart() {
+  function updateTrendChart(overviewR) {
+    var overview = (overviewR && overviewR.ok) ? overviewR.data : {};
+    chartData = (overview.trend || []).map(function(item){
+      return {hour:item.label, publicCount:item.textCount||0, privateCount:item.voiceCount||0};
+    });
     var canvas = document.getElementById('trend-chart');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
@@ -101,7 +102,7 @@
       ctx.fillStyle = '#8E8E90';
       ctx.font = '12px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('数据收集不足，等待更多数据点...', w/2, h/2);
+      ctx.fillText('暂无最近七天的问答记录', w/2, h/2);
       return;
     }
 
@@ -193,9 +194,10 @@
     var overview = (overviewR && overviewR.ok) ? overviewR.data : {};
     var rooms = overview.activeRooms || 0;
     var html = '<div class="tabular-nums text-[48px] font-medium text-on-background">' + rooms + '</div><div class="text-xs text-on-surface-variant mt-1">个房间在线</div>';
-    if (spotsR && spotsR.ok && spotsR.data && spotsR.data.length) {
+    var spots = spotsR && spotsR.ok && spotsR.data ? (spotsR.data.items || spotsR.data) : [];
+    if (spots.length) {
       html += '<div class="mt-3 flex flex-wrap gap-2">';
-      spotsR.data.slice(0, 3).forEach(function (s) {
+      spots.slice(0, 3).forEach(function (s) {
         html += '<span class="px-2 py-1 border border-outline-variant rounded-full text-xs text-on-surface-variant">' + ui.escapeHtml(s.spotName || s._id || '景点') + '</span>';
       });
       html += '</div>';
@@ -207,7 +209,7 @@
     var canvas = document.getElementById('split-chart');
     if (!canvas) return;
     var overview = (overviewR && overviewR.ok) ? overviewR.data : {};
-    var pubCount = Math.max(0, (overview.questionCount || 0) - (overview.voiceQuestionCount || 0));
+    var pubCount = overview.questionCount || 0;
     var privCount = overview.voiceQuestionCount || 0;
     var ctx = canvas.getContext('2d');
     var w = canvas.width, h = canvas.height;
@@ -264,21 +266,43 @@
     var pct = total > 0 ? Math.round(pubCount/total*100) : 0;
     var legend = document.getElementById('split-legend');
     if (legend) legend.innerHTML =
-      '<span style="color:#C75E42">● 公共 ' + pct + '%</span>' +
-      '<span style="color:#746F68">● 私人 ' + (100-pct) + '%</span>';
+      '<span style="color:#C75E42">● 文字 ' + pct + '%</span>' +
+      '<span style="color:#746F68">● 语音 ' + (100-pct) + '%</span>';
   }
 
-  function updateSentiment(result) {
+  function updateSentiment(result, reportR) {
     var el = document.getElementById('sentiment-content');
     if (!el) return;
     if (!result || !result.ok || !result.data) { el.innerHTML = comp.emptyState('sentiment_satisfied', '暂无数据'); return; }
     var d = result.data;
     var score = d.averageScore ? (d.averageScore * 20).toFixed(1) : '—';
-    var trend = Array.isArray(d.trend) ? '平稳' : (d.trend || '平稳');
+    var scores=(d.trend||[]).filter(function(item){return item.averageScore!==null;});
+    var trend='平稳';
+    if(scores.length>1){
+      var delta=scores[scores.length-1].averageScore-scores[scores.length-2].averageScore;
+      if(delta>0.05)trend='上升';else if(delta<-0.05)trend='下降';
+    }
     var trendColor = (trend === 'up' || trend === '上升') ? '#4C9A72' : '#746F68';
     el.innerHTML =
       '<div class="tabular-nums text-[48px] font-medium text-[#C75E42]">' + score + '%</div>' +
-      '<div class="text-xs mt-2" style="color:' + trendColor + '">较上期' + ui.escapeHtml(trend) + '</div>';
+      '<div class="text-xs mt-2" style="color:' + trendColor + '">最近趋势：' + ui.escapeHtml(trend) + ' · ' + (d.totalResponses||0) + '份反馈</div>';
+
+    var tags=document.querySelector('#visitor-insights .insight-tags');
+    var report=(reportR&&reportR.ok)?reportR.data:{};
+    if(tags){
+      var emotions=report.emotionDistribution||{};
+      tags.innerHTML='<span>积极 '+(emotions.positive||0)+'</span><span>一般 '+(emotions.neutral||0)+'</span><span>待改进 '+(emotions.negative||0)+'</span>';
+    }
+  }
+
+  function updateFeedbackReport(result){
+    var box=document.querySelector('#feedback .feedback-samples');
+    if(!box)return;
+    if(!result||!result.ok||!result.data){box.innerHTML='<p>游客反馈暂时无法读取。</p>';return;}
+    var d=result.data;
+    var topics=(d.attentionTopics||[]).slice(0,4).map(function(item){return ui.escapeHtml(item.topic)+' '+item.count+'次';});
+    var suggestions=(d.serviceSuggestions||[]).map(function(item){return '<p>• '+ui.escapeHtml(item)+'</p>';}).join('');
+    box.innerHTML='<p><strong>游客关注</strong></p><p>'+(topics.join(' · ')||'暂无足够数据')+'</p><p><strong>服务建议</strong></p>'+suggestions;
   }
 
   function updateLog(overviewR, metricsR) {
@@ -288,10 +312,11 @@
     var overview = (overviewR && overviewR.ok) ? overviewR.data : {};
     var html = '';
     html += '<div class="flex justify-between py-1 border-b border-outline-variant"><span>在线房间</span><span class="tabular-nums text-[#4ADE80]">' + (overview.activeRooms || 0) + '</span></div>';
-    html += '<div class="flex justify-between py-1"><span>今日总问答</span><span class="tabular-nums">' + (overview.questionCount || 0) + '</span></div>';
+    html += '<div class="flex justify-between py-1"><span>今日服务</span><span class="tabular-nums">' + (overview.todayServiceCount || 0) + '</span></div>';
     html += '<div class="flex justify-between py-1"><span>🎤 语音问答</span><span class="tabular-nums">' + (overview.voiceQuestionCount || 0) + '</span></div>';
     html += '<div class="flex justify-between py-1"><span>📷 图片识景</span><span class="tabular-nums">' + (overview.visionRecognizeCount || 0) + '</span></div>';
     html += '<div class="flex justify-between py-1"><span>🗺 路线推荐</span><span class="tabular-nums">' + (overview.routeRecommendCount || 0) + '</span></div>';
+    html += '<div class="flex justify-between py-1"><span>95%响应耗时</span><span class="tabular-nums">' + (metrics.p95LatencyMs ? Math.round(metrics.p95LatencyMs)+'ms' : '—') + '</span></div>';
     el.innerHTML = html;
   }
 
