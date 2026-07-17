@@ -71,4 +71,14 @@ WebSocket：`/ws/rooms/{roomId}?ticket=<one-time-ticket>`。客户端事件支�
 - 公共目录：`GET /api/spots/{spotId}`、`GET /api/spots/{spotId}/nearby`、`GET /api/routes`、`GET /api/routes/{routeId}`。
 - 健康检查：`GET /health/live`、`GET /health/ready`。
 
+## 运营事件
+
+| 方法 | 路径 | 权限 | 说明 |
+|---|---|---|---|
+| GET | `/api/operation-events?scenicAreaId=...` | 已登录 | 查询仍在有效期内的运营事件 |
+| POST | `/api/operation-events` | admin | 发布封路、天气、人流、公告或设施关闭事件 |
+| PATCH | `/api/operation-events/{eventId}` | admin | 将事件改为 `resolved` 或 `expired` |
+
+有效运营事件会在知识检索中以“景区运营公告”来源优先返回；其有效期结束或被关闭后不再参与回答。
+
 Swagger 和 OpenAPI 是字段级最终依据：`/docs`、`/openapi.json`。

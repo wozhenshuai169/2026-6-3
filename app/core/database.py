@@ -152,12 +152,74 @@ INSERT OR IGNORE INTO avatar_settings (
     config_id, role, outfit, image_url, voice, speed, emotion,
     lip_sync, emotion_sync, idle_motion, updated_at
 ) VALUES (
-    'default', 'xiaoyun', 'modern_black', '/assets/images/digital-guide-main.webp',
+    'default', 'xiaoyun', 'modern_black', '/assets/images/digital-guide-foreground.png',
     'guide_female', 1.0, 'friendly',
     1, 1, 1, strftime('%s','now')
 );
 CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at);
 CREATE INDEX IF NOT EXISTS idx_events_created ON operation_events(created_at);
+"""
+
+_MIGRATION_6 = """
+ALTER TABLE room_messages ADD COLUMN kind TEXT NOT NULL DEFAULT 'text';
+ALTER TABLE room_messages ADD COLUMN media_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE room_messages ADD COLUMN file_name TEXT NOT NULL DEFAULT '';
+ALTER TABLE room_messages ADD COLUMN duration REAL NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS direct_messages (
+    message_id TEXT PRIMARY KEY,
+    room_id TEXT NOT NULL REFERENCES rooms(room_id) ON DELETE CASCADE,
+    sender_id TEXT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    recipient_id TEXT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    sender_name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('text', 'image', 'audio')),
+    media_url TEXT NOT NULL DEFAULT '',
+    file_name TEXT NOT NULL DEFAULT '',
+    duration REAL NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_direct_messages_room_pair_created
+    ON direct_messages(room_id, sender_id, recipient_id, created_at DESC, message_id DESC);
+CREATE TABLE IF NOT EXISTS conversation_reads (
+    room_id TEXT NOT NULL REFERENCES rooms(room_id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    conversation_id TEXT NOT NULL,
+    read_at INTEGER NOT NULL,
+    PRIMARY KEY (room_id, user_id, conversation_id)
+);
+"""
+
+_MIGRATION_7 = """
+CREATE TABLE IF NOT EXISTS scenic_operation_events (
+    event_id TEXT PRIMARY KEY,
+    scenic_area_id TEXT NOT NULL,
+    event_type TEXT NOT NULL CHECK (event_type IN ('route_closed', 'weather_alert', 'crowd_warning', 'announcement', 'facility_closed')),
+    severity TEXT NOT NULL CHECK (severity IN ('info', 'warning', 'critical')),
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    affected_spot_ids_json TEXT NOT NULL DEFAULT '[]',
+    affected_route_ids_json TEXT NOT NULL DEFAULT '[]',
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'resolved', 'expired')),
+    valid_from INTEGER NOT NULL,
+    valid_until INTEGER,
+    created_by TEXT NOT NULL REFERENCES users(user_id),
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_scenic_operation_events_active
+    ON scenic_operation_events(scenic_area_id, status, valid_from, valid_until);
+"""
+
+_MIGRATION_8 = """
+UPDATE avatar_settings
+SET image_url = '/assets/images/digital-guide-foreground.png'
+WHERE config_id = 'default' AND image_url LIKE '/assets/images/digital-guide-main%';
+"""
+
+_MIGRATION_9 = """
+UPDATE avatar_settings
+SET role = 'xiaoyun', image_url = '/assets/images/digital-avatar-a.png', lip_sync = 1
+WHERE config_id = 'default' AND image_url NOT LIKE '/uploads/avatar/%';
 """
 
 MIGRATIONS = (
@@ -166,6 +228,10 @@ MIGRATIONS = (
     (3, _MIGRATION_3),
     (4, _MIGRATION_4),
     (5, _MIGRATION_5),
+    (6, _MIGRATION_6),
+    (7, _MIGRATION_7),
+    (8, _MIGRATION_8),
+    (9, _MIGRATION_9),
 )
 
 

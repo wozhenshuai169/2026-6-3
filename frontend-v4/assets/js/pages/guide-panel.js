@@ -15,10 +15,16 @@
   var selectedSpotId = null;
   var currentSpotId = null;
   var isPaused = false;
+  var roomEnded = false;
   var members = [];
   var roomRequestPending = false;
   var avatarRequestPending = false;
   var narrationRequestPending = false;
+  var guideLipSync = null;
+  var roomSocket = null;
+  var roomSocketRetry = null;
+  var mobilePanelReturnFocus = null;
+  var chapterRenderKey = null;
 
   // DOM
   var els = {};
@@ -40,15 +46,18 @@
       'btnStart','btnSkip','btnCollect','btnPause','btnCopyRoom','btnShare','btnViewRequests',
       'btnViewRequests2','btnBack','requestsBadge','spotSelectorBtn','spotSelectorLabel','spotDropdown',
       'btnNotifications','notificationBadge','btnMore','moreActionsMenu',
+      'btnMobilePanel','leaderMobileSheet','leaderMobileBackdrop','leaderMobileClose','leaderMobileContent',
       'memberList','memberListTitle','tabAll','tabRequests',
       'routeModal','routeList','routeCancel','routeConfirm','guideNarrationPlayer',
       'guideAudioControls','guideAudioToggle','guideAudioCurrent','guideAudioSeek','guideAudioDuration',
-      'narrationVoice','guideAvatarImage','guideStage'];
+      'narrationVoice','guideAvatarImage','guideAvatarFrame','guideAvatarMouth','guideStage',
+      'leaderSyncStatus','leaderSyncLabel','leaderSyncTime','leaderAudienceSummary','chapterTrack'];
     ids.forEach(function(id) {
       var camel = id.replace(/-([a-z])/g, function(m,c){ return c.toUpperCase(); });
       var kebab = id.replace(/([A-Z])/g, '-$1').toLowerCase();
       els[camel] = document.getElementById(id) || document.getElementById(kebab);
     });
+    setSyncState('idle', '等待创建同行小队');
   }
 
   function bindEvents() {
@@ -64,6 +73,15 @@
       btn.addEventListener('click', function(){ handleMoreAction(btn.getAttribute('data-more-action')); });
     });
     if (els.btnBack) els.btnBack.addEventListener('click', function(){ router.go('landing'); });
+    if (els.btnMobilePanel) els.btnMobilePanel.addEventListener('click', openMobilePanel);
+    if (els.leaderMobileClose) els.leaderMobileClose.addEventListener('click', closeMobilePanel);
+    if (els.leaderMobileBackdrop) els.leaderMobileBackdrop.addEventListener('click', closeMobilePanel);
+    if (els.leaderMobileSheet) els.leaderMobileSheet.querySelectorAll('[data-leader-panel]').forEach(function(btn) {
+      btn.addEventListener('click', function(){ renderMobilePanel(btn.getAttribute('data-leader-panel')); });
+    });
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && els.leaderMobileSheet && !els.leaderMobileSheet.classList.contains('hidden')) closeMobilePanel();
+    });
     if (els.spotSelectorBtn) els.spotSelectorBtn.addEventListener('click', toggleSpotDropdown);
     if (els.routeCancel) els.routeCancel.addEventListener('click', closeRouteModal);
     if (els.routeConfirm) els.routeConfirm.addEventListener('click', confirmCreateRoom);
@@ -100,6 +118,7 @@
         routes = r.data.routes;
         if (routes.length > 0) selectedRouteId = routes[0].routeId;
         renderSpotDropdown();
+        updateRoomDisplay();
       }
     });
   }
@@ -169,6 +188,7 @@
     }).then(function(r) {
       if (r.ok && r.data) {
         roomId = r.data.roomId;
+        roomEnded = false;
         state.set('roomId', roomId);
         state.set('routeId', selectedRouteId);
         closeRouteModal();
@@ -212,9 +232,13 @@
   function loadAvatarSettings() {
     api.get('/avatar-settings').then(function(result) {
       if (!result.ok || !result.data) return;
-      if (els.guideAvatarImage && result.data.imageUrl) {
-        els.guideAvatarImage.src = result.data.imageUrl;
+      var imageUrl = result.data.imageUrl || '';
+      var isHeadOnly = /digital-guide-foreground\.png(?:\?|$)/.test(imageUrl);
+      if (els.guideAvatarImage && imageUrl) {
+        els.guideAvatarImage.src = imageUrl;
       }
+      if (els.guideAvatarFrame) els.guideAvatarFrame.setAttribute('data-avatar-role', isHeadOnly ? 'head-only' : (result.data.role || 'xiaoyun'));
+      if (guideLipSync) guideLipSync.setEnabled(result.data.lipSync !== false);
       if (!state.get('narrationVoice') && els.narrationVoice) {
         els.narrationVoice.value = result.data.voice || 'guide_female';
       }
@@ -270,6 +294,7 @@
 
   function bindAudioControls() {
     if (!els.guideNarrationPlayer) return;
+    guideLipSync = A.lipSync.attach(els.guideNarrationPlayer, els.guideAvatarMouth);
     if (els.guideAudioToggle) els.guideAudioToggle.addEventListener('click', handleAudioToggle);
     if (els.guideAudioSeek) els.guideAudioSeek.addEventListener('input', handleAudioSeek);
     els.guideNarrationPlayer.addEventListener('loadedmetadata', updateAudioProgress);
@@ -475,9 +500,7 @@
         ui.toast((r.error && r.error.message) || '结束导览失败', 'error');
         return;
       }
-      if (els.guideNarrationPlayer) els.guideNarrationPlayer.pause();
-      [els.btnStart, els.btnPause, els.btnSkip].forEach(function(btn){ if (btn) btn.disabled = true; });
-      stopPolling();
+      completeTourDisplay();
       ui.toast('本次导览已结束', 'success');
     });
   }
@@ -534,10 +557,102 @@
     ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
   }
 
-  // === Polling ===
+  function setSyncState(status, label) {
+    if (!els.leaderSyncStatus) return;
+    els.leaderSyncStatus.setAttribute('data-state', status);
+    if (els.leaderSyncLabel) els.leaderSyncLabel.textContent = label;
+    if (els.leaderSyncTime) els.leaderSyncTime.textContent = status === 'live' ? '刚刚' : '';
+  }
+
+  function connectRoomSocket() {
+    if (!roomId || roomSocket) return;
+    setSyncState('syncing', '正在连接游客端');
+    api.post('/auth/ws-ticket', { roomId: roomId }).then(function(r) {
+      if (!r.ok || !r.data || !r.data.ticket || !roomId) {
+        setSyncState('error', '实时同步暂不可用');
+        return;
+      }
+      var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      var socket = new WebSocket(protocol + '//' + location.host + '/ws/rooms/' + encodeURIComponent(roomId) + '?ticket=' + encodeURIComponent(r.data.ticket));
+      roomSocket = socket;
+      socket.onopen = function() {
+        if (roomSocket === socket) setSyncState('live', '已与游客端同步');
+      };
+      socket.onmessage = function(event) {
+        if (roomSocket !== socket) return;
+        try { handleRoomSocketEvent(JSON.parse(event.data)); } catch (e) { /* Ignore malformed live events. */ }
+      };
+      socket.onerror = function() {
+        if (roomSocket === socket) setSyncState('error', '实时同步暂不可用');
+      };
+      socket.onclose = function() {
+        if (roomSocket !== socket) return;
+        roomSocket = null;
+        if (!roomId || document.hidden) return;
+        setSyncState('syncing', '正在恢复实时同步');
+        clearTimeout(roomSocketRetry);
+        roomSocketRetry = setTimeout(connectRoomSocket, 3000);
+      };
+    }).catch(function() {
+      setSyncState('error', '实时同步暂不可用');
+    });
+  }
+
+  function disconnectRoomSocket() {
+    clearTimeout(roomSocketRetry);
+    roomSocketRetry = null;
+    var socket = roomSocket;
+    roomSocket = null;
+    if (socket) socket.close();
+  }
+
+  function handleRoomSocketEvent(event) {
+    var type = event && event.type;
+    if (type === 'room.connected') {
+      setSyncState('live', '已与游客端同步');
+      fetchRoomStatus();
+      return;
+    }
+    if (type === 'room.spot' && event.data) {
+      currentSpotId = event.data.spotId || event.data.currentSpot || currentSpotId;
+      isPaused = event.data.status === 'paused';
+      updateRoomDisplay();
+      setSyncState('live', '景点已同步给游客');
+      return;
+    }
+    if (type === 'room.members' || type === 'room.status') {
+      if (type === 'room.status' && event.data && event.data.status === 'ended') {
+        completeTourDisplay();
+        return;
+      }
+      fetchRoomStatus();
+      setSyncState('live', '游客小队已更新');
+      return;
+    }
+    if (type === 'room.narration') {
+      fetchAvatarState();
+      setSyncState('live', '讲解状态已同步');
+      return;
+    }
+    if (type === 'room.message' || type === 'conversation.updated' || type === 'direct.message') {
+      setSyncState('live', '同行互动已更新');
+    }
+  }
+
+  function completeTourDisplay() {
+    roomEnded = true;
+    if (els.guideNarrationPlayer) els.guideNarrationPlayer.pause();
+    [els.btnStart, els.btnPause, els.btnSkip].forEach(function(btn) { if (btn) btn.disabled = true; });
+    setSyncState('idle', '本次导览已结束');
+    stopPolling();
+  }
+
+  // === Polling (fallback for live synchronization) ===
   function startPolling() {
+    if (roomEnded) return;
     if (roomPollTimer) clearInterval(roomPollTimer);
     if (avatarPollTimer) clearInterval(avatarPollTimer);
+    connectRoomSocket();
     fetchRoomStatus();
     fetchAvatarState();
     roomPollTimer = setInterval(fetchRoomStatus, A.config.POLL_INTERVAL_ROOM);
@@ -549,6 +664,7 @@
     if (avatarPollTimer) clearInterval(avatarPollTimer);
     roomPollTimer = null;
     avatarPollTimer = null;
+    disconnectRoomSocket();
   }
 
   function fetchRoomStatus() {
@@ -560,7 +676,16 @@
         currentSpotId = r.data.currentSpot || currentSpotId;
         isPaused = r.data.status === 'paused';
         updateRoomDisplay();
+        if (r.data.status === 'ended') {
+          completeTourDisplay();
+          return;
+        }
+        setSyncState(roomSocket ? 'live' : 'syncing', roomSocket ? '已与游客端同步' : '正在连接游客端');
+      } else {
+        setSyncState('error', '房间状态获取失败');
       }
+    }).catch(function(){
+      setSyncState('error', '房间状态获取失败');
     }).finally(function(){ roomRequestPending = false; });
   }
 
@@ -608,13 +733,29 @@
     if (route && route.spots) route.spots.forEach(function(spot){ spotNames[spot.spotId] = spot.name; });
     if (els.currentSpotDisplay) els.currentSpotDisplay.textContent = spotNames[currentSpotId] || currentSpotId || '—';
     if (els.scenicAreaDisplay) els.scenicAreaDisplay.textContent = '灵山胜境';
+    if (els.spotSelectorLabel) els.spotSelectorLabel.textContent = spotNames[currentSpotId] || currentSpotId || '切换景点';
+    if (els.leaderAudienceSummary) {
+      var visitorCount = members.filter(function(member) { return member.userId !== state.get('userId'); }).length;
+      if (!roomId) {
+        els.leaderAudienceSummary.textContent = '创建同行小队后，游客端会实时接收景点与讲解';
+      } else if (isPaused) {
+        els.leaderAudienceSummary.textContent = '小队已暂停，' + visitorCount + ' 位游客会看到暂停状态';
+      } else if (currentSpotId) {
+        els.leaderAudienceSummary.textContent = '正在同步“' + (spotNames[currentSpotId] || currentSpotId) + '”给 ' + visitorCount + ' 位游客';
+      } else {
+        els.leaderAudienceSummary.textContent = '选择景点后，游客端会自动更新讲解';
+      }
+    }
 
     // Progress
     if (route && currentSpotId && els.progressDisplay) {
       var idx = route.spotIds.indexOf(currentSpotId);
       if (idx >= 0) els.progressDisplay.textContent = '第' + (idx + 1) + '段/共' + route.spotIds.length + '段';
       else els.progressDisplay.textContent = '—';
+    } else if (els.progressDisplay) {
+      els.progressDisplay.textContent = route && route.spotIds ? '等待开始/共' + route.spotIds.length + '段' : '—';
     }
+    renderChapterTrack(route, spotNames);
 
     // Show/hide share/copy buttons
     if (els.btnShare) els.btnShare.style.display = roomId ? '' : 'none';
@@ -634,6 +775,27 @@
     }
 
     renderMemberList('all');
+  }
+
+  function renderChapterTrack(route, spotNames) {
+    if (!els.chapterTrack || !route || !route.spotIds || !route.spotIds.length) return;
+    var activeIndex = route.spotIds.indexOf(currentSpotId);
+    var nextKey = (route.routeId || '') + ':' + (currentSpotId || 'waiting');
+    if (chapterRenderKey === nextKey) return;
+    var html = '';
+    route.spotIds.forEach(function(spotId, index) {
+      var status = activeIndex < 0 ? 'pending' : (index < activeIndex ? 'done' : (index === activeIndex ? 'active' : 'pending'));
+      var statusText = status === 'active' ? '，当前讲解' : (status === 'done' ? '，已完成' : '，待讲解');
+      html += '<li class="' + status + '" aria-label="第' + (index + 1) + '段：' + ui.escapeHtml(spotNames[spotId] || spotId) + statusText + '"><b>' + (index + 1) + '</b><span>' + ui.escapeHtml(spotNames[spotId] || spotId) + '</span></li>';
+    });
+    els.chapterTrack.innerHTML = html;
+    els.chapterTrack.setAttribute('data-route-state', nextKey);
+    chapterRenderKey = nextKey;
+    if (activeIndex >= 0) {
+      els.chapterTrack.classList.remove('is-progress-updated');
+      void els.chapterTrack.offsetWidth;
+      els.chapterTrack.classList.add('is-progress-updated');
+    }
   }
 
   function renderMemberList(filter) {
@@ -658,6 +820,73 @@
       html += '</li>';
     });
     els.memberList.innerHTML = html;
+  }
+
+  function openMobilePanel() {
+    if (!els.leaderMobileSheet) return;
+    mobilePanelReturnFocus = document.activeElement;
+    els.leaderMobileSheet.classList.remove('hidden');
+    document.body.classList.add('mobile-sheet-open');
+    renderMobilePanel('members');
+    if (els.leaderMobileClose) els.leaderMobileClose.focus();
+  }
+
+  function closeMobilePanel() {
+    if (els.leaderMobileSheet) els.leaderMobileSheet.classList.add('hidden');
+    document.body.classList.remove('mobile-sheet-open');
+    if (mobilePanelReturnFocus && typeof mobilePanelReturnFocus.focus === 'function') mobilePanelReturnFocus.focus();
+    else if (els.btnMobilePanel) els.btnMobilePanel.focus();
+    mobilePanelReturnFocus = null;
+  }
+
+  function renderMobilePanel(mode) {
+    if (!els.leaderMobileContent || !els.leaderMobileSheet) return;
+    els.leaderMobileSheet.querySelectorAll('[data-leader-panel]').forEach(function(btn){
+      btn.classList.toggle('is-active', btn.getAttribute('data-leader-panel') === mode);
+    });
+    var route = getSelectedRoute();
+    var html = '';
+    if (mode === 'members') {
+      if (!members.length) html = '<p class="text-center text-sm text-[#91887d] py-6">暂时没有游客加入，分享同行码后会显示在这里。</p>';
+      else members.forEach(function(member){
+        var name = member.userName || '游客';
+        html += '<div class="leader-mobile-row"><span class="leader-mobile-mark">' + ui.escapeHtml(name.charAt(0)) + '</span><span style="flex:1"><strong>' + ui.escapeHtml(name) + '</strong><small>' + (member.hasRequest ? '有待处理的私人请求' : '正在同行') + '</small></span>' + (member.hasRequest ? '<span class="leader-mobile-current">待处理</span>' : '') + '</div>';
+      });
+    } else if (mode === 'route') {
+      if (!route || !route.spotIds || !route.spotIds.length) html = '<p class="text-center text-sm text-[#91887d] py-6">路线加载中，请稍后再试。</p>';
+      else route.spotIds.forEach(function(spotId, index){
+        var spot = (route.spots || []).find(function(item){ return item.spotId === spotId; }) || {};
+        var current = spotId === currentSpotId;
+        html += '<button class="leader-mobile-row" type="button" data-mobile-spot="' + ui.escapeHtml(spotId) + '" style="width:100%;border:0;background:transparent;text-align:left"><span class="leader-mobile-mark">' + (index + 1) + '</span><span style="flex:1"><strong>' + ui.escapeHtml(spot.name || spotId) + '</strong><small>' + (current ? '当前讲解位置' : '点击切换到此景点') + '</small></span>' + (current ? '<span class="leader-mobile-current">当前</span>' : '') + '</button>';
+      });
+    } else if (!roomId) {
+      html = '<div class="leader-mobile-actions"><p class="leader-mobile-hint">创建同行小队后，才可同步游客、发集合提醒和管理导览。</p><button type="button" data-mobile-action="start">创建同行小队</button><button type="button" data-mobile-action="back">切换身份</button></div>';
+    } else if (roomEnded) {
+      html = '<div class="leader-mobile-actions"><p class="leader-mobile-hint">本次导览已经结束。游客端会保留结束提示，不能重新开启。</p><button type="button" data-mobile-action="copy">复制本次同行码</button><button type="button" data-mobile-action="back">切换身份</button></div>';
+    } else {
+      html = '<div class="leader-mobile-actions"><button type="button" data-mobile-action="pause">' + (isPaused ? '继续讲解' : '暂停讲解') + '</button><button type="button" data-mobile-action="skip">跳至下一景点</button><button type="button" data-mobile-action="collect">发送集合提醒</button><button type="button" data-mobile-action="copy">复制同行码</button><button type="button" data-mobile-action="share">分享同行码</button><button type="button" data-mobile-action="requests">查看私人请求</button><button type="button" data-mobile-action="notifications">查看通知</button><button type="button" data-mobile-action="refresh">刷新成员与讲解状态</button><button type="button" data-mobile-action="end" class="danger">结束本次导览</button><button type="button" data-mobile-action="back">切换身份</button></div>';
+    }
+    els.leaderMobileContent.innerHTML = html;
+    els.leaderMobileContent.querySelectorAll('[data-mobile-spot]').forEach(function(btn){
+      btn.addEventListener('click', function(){ updateCurrentSpot(btn.getAttribute('data-mobile-spot')); closeMobilePanel(); });
+    });
+    els.leaderMobileContent.querySelectorAll('[data-mobile-action]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var action = btn.getAttribute('data-mobile-action');
+        if (action === 'start') { closeMobilePanel(); handleStart(); return; }
+        if (action === 'copy') handleCopyRoom();
+        if (action === 'share') handleShare();
+        if (action === 'pause') handlePause();
+        if (action === 'skip') handleSkip();
+        if (action === 'collect') handleCollect();
+        if (action === 'refresh') { fetchRoomStatus(); fetchAvatarState(); ui.toast('状态已刷新', 'success'); }
+        if (action === 'requests') { closeMobilePanel(); showRequestsModal(); return; }
+        if (action === 'notifications') { closeMobilePanel(); showNotificationCenter(); return; }
+        if (action === 'end') { closeMobilePanel(); handleEndTour(); return; }
+        if (action === 'back') { closeMobilePanel(); router.go('landing'); return; }
+        closeMobilePanel();
+      });
+    });
   }
 
   // Boot

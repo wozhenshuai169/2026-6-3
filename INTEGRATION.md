@@ -78,6 +78,14 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 `/api/kb/rebuild` 表示刷新知识库检索缓存；第一版基于关键词检索，后续可替换为向量检索。
 
+### 实时运营事件
+
+- `GET /api/operation-events?scenicAreaId=scenic_001`
+- `POST /api/operation-events`（admin）
+- `PATCH /api/operation-events/{eventId}`（admin）
+
+团长或运营人员发布封路、天气、人流、设施关闭事件后，问答检索会优先引用仍在有效期内的公告。语音 ASR 依赖外部服务读取上传音频时，必须把 `PUBLIC_BASE_URL` 配置为该后端可被服务商访问的 HTTPS 地址；本地 `127.0.0.1` 仅适合文字、图片和 TTS 验证。
+
 ### 数据大屏
 
 - `GET /api/dashboard/overview`

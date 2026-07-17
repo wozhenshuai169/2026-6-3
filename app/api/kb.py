@@ -19,13 +19,21 @@ from app.services.knowledge import (
 )
 
 router = APIRouter(prefix="/api/kb")
-ALLOWED_SUFFIXES = {".txt", ".md", ".json", ".pdf"}
+ALLOWED_SUFFIXES = {".txt", ".md", ".json", ".pdf", ".docx", ".xlsx"}
 MAX_FILE_SIZE = 20 * 1024 * 1024
 ALLOWED_MIME = {
     ".txt": {"text/plain", "application/octet-stream"},
     ".md": {"text/markdown", "text/plain", "application/octet-stream"},
     ".json": {"application/json", "text/json", "text/plain"},
     ".pdf": {"application/pdf"},
+    ".docx": {
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/octet-stream",
+    },
+    ".xlsx": {
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/octet-stream",
+    },
 }
 
 
@@ -66,6 +74,8 @@ async def upload_doc(
                 output.write(chunk)
         if suffix == ".pdf" and not temp_path.read_bytes()[:5].startswith(b"%PDF-"):
             raise AppError(415, "INVALID_DOCUMENT", "PDF signature is invalid")
+        if suffix in {".docx", ".xlsx"} and not temp_path.read_bytes()[:2].startswith(b"PK"):
+            raise AppError(415, "INVALID_DOCUMENT", "Office document signature is invalid")
         temp_path.replace(final_path)
         try:
             return create_document(display_name, safe_name, suffix, total)

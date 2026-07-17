@@ -16,6 +16,7 @@ from app.api.dashboard import router as dashboard_router
 from app.api.feedback import router as feedback_router
 from app.api.kb import router as kb_router
 from app.api.map import router as map_router
+from app.api.operation_events import router as operation_events_router
 from app.api.messages import router as messages_router
 from app.api.recommend import router as recommend_router
 from app.api.rooms import router as rooms_router
@@ -32,7 +33,7 @@ from app.middleware.security import SecurityMiddleware
 from app.services.knowledge import seed_scenic_chunks
 from app.services.users import cleanup_auth_state, ensure_bootstrap_admin
 
-for directory in ["uploads", "uploads/tts", "uploads/audio", "uploads/kb", "uploads/avatar", "data"]:
+for directory in ["uploads", "uploads/tts", "uploads/audio", "uploads/chat", "uploads/kb", "uploads/avatar", "data"]:
     Path(directory).mkdir(parents=True, exist_ok=True)
 
 setup_logging(settings.log_level)
@@ -40,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 def _cleanup_partial_uploads() -> None:
-    for directory in (Path("uploads/audio"), Path("uploads/kb")):
+    for directory in (Path("uploads/audio"), Path("uploads/chat"), Path("uploads/kb")):
         for path in directory.glob("*.part"):
             path.unlink(missing_ok=True)
 
@@ -91,6 +92,7 @@ app.include_router(spots_router)
 app.include_router(routes_router)
 app.include_router(kb_router)
 app.include_router(map_router)
+app.include_router(operation_events_router)
 app.include_router(dashboard_router)
 app.include_router(feedback_router)
 

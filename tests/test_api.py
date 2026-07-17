@@ -732,7 +732,7 @@ def test_openapi_and_v4_contract(client):
     guide_script = (root / "frontend-v4/assets/js/pages/guide-panel.js").read_text(encoding="utf-8")
     landing_html = (root / "frontend-v4/pages/landing/index.html").read_text(encoding="utf-8")
     visitor_html = (root / "frontend-v4/pages/user-portal/index.html").read_text(encoding="utf-8")
-    visitor_script = (root / "frontend-v4/assets/js/pages/user-portal.js").read_text(encoding="utf-8")
+    visitor_script = (root / "frontend-v4/assets/js/pages/visitor-unified.js").read_text(encoding="utf-8")
     assert "Authorization" in api_client and "Bearer" in api_client
     assert "admin123" not in landing
     assert 'id="btn-notifications"' in guide_html
@@ -740,32 +740,40 @@ def test_openapi_and_v4_contract(client):
     assert 'data-more-action="refresh"' in guide_html
     assert 'id="guide-audio-seek"' in guide_html
     assert 'id="narration-voice"' in guide_html
+    assert 'id="leader-sync-status"' in guide_html
+    assert 'id="leader-audience-summary"' in guide_html
+    assert 'guide-panel-mobile.css' in guide_html
+    assert 'id="leader-mobile-sheet"' in guide_html
+    assert 'id="chapter-track"' in guide_html
+    assert 'data-avatar-role="head-only"' in guide_html
     assert 'type="range"' in guide_html
     assert "voice: voice" in guide_script
     assert "handleAudioSeek" in guide_script
     assert "showNotificationCenter" in guide_script
     assert "handleMoreAction" in guide_script
+    assert "connectRoomSocket" in guide_script
+    assert "handleRoomSocketEvent" in guide_script
+    assert "renderMobilePanel" in guide_script
+    assert "data-mobile-action=\"collect\"" in guide_script
+    assert "renderChapterTrack" in guide_script
+    assert "isHeadOnly" in guide_script
     assert "各位朋友，欢迎来到主展厅" not in guide_html
     assert "根据当前景点资料准备讲解并播放" in guide_html
     assert 'id="modal-voice"' in landing_html
     assert 'id="room-voice-select"' in visitor_html
     assert 'id="visitor-voice"' in visitor_html
-    assert visitor_html.count('../vision/index.html') == 1
-    assert visitor_html.count('../recommend/index.html') == 1
-    assert 'class="stage-tools"' not in visitor_html
-    assert 'id="btn-switch-text" class="avatar-text-switch"' in visitor_html
-    assert 'id="fn-audio"' not in visitor_html
-    assert "voice:selectedVoice" in visitor_script
-    assert "playRoomNarration" in visitor_script
-    assert "sendPublicQuestion(text,'voice'" in visitor_script
-    assert "inputMode:inputMode" in visitor_script
-    assert "type==='audio'" not in visitor_script
-    assert "renderKnowledgeResult" in visitor_script
-    assert "正在读取当前景点资料" in visitor_script
-    assert "灵山胜境周边" in visitor_script
-    assert "高德真实 POI" not in visitor_script
-    assert "不使用 Mock" not in visitor_script
-    assert " · POI " not in visitor_script
+    assert 'data-tool="vision"' in visitor_html
+    assert 'data-tool="route"' in visitor_html
+    assert 'id="guide-person-invoke"' in visitor_html
+    assert 'id="chat-drawer"' in visitor_html
+    assert 'pages/user-portal.js' not in visitor_html
+    assert "sendPublicQuestion" in visitor_script
+    assert "activateGuide('arrival')" in visitor_script
+    assert "long press" not in visitor_script
+    assert "direct/" in visitor_script
+    assert "MediaRecorder" in visitor_script
+    assert "chat-media" in visitor_script
+    assert "小周" not in visitor_html
 
     natural_ui_files = [
         (root / "frontend-v4/index.html").read_text(encoding="utf-8"),

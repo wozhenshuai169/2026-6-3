@@ -113,12 +113,12 @@
 
   function handleJoinRoom(){
     var code=(els.roomCodeInput.value||'').trim();
-    if(!code){showJoinError('请输入房间号，或点击“独自导览”');return;}
+    if(!code){showJoinError('请输入同行码，或点击“先自己逛逛”');return;}
     els.roomJoinBtn.disabled=true;els.roomJoinBtn.textContent='加入中...';
     els.roomJoinError.classList.add('hidden');
     api.post('/rooms/'+code+'/join',{}).then(function(r){
-      if(r.ok){roomId=code;isSoloMode=false;state.set('roomId',roomId);hideJoinOverlay();ui.toast('加入成功！','success');startRoomMode();addMsg('system','你已加入导览房间');}
-      else{var msg=(r.error&&r.error.message)||'加入失败';if(r.error&&r.error.status===404)msg='房间不存在';showJoinError(msg);els.roomJoinBtn.disabled=false;els.roomJoinBtn.textContent='进入导览';}
+      if(r.ok){roomId=code;isSoloMode=false;state.set('roomId',roomId);hideJoinOverlay();ui.toast('加入成功！','success');startRoomMode();addMsg('system','你已加入同行小队');}
+      else{var msg=(r.error&&r.error.message)||'加入失败';if(r.error&&r.error.status===404)msg='同行码不存在';showJoinError(msg);els.roomJoinBtn.disabled=false;els.roomJoinBtn.textContent='加入同行小队';}
     });
   }
   function showJoinError(msg){els.roomJoinError.textContent=msg;els.roomJoinError.classList.remove('hidden');}
@@ -128,16 +128,16 @@
     roomId=null;isSoloMode=true;members=[];
     state.remove('roomId');
     if(els.roomJoinError)els.roomJoinError.classList.add('hidden');
-    if(els.roomJoinBtn){els.roomJoinBtn.disabled=false;els.roomJoinBtn.textContent='进入导览';}
+    if(els.roomJoinBtn){els.roomJoinBtn.disabled=false;els.roomJoinBtn.textContent='加入同行小队';}
     hideJoinOverlay();
     renderMemberList();
     updateDigitalHumanState('idle');
     if(els.avatarStatusLabel)els.avatarStatusLabel.textContent='独自导览';
     if(els.spotChip){els.spotChip.classList.remove('hidden');}
     if(els.spotChipName)els.spotChipName.textContent='独自游览';
-    if(els.narrationText)els.narrationText.textContent='已进入独自导览。你可以直接询问景点和路线，无需加入公共房间。';
+    if(els.narrationText)els.narrationText.textContent='已进入独自导览。你可以直接询问景点和路线，无需加入同行小队。';
     loadRouteData();
-    if(!messages.length)addMsg('system','已进入独自导览模式，可直接提问或播放讲解');
+    if(!messages.length)addMsg('system','已进入独自导览，可直接提问或播放讲解');
     ui.toast('已进入独自导览', 'success');
   }
 
@@ -248,7 +248,7 @@
           lastNarrationId=d.narrationId;
           roomNarrationPaused=false;
           playRoomNarration(d);
-          addMsg('status','团长已开始新的景点讲解');
+          addMsg('status','领队已开始新的景点讲解');
         }else if(roomNarrationPaused&&els.ttsPlayer){
           roomNarrationPaused=false;
           els.ttsPlayer.play().catch(function(){
@@ -345,7 +345,7 @@
 
   function sendSoloQuestion(text,inputMode,asrConfidence){
     var isPrivate=detectPrivateQuestion(text);
-    if(isPrivate)addMsg('decision','独自导览模式下，你的问题不会进入公共频道；如需团长协助，请加入房间后使用私人服务');
+    if(isPrivate)addMsg('decision','独自导览时，你的提问只对你可见；如需领队协助，请加入同行小队后联系对方');
     showTyping();
     api.post('/ai/solo-question',{
       userId:userId,

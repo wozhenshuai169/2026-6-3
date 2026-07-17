@@ -13,6 +13,7 @@ import base64
 import json
 import mimetypes
 import sys
+from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -21,6 +22,7 @@ import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "test_data" / "real_model_validation" / "manifest.json"
+REPORT = ROOT / "data" / "real_model_validation_report.json"
 
 
 class ValidationFailure(RuntimeError):
@@ -105,6 +107,31 @@ def _run_images(client: httpx.Client, tourist: dict, room_id: str, manifest: dic
     return passed
 
 
+def _run_text(client: httpx.Client, tourist: dict, room_id: str, manifest: dict) -> list[str]:
+    """Validate the deployed LLM path, including product-side retrieval citations."""
+    passed: list[str] = []
+    for case in manifest["testGroups"].get("text", []):
+        payload = _json(
+            client.post(
+                "/api/ai/public-question",
+                headers=_headers(tourist),
+                json={
+                    "roomId": room_id, "userId": tourist["userId"],
+                    "question": case["question"], "needAudio": False,
+                },
+            ),
+            case["id"],
+        )
+        expected = case["expected"]
+        _assert(bool(payload.get("answer", "").strip()), case["id"], "LLM returned an empty answer")
+        if expected.get("requiresCitation"):
+            _assert(bool(payload.get("sources")), case["id"], "answer has no knowledge citation")
+        if expected.get("decision"):
+            _assert(payload.get("decision") == expected["decision"], case["id"], "unexpected decision")
+        passed.append(case["id"])
+    return passed
+
+
 def _run_voice(client: httpx.Client, tourist: dict, room_id: str, manifest: dict, skip_missing: bool) -> list[str]:
     passed: list[str] = []
     threshold = float(manifest.get("thresholds", {}).get("minAsrConfidence", 0))
@@ -170,6 +197,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", default="")
     parser.add_argument("--skip-missing-audio", action="store_true")
+    parser.add_argument("--skip-tts", action="store_true")
     args = parser.parse_args()
     manifest = _load_manifest()
     base_url = (args.base_url or manifest["baseUrl"]).rstrip("/")
@@ -178,13 +206,34 @@ def main() -> int:
             guide, tourist, room_id = _room(client)
             del guide
             passed = []
+            passed.extend(_run_text(client, tourist, room_id, manifest))
             passed.extend(_run_images(client, tourist, room_id, manifest))
             passed.extend(_run_voice(client, tourist, room_id, manifest, args.skip_missing_audio))
-            passed.extend(_run_tts(client, tourist, manifest))
+            if not args.skip_tts:
+                passed.extend(_run_tts(client, tourist, manifest))
     except (httpx.HTTPError, ValidationFailure) as exc:
+        report = {
+            "generatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "baseUrl": base_url,
+            "status": "blocked",
+            "passed": passed if "passed" in locals() else [],
+            "skipped": {"tts": args.skip_tts, "missingAudio": args.skip_missing_audio},
+            "error": str(exc),
+        }
+        REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"REAL VALIDATION FAILED: {exc}", file=sys.stderr)
+        print(json.dumps(report, ensure_ascii=False), file=sys.stderr)
         return 1
-    print(json.dumps({"baseUrl": base_url, "passed": passed, "count": len(passed)}, ensure_ascii=False))
+    report = {
+        "generatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "baseUrl": base_url,
+        "status": "passed",
+        "passed": passed,
+        "count": len(passed),
+        "skipped": {"tts": args.skip_tts, "missingAudio": args.skip_missing_audio},
+    }
+    REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(report, ensure_ascii=False))
     return 0
 
 

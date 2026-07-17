@@ -92,7 +92,7 @@ def test_memory_extracts_tags_without_raw_text():
 
 def test_evaluation_harness_covers_spec_metrics():
     metrics = EvaluationHarness().run()
-    assert metrics["caseCount"] >= 30
+    assert metrics["caseCount"] >= 60
     assert metrics["privateLeakCount"] == 0
     assert metrics["riskEscalationRecall"] == 1.0
     assert metrics["under10sRate"] == 1.0
@@ -111,7 +111,7 @@ def test_evaluation_harness_covers_spec_metrics():
 def test_scenic_chunks_are_expanded_and_metadata_complete():
     chunks = TourAIOrchestrator().data.chunks
     required = {"spotId", "topic", "audience", "routeIds", "source"}
-    assert 30 <= len(chunks) <= 80
+    assert 80 <= len(chunks) <= 140
     for chunk in chunks:
         assert required <= set(chunk), chunk["chunkId"]
         assert chunk["spotId"]

@@ -2,21 +2,24 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>云游智导 · 团长控制台</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>云游智导 · 领队工作台</title>
   <link rel="stylesheet" href="../../assets/css/material-icons.css">
   <link rel="stylesheet" href="../../assets/css/warm-console.css">
+  <link rel="stylesheet" href="../../assets/css/lip-sync.css">
+  <link rel="stylesheet" href="../../assets/css/guide-panel-mobile.css">
 </head>
 <body class="console-page">
   <header class="console-topbar">
-    <div class="brand"><span class="brand-mark material-icons">landscape</span><strong>云游智导</strong><span class="brand-divider"></span><span>团长控制台</span></div>
-    <div class="top-actions"><span class="date">2026-07-12</span><button id="btn-share" class="text-action"><span class="material-icons">ios_share</span>分享房间</button><button id="btn-notifications" class="icon-action notification-action" aria-label="通知中心" title="通知中心"><span class="material-icons">notifications_none</span><span id="notification-badge" class="notification-badge hidden">0</span></button><div class="more-menu-wrap"><button id="btn-more" class="icon-action" aria-label="更多操作" aria-expanded="false" title="更多操作"><span class="material-icons">more_horiz</span></button><div id="more-actions-menu" class="more-actions-menu hidden" role="menu"><button type="button" data-more-action="copy"><span class="material-icons">content_copy</span><span>复制房间号</span></button><button type="button" data-more-action="refresh"><span class="material-icons">refresh</span><span>刷新房间状态</span></button><button type="button" data-more-action="end" class="danger"><span class="material-icons">stop_circle</span><span>结束本次导览</span></button></div></div></div>
+    <div class="brand"><span class="brand-mark material-icons">landscape</span><strong>云游智导</strong><span class="brand-divider"></span><span>领队工作台</span></div>
+    <div id="leader-sync-status" class="leader-sync-status" data-state="idle" role="status"><span></span><b id="leader-sync-label">等待创建同行小队</b><time id="leader-sync-time"></time></div>
+    <div class="top-actions"><span class="date">2026-07-12</span><button id="btn-share" class="text-action"><span class="material-icons">ios_share</span>分享同行码</button><button id="btn-notifications" class="icon-action notification-action" aria-label="通知中心" title="通知中心"><span class="material-icons">notifications_none</span><span id="notification-badge" class="notification-badge hidden">0</span></button><div class="more-menu-wrap"><button id="btn-more" class="icon-action" aria-label="更多操作" aria-expanded="false" title="更多操作"><span class="material-icons">more_horiz</span></button><div id="more-actions-menu" class="more-actions-menu hidden" role="menu"><button type="button" data-more-action="copy"><span class="material-icons">content_copy</span><span>复制同行码</span></button><button type="button" data-more-action="refresh"><span class="material-icons">refresh</span><span>刷新小队状态</span></button><button type="button" data-more-action="end" class="danger"><span class="material-icons">stop_circle</span><span>结束本次导览</span></button></div></div></div>
   </header>
 
   <main class="console-layout">
     <aside class="visitor-pane">
       <div class="pane-title"><h2 id="member-list-title">在线游客 0</h2><span id="member-count" class="sr-only">0人</span><span id="member-status-dot" class="online-dot"></span></div>
-      <div class="room-meta"><span>房间</span><strong id="room-id-display">—</strong><button id="btn-copy-room" class="tiny-action"><span class="material-icons">content_copy</span></button></div>
+      <div class="room-meta"><span>同行码</span><strong id="room-id-display">—</strong><button id="btn-copy-room" class="tiny-action"><span class="material-icons">content_copy</span></button></div>
       <ul id="member-list" class="visitor-list" aria-label="在线游客"></ul>
       <div id="pending-requests-row" class="request-summary hidden"><span id="pending-requests-text"></span><button id="btn-view-requests">查看</button></div>
       <div class="pane-footer"><button id="tab-all" class="text-action active">全部游客</button><button id="tab-requests" class="text-action">仅看请求</button></div>
@@ -24,18 +27,15 @@
 
     <section class="stage-pane">
       <div id="guide-stage" class="guide-stage" data-status="idle" data-emotion="friendly">
-        <img id="guide-avatar-image" src="../../assets/images/digital-guide-main.webp" alt="导游讲解画面">
+        <div class="guide-avatar-area"><div id="guide-avatar-frame" class="guide-avatar-frame" data-avatar-role="head-only"><img id="guide-avatar-image" src="../../assets/images/digital-guide-foreground.png" alt="可爱卡通数字人头像"><span id="guide-avatar-mouth" class="lip-sync-mouth" data-mouth-level="0" aria-hidden="true"></span></div></div>
         <div class="stage-status"><span class="speaking-dot"></span><span id="ai-status-badge">待命</span><span id="ai-action-display">等待开始讲解</span></div>
+        <p id="leader-audience-summary" class="leader-audience-summary">游客端将在景点切换后同步更新</p>
         <p class="subtitle">点击“开始讲解”后，系统会根据当前景点资料准备讲解并播放。</p>
       </div>
       <div class="chapter-panel">
         <div class="chapter-current"><small>当前章节</small><strong id="current-spot-display">灵山大照壁</strong><span id="progress-display">第 1 段 / 共 5 段</span></div>
-        <ol class="chapter-track">
-          <li class="done"><b>1</b><span>迎宾介绍</span></li>
-          <li class="active"><b>2</b><span>九龙灌浴</span></li>
-          <li><b>3</b><span>灵山大佛</span></li>
-          <li><b>4</b><span>灵山梵宫</span></li>
-          <li><b>5</b><span>互动问答</span></li>
+        <ol id="chapter-track" class="chapter-track" aria-label="导览章节进度">
+          <li><b>1</b><span>等待路线</span></li>
         </ol>
         <div class="chapter-time"><small>全程时长</small><strong>12:20</strong></div>
       </div>
@@ -68,6 +68,7 @@
     <button id="btn-pause" class="command"><span class="material-icons">pause</span>暂停</button>
     <button id="btn-skip" class="command"><span class="material-icons">skip_next</span>跳过景点</button>
     <button id="btn-collect" class="command"><span class="material-icons">campaign</span>集合广播</button>
+    <button id="btn-mobile-panel" class="command mobile-panel-action" aria-label="打开成员、路线与管理"><span class="material-icons">view_agenda</span>成员与路线</button>
     <div id="guide-audio-controls" class="guide-audio-controls hidden" aria-label="讲解音频播放器">
       <button id="guide-audio-toggle" class="guide-audio-toggle" type="button" aria-label="播放讲解" title="播放讲解"><span class="material-icons">play_arrow</span></button>
       <span id="guide-audio-current" class="guide-audio-time">0:00</span>
@@ -79,7 +80,8 @@
   </footer>
 
   <div id="route-modal" class="modal-layer hidden"><div class="modal-card"><p class="eyebrow">创建导览房间</p><h2>选择今天的导览路线</h2><div id="route-list" class="route-options"></div><div class="modal-actions"><button id="route-cancel" class="command">取消</button><button id="route-confirm" class="command primary" disabled>确认并创建</button></div></div></div>
+  <div id="leader-mobile-sheet" class="leader-mobile-sheet hidden" role="dialog" aria-modal="true" aria-label="成员、路线与管理"><div id="leader-mobile-backdrop" class="leader-mobile-backdrop"></div><section class="leader-mobile-card"><header><div><small>领队工作台</small><h2>成员、路线与管理</h2></div><button id="leader-mobile-close" type="button" aria-label="关闭"><span class="material-icons">close</span></button></header><nav><button type="button" data-leader-panel="members" class="is-active">成员</button><button type="button" data-leader-panel="route">路线</button><button type="button" data-leader-panel="manage">管理</button></nav><div id="leader-mobile-content"></div></section></div>
 
-  <script src="../../assets/js/config.js"></script><script src="../../assets/js/state.js"></script><script src="../../assets/js/api-client.js"></script><script src="../../assets/js/auth.js"></script><script src="../../assets/js/ui.js"></script><script src="../../assets/js/router.js"></script><script src="../../assets/js/components.js"></script><script src="../../assets/js/pages/guide-panel.js"></script>
+  <script src="../../assets/js/config.js"></script><script src="../../assets/js/state.js"></script><script src="../../assets/js/api-client.js"></script><script src="../../assets/js/auth.js"></script><script src="../../assets/js/ui.js"></script><script src="../../assets/js/router.js"></script><script src="../../assets/js/components.js"></script><script src="../../assets/js/lip-sync.js"></script><script src="../../assets/js/pages/guide-panel.js"></script>
 </body>
 </html>

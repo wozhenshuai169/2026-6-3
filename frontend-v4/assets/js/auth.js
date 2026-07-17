@@ -166,8 +166,17 @@ Aurelian.auth = (function () {
 
     function setupDemo(role) {
       var name = role === 'visitor' ? '游客Demo' : '团长Demo';
-      guest(name, role).then(function(result) {
-        if (!result.ok) return;
+      if (btnL) btnL.disabled = true;
+      if (btnV) btnV.disabled = true;
+      guest(name, role).then(function (result) {
+        if (!result.ok) {
+          var message = (result.error && result.error.message) || '暂时无法连接服务，请稍后重试';
+          var hintNode = overlay.querySelector('p');
+          if (hintNode) hintNode.textContent = message;
+          if (btnL) btnL.disabled = false;
+          if (btnV) btnV.disabled = false;
+          return;
+        }
         overlay.remove();
         if (onPass) onPass();
         else window.location.reload();

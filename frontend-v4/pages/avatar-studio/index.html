@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../../assets/css/material-icons.css">
   <link rel="stylesheet" href="../../assets/css/platform.css">
   <link rel="stylesheet" href="../../assets/css/admin-page.css">
+  <link rel="stylesheet" href="../../assets/css/lip-sync.css">
   <link rel="stylesheet" href="../../assets/css/avatar-studio.css">
 </head>
 <body class="app-page admin-shell">
@@ -29,13 +30,23 @@
       </div>
       <div class="studio-grid">
         <section class="surface avatar-preview">
-          <img id="avatar-preview-image" src="../../assets/images/digital-guide-main.webp" alt="讲解形象预览">
-          <div class="preview-caption"><span id="preview-status" class="status">待命</span><p id="preview-line">你好，我是小云。欢迎来到灵山胜境，让我陪你了解这里的故事。</p></div>
+          <div id="avatar-preview-frame" class="avatar-portrait-frame" data-avatar-role="xiaoyun">
+            <img id="avatar-preview-image" src="../../assets/images/digital-avatar-a.png" alt="讲解形象 A 预览">
+            <span id="avatar-preview-mouth" class="lip-sync-mouth" data-mouth-level="0" aria-hidden="true"></span>
+          </div>
+          <div class="preview-caption"><span id="preview-status" class="status">待命</span><p id="preview-line">你好，我是智能导游。欢迎来到灵山胜境，让我陪你了解这里的故事。</p></div>
+          <audio id="avatar-preview-audio" preload="metadata" hidden></audio>
         </section>
         <section class="surface control-panel">
           <div class="control-section">
             <h2>形象与服装</h2>
-            <label>讲解角色<select id="avatar-role" class="field"><option value="xiaoyun">小云 · 亲和导览</option><option value="yunchuan">云川 · 稳重导览</option><option value="tongtong">童童 · 亲子向</option></select></label>
+            <fieldset class="avatar-choice-set">
+              <legend>可选形象</legend>
+              <div class="avatar-choice-grid">
+                <label class="avatar-choice-card"><input type="radio" name="avatar-role" value="xiaoyun" checked><span class="avatar-choice-thumb"><img src="../../assets/images/digital-avatar-a.png" alt="形象 A"></span><span><strong>形象 A</strong><small>清朗 · 中性蓝</small></span></label>
+                <label class="avatar-choice-card"><input type="radio" name="avatar-role" value="yunchuan"><span class="avatar-choice-thumb"><img src="../../assets/images/digital-avatar-b.png" alt="形象 B"></span><span><strong>形象 B</strong><small>亲和 · 柔和青</small></span></label>
+              </div>
+            </fieldset>
             <label>服装主题<select id="avatar-outfit" class="field"><option value="modern_black">现代中式 · 墨黑</option><option value="culture_red">景区文化 · 朱红</option><option value="outdoor_ivory">户外导览 · 米白</option></select></label>
             <label>形象图片<input id="avatar-image-file" class="field" type="file" accept="image/png,image/jpeg,image/webp"><small>上传后会用于导览页的讲解画面</small></label>
           </div>
@@ -47,6 +58,7 @@
           </div>
           <div class="control-section">
             <h2>画面效果</h2>
+            <label class="switch-row"><span><strong>简单口型匹配</strong><small>根据讲解音频强弱切换四档嘴型</small></span><input id="lip-sync" type="checkbox" checked></label>
             <label class="switch-row"><span><strong>表情变化</strong><small>根据讲解内容调整面部表情</small></span><input id="emotion-sync" type="checkbox" checked></label>
             <label class="switch-row"><span><strong>眨眼与待机动作</strong><small>让静止状态看起来更自然</small></span><input id="idle-motion" type="checkbox" checked></label>
           </div>
@@ -60,6 +72,7 @@
   <script src="../../assets/js/api-client.js"></script>
   <script src="../../assets/js/auth.js"></script>
   <script src="../../assets/js/ui.js"></script>
+  <script src="../../assets/js/lip-sync.js"></script>
   <script src="../../assets/js/pages/avatar-studio.js"></script>
 </body>
 </html>

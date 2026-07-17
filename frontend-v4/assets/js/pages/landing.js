@@ -19,7 +19,7 @@
       var demoRole = new URLSearchParams(location.search).get('role') || 'tour_leader';
       if (demoRole === 'admin') demoAdmin = true;
       else {
-        auth.guest(demoRole==='visitor'?'游客Demo':'团长Demo', demoRole).then(function(result){
+        auth.guest(demoRole==='visitor'?'游客Demo':'领队Demo', demoRole).then(function(result){
           if (result.ok) router.go(demoRole==='visitor'?'user-portal':'guide-panel');
         });
         return;
@@ -75,7 +75,7 @@
 
   function openModal(role) {
     chosenRole = role;
-    var label = role === 'visitor' ? '游客' : '团长';
+    var label = role === 'visitor' ? '游客' : '领队';
     if (modalTitle) modalTitle.textContent = label + ' — 输入你的名字';
     if (modalVoiceGroup) modalVoiceGroup.classList.toggle('hidden', role !== 'visitor');
     if (modalVoice && role === 'visitor') modalVoice.value = state.get('narrationVoice') || defaultAvatarVoice;

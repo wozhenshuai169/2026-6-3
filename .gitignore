@@ -64,3 +64,15 @@ CMakeLists.txt
 src/
 !frontend-v2/src/
 rmdb_client/
+
+# ── 服务器日志 ──
+server-*.err
+server-*.out
+*.err
+*.out
+http-server.err
+http-server.out
+
+# ── 上传目录 ──
+uploads/
+.playwright-mcp/

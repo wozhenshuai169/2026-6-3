@@ -1,13 +1,49 @@
 import json
+import re
 from io import BytesIO
 from pathlib import Path
 from time import time
 from uuid import uuid4
+from xml.etree import ElementTree as ET
+from zipfile import BadZipFile, ZipFile
 
 from app.core.database import database
 
 DATA_DIR = Path("data")
 UPLOAD_DIR = Path("uploads") / "kb"
+WORD_NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+SHEET_NS = {"x": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+
+
+def _extract_docx_text(content: bytes) -> str:
+    try:
+        with ZipFile(BytesIO(content)) as archive:
+            root = ET.fromstring(archive.read("word/document.xml"))
+    except (BadZipFile, KeyError, ET.ParseError) as exc:
+        raise ValueError("Invalid DOCX document") from exc
+    paragraphs = []
+    for node in root.findall(".//w:p", WORD_NS):
+        text = "".join(item.text or "" for item in node.findall(".//w:t", WORD_NS)).strip()
+        if text:
+            paragraphs.append(text)
+    return "\n".join(paragraphs)
+
+
+def _extract_xlsx_schema(content: bytes) -> str:
+    """Index workbook structure only; raw visitor rows must not enter the RAG corpus."""
+    try:
+        with ZipFile(BytesIO(content)) as archive:
+            workbook = ET.fromstring(archive.read("xl/workbook.xml"))
+    except (BadZipFile, KeyError, ET.ParseError) as exc:
+        raise ValueError("Invalid XLSX workbook") from exc
+    names = [sheet.attrib.get("name", "未命名工作表") for sheet in workbook.findall(".//x:sheets/x:sheet", SHEET_NS)]
+    if not names:
+        raise ValueError("Workbook does not contain a worksheet")
+    return (
+        f"工作簿包含工作表：{'、'.join(names)}。"
+        "为保护游客隐私，原始表格行数据不会写入问答知识库；"
+        "请通过数据聚合任务生成脱敏的景点级运营洞察后再用于后台分析。"
+    )
 
 
 def _extract_text(content: bytes, suffix: str) -> str:
@@ -23,6 +59,10 @@ def _extract_text(content: bytes, suffix: str) -> str:
             raise ValueError("PDF support requires the pypdf dependency") from exc
         reader = PdfReader(BytesIO(content))
         return "\n".join(page.extract_text() or "" for page in reader.pages)
+    if suffix == ".docx":
+        return _extract_docx_text(content)
+    if suffix == ".xlsx":
+        return _extract_xlsx_schema(content)
     raise ValueError("Unsupported document type")
 
 
@@ -233,6 +273,10 @@ def search_knowledge(query: str, limit: int = 5, spot_id: str = "") -> list[dict
     if not clean:
         raise ValueError("Query is empty")
     bounded = max(1, min(limit, 20))
+    # Time-bounded operational notices must take precedence over archived facts.
+    from app.services.operation_events import active_event_chunks
+
+    realtime = active_event_chunks(clean)
     with database() as connection:
         if len(clean) >= 3:
             try:
@@ -276,7 +320,9 @@ def search_knowledge(query: str, limit: int = 5, spot_id: str = "") -> list[dict
                 """,
                 (f"%{clean[:24]}%", f"%{clean[:24]}%", bounded),
             ).fetchall()
-    return [
+        if not rows:
+            rows = _phrase_fallback(connection, clean, bounded)
+    archived = [
         {
             "title": row["title"],
             "chunkId": row["chunk_id"],
@@ -286,3 +332,31 @@ def search_knowledge(query: str, limit: int = 5, spot_id: str = "") -> list[dict
         }
         for row in rows
     ]
+    return (realtime + archived)[:bounded]
+
+
+def _phrase_fallback(connection, query: str, limit: int):
+    """Rank Chinese phrase overlap when FTS cannot match a whole spoken question."""
+    normalized = re.sub(r"[^\u4e00-\u9fffA-Za-z0-9]", "", query)
+    if len(normalized) < 2:
+        return []
+    phrases = {
+        normalized[index : index + width]
+        for width in range(min(8, len(normalized)), 1, -1)
+        for index in range(len(normalized) - width + 1)
+    }
+    candidates = connection.execute(
+        "SELECT chunk_id, title, source, content, 0.0 AS rank FROM kb_chunks"
+    ).fetchall()
+    scored = []
+    for row in candidates:
+        title, content = str(row["title"]), str(row["content"])
+        matches = [phrase for phrase in phrases if phrase in title or phrase in content]
+        if not matches:
+            continue
+        score = max(len(phrase) for phrase in matches)
+        score += sum(0.1 for phrase in matches if len(phrase) >= 3)
+        if any(phrase in title for phrase in matches):
+            score += 0.5
+        scored.append((score, row))
+    return [row for _, row in sorted(scored, key=lambda item: item[0], reverse=True)[:limit]]

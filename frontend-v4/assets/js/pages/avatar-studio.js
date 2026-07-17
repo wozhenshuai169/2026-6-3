@@ -4,46 +4,67 @@
   var A = window.Aurelian;
   var api = A.api;
   var ui = A.ui;
-  var currentImageUrl = '/assets/images/digital-guide-main.webp';
+  var AVATARS = {
+    xiaoyun: { imageUrl: '/assets/images/digital-avatar-a.png', alt: '形象 A' },
+    yunchuan: { imageUrl: '/assets/images/digital-avatar-b.png', alt: '形象 B' }
+  };
+  var currentImageUrl = AVATARS.xiaoyun.imageUrl;
+  var lipSyncController = null;
 
   function byId(id) {
     return document.getElementById(id);
   }
 
   function config() {
+    var role = selectedRole();
     return {
-      role: byId('avatar-role').value,
+      role: role,
       outfit: byId('avatar-outfit').value,
       imageUrl: currentImageUrl,
       voice: byId('avatar-voice').value,
       speed: Number(byId('avatar-speed').value),
       emotion: byId('avatar-emotion').value,
-      lipSync: false,
+      lipSync: byId('lip-sync').checked,
       emotionSync: byId('emotion-sync').checked,
       idleMotion: byId('idle-motion').checked
     };
   }
 
+  function selectedRole() {
+    var checked = document.querySelector('input[name="avatar-role"]:checked');
+    return checked && AVATARS[checked.value] ? checked.value : 'xiaoyun';
+  }
+
+  function selectRole(role, useDefaultImage) {
+    var nextRole = AVATARS[role] ? role : 'xiaoyun';
+    var radio = document.querySelector('input[name="avatar-role"][value="' + nextRole + '"]');
+    if (radio) radio.checked = true;
+    if (useDefaultImage !== false) currentImageUrl = AVATARS[nextRole].imageUrl;
+    byId('avatar-preview-frame').setAttribute('data-avatar-role', nextRole);
+    byId('avatar-preview-image').src = currentImageUrl;
+    byId('avatar-preview-image').alt = AVATARS[nextRole].alt + '讲解形象预览';
+  }
+
   function applyConfig(c) {
     if (!c) return;
-    byId('avatar-role').value = c.role || 'xiaoyun';
+    var role = AVATARS[c.role] ? c.role : 'xiaoyun';
     byId('avatar-outfit').value = c.outfit || 'modern_black';
     byId('avatar-voice').value = c.voice || 'guide_female';
     byId('avatar-speed').value = c.speed || 1;
     byId('avatar-emotion').value = c.emotion || 'friendly';
+    byId('lip-sync').checked = c.lipSync !== false;
     byId('emotion-sync').checked = c.emotionSync !== false;
     byId('idle-motion').checked = c.idleMotion !== false;
-    currentImageUrl = c.imageUrl || currentImageUrl;
-    byId('avatar-preview-image').src = currentImageUrl;
+    currentImageUrl = c.imageUrl && c.imageUrl.indexOf('/uploads/avatar/') === 0 ? c.imageUrl : AVATARS[role].imageUrl;
+    selectRole(role, false);
+    if (lipSyncController) lipSyncController.setEnabled(byId('lip-sync').checked);
     refreshPreview();
   }
 
   function refreshPreview() {
-    var roleNames = { xiaoyun: '小云', yunchuan: '云川', tongtong: '童童' };
-    var role = byId('avatar-role').value;
     byId('speed-output').textContent = byId('avatar-speed').value + '×';
-    byId('preview-line').textContent = '你好，我是' + (roleNames[role] || '讲解员') + '。欢迎来到灵山胜境，让我陪你了解这里的故事。';
-    byId('avatar-preview-image').dataset.role = role;
+    byId('preview-line').textContent = '你好，我是智能导游。欢迎来到灵山胜境，让我陪你了解这里的故事。';
+    byId('avatar-preview-image').dataset.role = selectedRole();
     byId('avatar-preview-image').dataset.outfit = byId('avatar-outfit').value;
   }
 
@@ -69,8 +90,19 @@
   }
 
   function init() {
-    ['avatar-role', 'avatar-outfit', 'avatar-emotion'].forEach(function (id) {
+    var previewAudio = byId('avatar-preview-audio');
+    lipSyncController = A.lipSync.attach(previewAudio, byId('avatar-preview-mouth'));
+    document.querySelectorAll('input[name="avatar-role"]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        selectRole(radio.value, true);
+        refreshPreview();
+      });
+    });
+    ['avatar-outfit', 'avatar-emotion'].forEach(function (id) {
       byId(id).addEventListener('change', refreshPreview);
+    });
+    byId('lip-sync').addEventListener('change', function () {
+      if (lipSyncController) lipSyncController.setEnabled(this.checked);
     });
     byId('avatar-speed').addEventListener('input', refreshPreview);
     byId('avatar-image-file').addEventListener('change', function () {
@@ -102,13 +134,16 @@
         speed: c.speed
       }).then(function (result) {
         if (result.ok && result.data && result.data.audioUrl) {
-          new Audio(result.data.audioUrl).play().catch(function () {});
+          previewAudio.src = result.data.audioUrl;
+          previewAudio.play().catch(function () { ui.toast('试听音频已准备好，请再次点击试听', 'warning'); });
         } else {
           ui.toast('试听暂时不可用，请稍后重试', 'warning');
         }
-        setTimeout(function () { byId('preview-status').textContent = '待命'; }, 1800);
       });
     });
+    previewAudio.addEventListener('play', function () { byId('preview-status').textContent = '讲解中'; });
+    previewAudio.addEventListener('pause', function () { byId('preview-status').textContent = '待命'; });
+    previewAudio.addEventListener('ended', function () { byId('preview-status').textContent = '待命'; });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

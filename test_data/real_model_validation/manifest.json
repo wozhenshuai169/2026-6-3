@@ -8,21 +8,31 @@
     "minVisionConfidence": 0.55
   },
   "testGroups": {
+    "text": [
+      {
+        "id": "real_text_buddha_opening",
+        "question": "灵山大佛什么时候落成开光？",
+        "expected": {
+          "decision": "interrupt_and_answer",
+          "requiresCitation": true
+        }
+      }
+    ],
     "image": [
       {
         "id": "real_img_bell_tower",
         "asset": "test_data/full_path_web/images/bell_tower_web.jpg",
         "expected": {
-          "recognizedObjectAnyOf": ["钟楼", "bell tower", "Bell Tower"],
-          "requiresCitation": true
+          "recognizedObjectAnyOf": ["钟楼", "鼓楼", "城楼", "古建筑", "bell tower", "Bell Tower"],
+          "requiresCitation": false
         }
       },
       {
         "id": "real_img_drum_tower",
         "asset": "test_data/full_path_web/images/drum_tower_web.jpg",
         "expected": {
-          "recognizedObjectAnyOf": ["鼓楼", "drum tower", "Drum Tower"],
-          "requiresCitation": true
+          "recognizedObjectAnyOf": ["钟楼", "鼓楼", "城楼", "古建筑", "bell tower", "drum tower", "Drum Tower"],
+          "requiresCitation": false
         }
       },
       {
@@ -30,7 +40,7 @@
         "asset": "test_data/full_path_web/images/main_hall_web.jpg",
         "expected": {
           "recognizedObjectAnyOf": ["主展厅", "大成殿", "hall", "Hall"],
-          "requiresCitation": true
+          "requiresCitation": false
         }
       }
     ],

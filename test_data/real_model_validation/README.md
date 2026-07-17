@@ -28,7 +28,7 @@ Do not use the old generated tone files for real ASR validation.
 
 ## Run
 
-如果要验证真实外部 Provider，先按当前环境配置对应 Key / endpoint。主后端已有 ProviderFactory，会在配置齐全时走真实实现，否则自动降级 mock。
+如果要验证真实外部 Provider，先按当前环境配置对应 Key / endpoint。主后端在凭证缺失或外部服务失败时会返回明确错误，不会伪造模型结果。
 
 常见配置示例：
 
@@ -58,6 +58,14 @@ If voice recordings are not ready yet, run image/TTS validation and skip missing
 python tools/run_real_model_validation.py --base-url https://your-public-backend.example --skip-missing-audio
 ```
 
+仅验证已配置的真实文本与视觉模型、暂时跳过语音合成时：
+
+```bash
+python tools/run_real_model_validation.py --base-url http://127.0.0.1:8001 --skip-missing-audio --skip-tts
+```
+
+每次执行都会写入 `data/real_model_validation_report.json`，标明通过项、跳过项或阻塞原因。
+
 For another backend address:
 
 ```bash
@@ -67,6 +75,8 @@ python tools/run_real_model_validation.py --base-url http://127.0.0.1:9000
 ## Pass Criteria
 
 - Image recognition returns one of the allowed names and confidence is at least `minVisionConfidence`.
+- Text questions return a non-empty DeepSeek answer with the required product-side knowledge citation.
+- 当前图片样本用于验证真实多模态识别，不要求景区知识引用；景区图片与知识引用的联动由固定算法评测集覆盖。后续补充灵山现场照片后，再将对应样本设为 `requiresCitation=true`。
 - ASR text contains the key phrase for the recorded sentence and confidence is at least `minAsrConfidence`.
 - Voice orchestration routes to the expected decision.
 - TTS returns `success=true` and a non-empty `audioUrl`.
