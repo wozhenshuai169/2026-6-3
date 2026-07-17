@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from time import perf_counter
 from uuid import uuid4
 
@@ -14,22 +13,10 @@ from app.services.audio import tts_synthesize
 from app.services.avatar_settings import get_avatar_settings
 from app.services.knowledge import search_knowledge
 from app.services.rooms import get_room, save_room_narration
+from app.services.spoken_text import sanitize_spoken_text
 from app.services.stats import record_event
 
 logger = logging.getLogger(__name__)
-
-_NARRATION_PUNCTUATION = "，。！？；：、,.!?;:"
-_NARRATION_UNSUPPORTED_CHARS = re.compile(
-    rf"[^\w\s{re.escape(_NARRATION_PUNCTUATION)}]",
-    flags=re.UNICODE,
-)
-
-
-def sanitize_narration_text(value: str) -> str:
-    """Keep narration speech-friendly and free of Markdown/special symbols."""
-    text = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", value or "")
-    text = _NARRATION_UNSUPPORTED_CHARS.sub("", text).replace("_", "")
-    return re.sub(r"\s+", " ", text).strip()
 
 SPOT_NAMES = {
     "lingshan_dazhaobi": "灵山大照壁",
@@ -100,7 +87,7 @@ async def generate_room_narration(
             logger.error("Room narration DeepSeek request failed: %s", exc)
             raise AppError(503, "LLM_UNAVAILABLE", "智能讲解服务暂时不可用") from exc
 
-        text = sanitize_narration_text(response.content or "")
+        text = sanitize_spoken_text(response.content or "")
         if not text:
             raise AppError(503, "LLM_EMPTY_RESPONSE", "智能讲解服务没有返回内容")
 

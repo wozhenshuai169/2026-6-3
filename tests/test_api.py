@@ -373,11 +373,13 @@ def test_solo_question_uses_deepseek_without_a_room(client, auth_helpers, monkey
     class FakeDeepSeek:
         async def chat(self, messages, **kwargs):
             calls.append({"messages": messages, "kwargs": kwargs})
-            return SimpleNamespace(content="前方有休息需求时，请先在附近设施中查看实时服务点。")
+            return SimpleNamespace(content="**前方有休息需求时**，请先在[附近设施](https://example.com)中查看_实时服务点_。")
 
     async def fake_tts(text, voice="guide_female", speed=1.0, room_id=None):
         assert room_id is None
         assert voice == "xiaomei"
+        assert text == "前方有休息需求时，请先在附近设施中查看实时服务点。"
+        assert "*" not in text
         return {
             "success": True,
             "audioUrl": "/uploads/audio/solo-test.wav",
@@ -412,6 +414,7 @@ def test_solo_question_uses_deepseek_without_a_room(client, auth_helpers, monkey
     assert payload["provider"] == "deepseek"
     assert payload["mode"] == "solo"
     assert payload["audioUrl"] == "/uploads/audio/solo-test.wav"
+    assert payload["answer"] == "前方有休息需求时，请先在附近设施中查看实时服务点。"
     assert calls and calls[0]["messages"][-1]["content"] == "附近有休息区吗？"
     assert calls[0]["kwargs"]["context"]["mode"] == "solo"
     solo_prompt = calls[0]["messages"][0]["content"]

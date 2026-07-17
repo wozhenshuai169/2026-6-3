@@ -19,6 +19,7 @@ from app.services.avatar_settings import get_avatar_settings
 from app.services.audio import asr_transcribe, tts_synthesize
 from app.services.knowledge import search_knowledge
 from app.services.rooms import get_room
+from app.services.spoken_text import sanitize_spoken_text
 from app.services.stats import record_event
 from app.services.users import get_user_memory_tags, merge_user_memory_tags
 
@@ -117,6 +118,7 @@ async def _answer_with_llm(
         "不能只回复“继续当前导览”或其他占位话术。景点历史、人物、年代和设施位置"
         "等事实应优先依据知识库；知识库没有依据时要明确说明不确定，不得编造精确事实。"
         "安全、路线和一般游览建议可以依据常识回答，紧急情况建议联系现场工作人员。\n"
+        "回答只使用文字和正常的中英文句子标点，不得使用Markdown、星号、井号、下划线或项目符号。\n"
         f"当前景点：{spot or '未指定'}\n"
         f"知识库资料：\n{context_text}"
     )
@@ -138,7 +140,7 @@ async def _answer_with_llm(
             logger.error("LLM question failed: %s", exc)
             raise AppError(503, "LLM_UNAVAILABLE", "智能问答服务暂时不可用") from exc
 
-    answer = (response.content or "").strip()
+    answer = sanitize_spoken_text(response.content or "")
     if not answer:
         raise AppError(503, "LLM_EMPTY_RESPONSE", "智能问答服务没有返回内容")
     return {
@@ -217,7 +219,8 @@ async def solo_question(
             "景点历史、人物、年代和设施位置等事实应优先依据下方知识库。"
             "知识库没有依据时，要明确说明不确定，不得编造精确事实或实时状态；"
             "路线、安全和一般游览建议可以基于常识回答，并建议游客用“附近设施”"
-            "查看实时位置，紧急情况联系现场工作人员。\n"
+            "查看实时位置，紧急情况联系现场工作人员。"
+            "回答只使用文字和正常的中英文句子标点，不得使用Markdown、星号、井号、下划线或项目符号。\n"
             f"当前景点：{spot or '未指定'}\n"
             f"知识库资料：\n{context_text}"
         )
@@ -241,7 +244,7 @@ async def solo_question(
                     "智能问答服务暂时不可用",
                 ) from exc
 
-        answer = (response.content or "").strip()
+        answer = sanitize_spoken_text(response.content or "")
         if not answer:
             raise AppError(503, "LLM_EMPTY_RESPONSE", "智能问答服务没有返回内容")
 
