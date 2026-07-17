@@ -35,6 +35,7 @@
   var selectedVoice = A.state.get('narrationVoice') || 'guide_female';
 
   var els = {
+    switchRole: document.getElementById('visitor-switch-role'),
     title: document.getElementById('journey-scene-title'),
     viewport: document.getElementById('journey-viewport'),
     surfaces: Array.prototype.slice.call(document.querySelectorAll('.journey-surface')),
@@ -626,6 +627,10 @@
   }
 
   function initEvents() {
+    els.switchRole.addEventListener('click', function () {
+      els.switchRole.disabled = true;
+      A.auth.logout();
+    });
     els.dock.forEach(function (button) { button.addEventListener('click', function () { setScene(button.dataset.sceneTarget); }); });
     els.viewport.addEventListener('touchstart', function (event) { var touch = event.changedTouches[0]; touchStartX = touch.clientX; touchStartY = touch.clientY; }, { passive: true });
     els.viewport.addEventListener('touchend', function (event) { var touch = event.changedTouches[0]; var dx = touch.clientX - touchStartX; var dy = touch.clientY - touchStartY; if (Math.abs(dx) < 52 || Math.abs(dx) < Math.abs(dy) * 1.25) return; var index = scenes.indexOf(currentScene); setScene(scenes[Math.max(0, Math.min(scenes.length - 1, index + (dx < 0 ? 1 : -1)))]); }, { passive: true });

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from time import perf_counter
 from uuid import uuid4
 
@@ -16,6 +17,19 @@ from app.services.rooms import get_room, save_room_narration
 from app.services.stats import record_event
 
 logger = logging.getLogger(__name__)
+
+_NARRATION_PUNCTUATION = "，。！？；：、,.!?;:"
+_NARRATION_UNSUPPORTED_CHARS = re.compile(
+    rf"[^\w\s{re.escape(_NARRATION_PUNCTUATION)}]",
+    flags=re.UNICODE,
+)
+
+
+def sanitize_narration_text(value: str) -> str:
+    """Keep narration speech-friendly and free of Markdown/special symbols."""
+    text = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", value or "")
+    text = _NARRATION_UNSUPPORTED_CHARS.sub("", text).replace("_", "")
+    return re.sub(r"\s+", " ", text).strip()
 
 SPOT_NAMES = {
     "lingshan_dazhaobi": "灵山大照壁",
@@ -68,6 +82,7 @@ async def generate_room_narration(
             "请以灵山胜境现场讲解员的口吻，为团队准备一段可直接朗读的景点讲解词。"
             "成稿中不要提及人工智能、模型、生成过程或服务提供商。"
             "长度控制在100到160个汉字，开头自然欢迎游客，语言生动但不夸张，不使用Markdown。"
+            "成稿只使用文字和正常的中英文句子标点，不得出现星号、井号、下划线、项目符号或其他特殊符号。"
             "事实优先依据资料；资料不足时只介绍可靠的通用背景，不得编造精确年代、数字或实时安排。\n"
             f"景点：{spot_name}\n资料：\n{context_text}"
         )
@@ -85,7 +100,7 @@ async def generate_room_narration(
             logger.error("Room narration DeepSeek request failed: %s", exc)
             raise AppError(503, "LLM_UNAVAILABLE", "智能讲解服务暂时不可用") from exc
 
-        text = (response.content or "").strip()
+        text = sanitize_narration_text(response.content or "")
         if not text:
             raise AppError(503, "LLM_EMPTY_RESPONSE", "智能讲解服务没有返回内容")
 

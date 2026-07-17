@@ -459,11 +459,13 @@ def test_guide_start_narration_generates_audio_for_room_members(client, auth_hel
             assert "灵山大佛" in messages[0]["content"]
             assert "现场讲解员的口吻" in messages[0]["content"]
             assert "现场中文数字导游" not in messages[0]["content"]
-            return SimpleNamespace(content="各位游客，欢迎来到灵山大佛前，请放慢脚步欣赏庄严的佛教文化景观。")
+            return SimpleNamespace(content="**各位游客**，欢迎来到[灵山大佛](https://example.com)。#请放慢脚步_欣赏庄严的佛教文化景观。")
 
     async def fake_tts(text, voice="guide_female", speed=1.0, room_id=None):
         assert room_id
         assert text.startswith("各位游客")
+        assert text == "各位游客，欢迎来到灵山大佛。请放慢脚步欣赏庄严的佛教文化景观。"
+        assert not any(symbol in text for symbol in "*#_[]()`~")
         assert voice == "guide_male"
         return {
             "success": True,
@@ -518,6 +520,7 @@ def test_guide_start_narration_generates_audio_for_room_members(client, auth_hel
     assert payload["voice"] == "guide_male"
     assert payload["audioUrl"] == "/uploads/tts/room-narration-test.mp3"
     assert payload["narrationId"]
+    assert payload["text"] == "各位游客，欢迎来到灵山大佛。请放慢脚步欣赏庄严的佛教文化景观。"
     assert forbidden.status_code == 403
     assert avatar.status_code == 200
     assert avatar.json()["narrationId"] == payload["narrationId"]
@@ -766,6 +769,8 @@ def test_openapi_and_v4_contract(client):
     assert 'data-tool="route"' in visitor_html
     assert 'id="guide-person-invoke"' in visitor_html
     assert 'id="chat-drawer"' in visitor_html
+    assert 'id="visitor-switch-role"' in visitor_html
+    assert "A.auth.logout()" in visitor_script
     assert 'pages/user-portal.js' not in visitor_html
     assert "sendPublicQuestion" in visitor_script
     assert "activateGuide('arrival')" in visitor_script

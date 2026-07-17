@@ -2,6 +2,9 @@
 .journey-shell { grid-template-rows: 84px minmax(0, 1fr) 82px; }
 .journey-header { grid-template-columns: 1fr auto 1fr; min-height: 84px; padding: max(16px, env(safe-area-inset-top)) 20px 10px; border-bottom: 0; }
 .journey-header h1 { margin: 0; font-size: 21px; letter-spacing: .08em; }
+.journey-switch-role { justify-self: start; display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; color: var(--j-muted); font-size: 12px; }
+.journey-switch-role .material-icons { font-size: 19px; }
+.journey-switch-role:hover,.journey-switch-role:focus-visible { background: var(--j-accent-soft); color: var(--j-accent); outline: 0; }
 .journey-surface { padding: 14px 16px 12px; }
 
 .journey-public-message { display: flex; margin: 0; font-size: 14px; line-height: 1.65; }
