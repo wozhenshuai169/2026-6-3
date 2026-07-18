@@ -47,6 +47,7 @@
     publicSend: document.getElementById('public-chat-send'),
     publicVoice: document.getElementById('btn-voice'),
     guidePerson: document.getElementById('guide-person-invoke'),
+    guideImage: document.getElementById('guide-person-image'),
     guideStatus: document.getElementById('avatar-status-label'),
     guideText: document.getElementById('narration-text'),
     guideArrivalName: document.getElementById('guide-arrival-name'),
@@ -672,6 +673,7 @@
     els.voiceSelect.value = selectedVoice;
     els.visitorVoice.value = selectedVoice;
     initEvents(); setScene(currentScene); renderTeamState();
+    if (A.lipSync && els.tts && els.guideImage) A.lipSync.attach(els.tts, els.guideImage);
     if (roomId) hydrateRoom(false); else { els.spotName.textContent = currentSpotId || '独自导览'; els.guideArrivalName.textContent = currentSpotId || '独自导览'; }
     startRoomPolling();
   }

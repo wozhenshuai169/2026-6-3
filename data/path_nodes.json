@@ -1,1 +1,188 @@
-[]
+[
+  {
+    "nodeId": "ls_entrance",
+    "nodeName": "景区入口",
+    "nodeType": "entrance",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_dazhaobi",
+    "nodeName": "灵山大照壁",
+    "nodeType": "spot",
+    "spotId": "lingshan_dazhaobi",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_wuming_bridge",
+    "nodeName": "五明桥",
+    "nodeType": "spot",
+    "spotId": "wuming_bridge",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_buddha_foot",
+    "nodeName": "佛足坛",
+    "nodeType": "spot",
+    "spotId": "buddha_foot_altar",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_wuzhi_gate",
+    "nodeName": "五智门",
+    "nodeType": "spot",
+    "spotId": "wuzhi_gate",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_bodhi_avenue",
+    "nodeName": "菩提大道",
+    "nodeType": "spot",
+    "spotId": "bodhi_avenue",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_jiulong",
+    "nodeName": "九龙灌浴",
+    "nodeType": "spot",
+    "spotId": "jiulong_guanyu",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_demon_relief",
+    "nodeName": "降魔浮雕",
+    "nodeType": "spot",
+    "spotId": "demon_relief",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_ashoka",
+    "nodeName": "阿育王柱",
+    "nodeType": "spot",
+    "spotId": "ashoka_pillar",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_baizi",
+    "nodeName": "百子戏弥勒",
+    "nodeType": "spot",
+    "spotId": "baizi_mile",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_xiangfu",
+    "nodeName": "祥符禅寺",
+    "nodeType": "spot",
+    "spotId": "xiangfu_temple",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_museum",
+    "nodeName": "佛教文化博览馆",
+    "nodeType": "spot",
+    "spotId": "buddhist_museum",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_buddha",
+    "nodeName": "灵山大佛",
+    "nodeType": "spot",
+    "spotId": "lingshan_buddha",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": false,
+    "accessNote": "登临区域包含台阶，现场无障碍安排以景区指引为准"
+  },
+  {
+    "nodeId": "ls_palace",
+    "nodeName": "灵山梵宫",
+    "nodeType": "spot",
+    "spotId": "lingshan_palace",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_pagoda",
+    "nodeName": "曼飞龙塔",
+    "nodeType": "spot",
+    "spotId": "manfeilong_pagoda",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_mandala",
+    "nodeName": "五印坛城",
+    "nodeType": "spot",
+    "spotId": "wuyin_mandala",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "ls_wujinyi",
+    "nodeName": "无尽意斋",
+    "nodeType": "spot",
+    "spotId": "wujinyi_house",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true
+  },
+  {
+    "nodeId": "fac_rest_entrance",
+    "nodeName": "入口游客休息点",
+    "nodeType": "rest_area",
+    "facilityType": "rest_area",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true,
+    "verificationStatus": "needs_field_verification",
+    "verificationNote": "候选位置，具体位置和开放状态以现场标识为准"
+  },
+  {
+    "nodeId": "fac_toilet_jiulong",
+    "nodeName": "九龙灌浴周边卫生间",
+    "nodeType": "facility",
+    "facilityType": "toilet",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true,
+    "verificationStatus": "needs_field_verification",
+    "verificationNote": "候选位置，具体位置和开放状态以现场标识为准"
+  },
+  {
+    "nodeId": "fac_rest_buddha",
+    "nodeName": "大佛区域休息点",
+    "nodeType": "rest_area",
+    "facilityType": "rest_area",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true,
+    "verificationStatus": "needs_field_verification",
+    "verificationNote": "候选位置，具体位置和开放状态以现场标识为准"
+  },
+  {
+    "nodeId": "fac_service_palace",
+    "nodeName": "梵宫区域游客服务点",
+    "nodeType": "facility",
+    "facilityType": "service_desk",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true,
+    "verificationStatus": "needs_field_verification",
+    "verificationNote": "候选位置，具体位置和开放状态以现场标识为准"
+  },
+  {
+    "nodeId": "fac_first_aid_palace",
+    "nodeName": "梵宫区域应急联络点",
+    "nodeType": "facility",
+    "facilityType": "first_aid",
+    "scenicAreaId": "lingshan_shengjing",
+    "accessible": true,
+    "verificationStatus": "needs_field_verification",
+    "verificationNote": "候选位置；紧急情况优先联系现场工作人员或拨打急救电话"
+  }
+]

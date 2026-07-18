@@ -751,7 +751,8 @@ def test_openapi_and_v4_contract(client):
     assert 'guide-panel-mobile.css' in guide_html
     assert 'id="leader-mobile-sheet"' in guide_html
     assert 'id="chapter-track"' in guide_html
-    assert 'data-avatar-role="head-only"' in guide_html
+    assert 'src="../../assets/images/digital-avatar-a.png"' in guide_html
+    assert 'data-speaking-src="../../assets/images/digital-avatar-a-open.png"' in guide_html
     assert 'type="range"' in guide_html
     assert "voice: voice" in guide_script
     assert "handleAudioSeek" in guide_script

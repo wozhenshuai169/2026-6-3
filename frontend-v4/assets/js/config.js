@@ -26,7 +26,33 @@ Aurelian.config = {
 
 (function () {
   'use strict';
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var DIRECTION_KEY = 'aurelian:navigation-direction';
+  var root = document.documentElement;
+  var isNavigating = false;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var supportsNativeTransition = Boolean(document.startViewTransition && 'onpageswap' in window);
+  var incomingDirection = readDirection();
+
+  root.dataset.navigationDirection = incomingDirection;
+  if (!supportsNativeTransition) root.classList.add('page-motion-fallback');
+
+  function readDirection() {
+    try {
+      return window.sessionStorage.getItem(DIRECTION_KEY) || 'forward';
+    } catch (error) {
+      return 'forward';
+    }
+  }
+
+  function rememberDirection(direction) {
+    root.dataset.navigationDirection = direction;
+    try {
+      window.sessionStorage.setItem(DIRECTION_KEY, direction);
+    } catch (error) {
+      // Navigation still works when storage is unavailable.
+    }
+  }
 
   function samePageHash(anchor) {
     return anchor.pathname === window.location.pathname && anchor.hash;
@@ -36,18 +62,94 @@ Aurelian.config = {
     return anchor.origin === window.location.origin && /\.html(?:$|[?#])/.test(anchor.href);
   }
 
-  function navigateWithMotion(url) {
-    document.body.classList.add('is-leaving');
-    window.setTimeout(function () { window.location.href = url; }, 130);
+  function finishNavigation(url, mode) {
+    if (mode === 'replace') window.location.replace(url);
+    else window.location.assign(url);
+  }
+
+  function navigateWithMotion(url, options) {
+    options = options || {};
+    if (isNavigating) return;
+    isNavigating = true;
+
+    var direction = options.direction || (options.replace ? 'replace' : 'forward');
+    rememberDirection(direction);
+
+    if (reduceMotion || supportsNativeTransition || !document.body) {
+      finishNavigation(url, options.replace ? 'replace' : 'push');
+      return;
+    }
+
+    document.body.classList.add('is-page-leaving');
+    window.setTimeout(function () {
+      finishNavigation(url, options.replace ? 'replace' : 'push');
+    }, 180);
+  }
+
+  function navigateBack(fallbackUrl) {
+    if (isNavigating) return;
+    if (window.history.length <= 1 && fallbackUrl) {
+      navigateWithMotion(fallbackUrl, { replace: true });
+      return;
+    }
+
+    isNavigating = true;
+    rememberDirection('back');
+
+    if (reduceMotion || supportsNativeTransition || !document.body) {
+      window.history.back();
+      return;
+    }
+
+    document.body.classList.add('is-page-leaving');
+    window.setTimeout(function () { window.history.back(); }, 180);
   }
 
   window.Aurelian.navigateWithMotion = navigateWithMotion;
+  window.Aurelian.navigateBack = navigateBack;
+
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest && event.target.closest('button[onclick]');
+    if (!button || event.defaultPrevented) return;
+
+    var inlineAction = button.getAttribute('onclick') || '';
+    if (/\bhistory\.back\s*\(\s*\)/.test(inlineAction)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      navigateBack('../../pages/landing/index.html');
+      return;
+    }
+
+    var hrefMatch = inlineAction.match(/\b(?:window\.)?location\.href\s*=\s*(['"])(.*?)\1/);
+    if (hrefMatch) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      navigateWithMotion(hrefMatch[2]);
+    }
+  }, true);
 
   document.addEventListener('click', function (event) {
     var anchor = event.target.closest && event.target.closest('a[href]');
-    if (!anchor || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    if (anchor.target || anchor.hasAttribute('download') || samePageHash(anchor) || !isInternalPage(anchor)) return;
+    if (!anchor || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (anchor.target || anchor.hasAttribute('download') || anchor.hasAttribute('data-no-transition') || samePageHash(anchor) || !isInternalPage(anchor)) return;
     event.preventDefault();
     navigateWithMotion(anchor.href);
+  });
+
+  window.addEventListener('pageshow', function () {
+    isNavigating = false;
+    if (!document.body) return;
+    document.body.classList.remove('is-page-leaving');
+
+    if (!supportsNativeTransition && !reduceMotion && incomingDirection) {
+      document.body.classList.add('is-page-entering');
+      window.setTimeout(function () {
+        document.body.classList.remove('is-page-entering');
+      }, 340);
+    }
+
+    window.setTimeout(function () {
+      try { window.sessionStorage.removeItem(DIRECTION_KEY); } catch (error) {}
+    }, 400);
   });
 })();

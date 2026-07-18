@@ -9,6 +9,13 @@
 
   function attach(audio, mouth) {
     var enabled = true;
+    var frameImage = mouth && mouth.matches && mouth.matches('img')
+      ? mouth
+      : mouth && mouth.parentElement && mouth.parentElement.querySelector('img[data-speaking-src]');
+    var closedSrc = frameImage ? (frameImage.currentSrc || frameImage.src) : '';
+    var speakingSrc = '';
+    var showingOpenFrame = false;
+    if (frameImage && mouth !== frameImage) mouth.hidden = true;
     var context = null;
     var analyser = null;
     var source = null;
@@ -19,7 +26,18 @@
 
     function setLevel(level) {
       if (!mouth) return;
-      mouth.setAttribute('data-mouth-level', String(enabled ? level : 0));
+      var activeLevel = enabled ? level : 0;
+      mouth.setAttribute('data-mouth-level', String(activeLevel));
+      if (!frameImage) return;
+      var configuredOpenSrc = frameImage.getAttribute('data-speaking-src') || '';
+      speakingSrc = configuredOpenSrc ? new URL(configuredOpenSrc, document.baseURI).href : '';
+      if (!showingOpenFrame && frameImage.currentSrc !== speakingSrc) {
+        closedSrc = frameImage.currentSrc || frameImage.src;
+      }
+      var shouldOpen = activeLevel > 0 && Boolean(speakingSrc);
+      if (shouldOpen === showingOpenFrame) return;
+      frameImage.src = shouldOpen ? speakingSrc : closedSrc;
+      showingOpenFrame = shouldOpen;
     }
 
     function ensureGraph() {
@@ -95,6 +113,10 @@
       audio.addEventListener('pause', stop);
       audio.addEventListener('ended', stop);
       audio.addEventListener('emptied', stop);
+    }
+    if (frameImage && frameImage.getAttribute('data-speaking-src')) {
+      var preload = new Image();
+      preload.src = new URL(frameImage.getAttribute('data-speaking-src'), document.baseURI).href;
     }
     setLevel(0);
 

@@ -233,9 +233,12 @@
     api.get('/avatar-settings').then(function(result) {
       if (!result.ok || !result.data) return;
       var imageUrl = result.data.imageUrl || '';
+      var hasSpeakingFrame = /digital-avatar-a\.png(?:\?|$)/.test(imageUrl);
       var isHeadOnly = /digital-guide-foreground\.png(?:\?|$)/.test(imageUrl);
       if (els.guideAvatarImage && imageUrl) {
         els.guideAvatarImage.src = imageUrl;
+        if (hasSpeakingFrame) els.guideAvatarImage.setAttribute('data-speaking-src', '/assets/images/digital-avatar-a-open.png');
+        else els.guideAvatarImage.removeAttribute('data-speaking-src');
       }
       if (els.guideAvatarFrame) els.guideAvatarFrame.setAttribute('data-avatar-role', isHeadOnly ? 'head-only' : (result.data.role || 'xiaoyun'));
       if (guideLipSync) guideLipSync.setEnabled(result.data.lipSync !== false);

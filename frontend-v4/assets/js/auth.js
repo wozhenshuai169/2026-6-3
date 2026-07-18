@@ -191,7 +191,11 @@ Aurelian.auth = (function () {
   function logout() {
     api.post('/auth/logout', {}).then(function() {
       st.clear();
-      window.location.href = '../../pages/landing/index.html';
+      if (Aurelian.navigateWithMotion) {
+        Aurelian.navigateWithMotion('../../pages/landing/index.html', { replace: true });
+      } else {
+        window.location.href = '../../pages/landing/index.html';
+      }
     });
   }
 

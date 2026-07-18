@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     vision_model: str = ""
     dashscope_api_key: str = ""
     public_base_url: str = ""
+    asr_model: str = "qwen3-asr-flash"
 
     # ═══════════════════════════════════════════════════
     # 功能开关
@@ -92,7 +93,15 @@ class Settings(BaseSettings):
 
     @property
     def audio_provider_enabled(self) -> bool:
-        return bool(self.dashscope_api_key or self.vision_api_key) or self.isi_enabled
+        return self.asr_provider_enabled or self.tts_provider_enabled
+
+    @property
+    def asr_provider_enabled(self) -> bool:
+        return self.enable_asr and (bool(self.dashscope_api_key or self.vision_api_key) or self.isi_enabled)
+
+    @property
+    def tts_provider_enabled(self) -> bool:
+        return self.enable_tts or self.isi_enabled
 
     @property
     def isi_enabled(self) -> bool:

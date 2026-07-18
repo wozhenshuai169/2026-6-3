@@ -158,7 +158,11 @@ class TourAIOrchestrator:
     def _append_path_hint(self, answer: str, path_hint: dict | None) -> str:
         if not path_hint:
             return answer
-        return f"{answer} 按当前简化路径图，最近的{path_hint['targetName']}步行约{path_hint['walkingMinutes']}分钟，路线强度较低。"
+        note = path_hint.get("verificationNote") or "具体位置和开放状态以现场标识为准"
+        return (
+            f"{answer} 按候选简化路径图，最近的{path_hint['targetName']}步行约"
+            f"{path_hint['walkingMinutes']}分钟，路线强度较低；{note}。"
+        )
 
     def handle_voice(self, request: AlgorithmRequest) -> tuple:
         asr = self.voice.asr(

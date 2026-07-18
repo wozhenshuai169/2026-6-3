@@ -134,6 +134,8 @@ class ScenicDataAdapter:
                     "targetName": target["nodeName"],
                     "walkingMinutes": score,
                     "lowIntensity": True,
+                    "verificationStatus": target.get("verificationStatus", "unknown"),
+                    "verificationNote": target.get("verificationNote", ""),
                 }
         return best
 
@@ -161,9 +163,16 @@ class ScenicDataAdapter:
             for edge in edges:
                 if avoid_high and edge.get("difficulty") == "high":
                     continue
-                if edge.get("fromNodeId") != current:
+                left = edge.get("fromNodeId")
+                right = edge.get("toNodeId")
+                if current == left:
+                    next_node = right
+                elif current == right:
+                    next_node = left
+                else:
                     continue
-                next_node = edge["toNodeId"]
+                if not next_node:
+                    continue
                 next_distance = current_distance + int(edge.get("walkingMinutes", 999))
                 if next_distance < distances.get(next_node, 10**9):
                     distances[next_node] = next_distance

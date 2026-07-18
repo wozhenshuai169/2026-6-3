@@ -30,6 +30,7 @@ class ScenicRAG:
             )
             route_norm = 1.0 if state.currentRouteId in chunk.get("routeIds", []) else 0.0
             freshness_norm = self._freshness_norm(chunk.get("updatedAt"))
+            source_norm = self._source_norm(chunk.get("sourceTier"))
             event_norm = 1.0 if chunk.get("type") == "operation_event" else 0.0
             intent_norm = self._intent_norm(question, chunk, explicit_spot_ids)
             if keyword_norm == 0 and event_norm == 0 and intent_norm == 0:
@@ -42,7 +43,7 @@ class ScenicRAG:
                 + 0.02 * freshness_norm
                 + 0.45 * intent_norm
                 + 0.10 * event_norm
-            )
+            ) * source_norm
             if score > 0:
                 scored.append(
                     (
@@ -57,6 +58,7 @@ class ScenicRAG:
                             "freshness": round(freshness_norm, 3),
                             "intent": intent_norm,
                             "event": event_norm,
+                            "source": source_norm,
                         },
                     )
                 )
@@ -89,6 +91,8 @@ class ScenicRAG:
         ]
         answer = self._compose_answer(question, top)
         confidence = min(0.95, max(0.4, scored[0][0]))
+        if top[0].get("sourceTier") == "unverified_reference":
+            confidence = min(confidence, 0.55)
         return QAResult(
             answer=answer,
             citations=citations,
@@ -114,6 +118,7 @@ class ScenicRAG:
                     "type": "operation_event",
                     "source": event.get("source", "景区运营事件"),
                     "updatedAt": event.get("updatedAt"),
+                    "sourceTier": "operator_event",
                     "routeIds": event.get("affectedRouteIds", []),
                     "content": event["content"],
                 }
@@ -208,13 +213,23 @@ class ScenicRAG:
     def _compose_answer(self, question: str, chunks: list[dict]) -> str:
         primary = chunks[0]
         content = primary["content"].rstrip("。")
-        if "开放" in question or "时间" in question:
+        if primary.get("sourceTier") == "unverified_reference":
+            prefix = "未标注来源的资料包中提到，以下内容仍需以现场标识或景区工作人员说明核验："
+        elif "开放" in question or "时间" in question:
             prefix = "按当前景区资料，"
         elif "路线" in question or "怎么走" in question:
             prefix = "结合当前路线，"
         else:
             prefix = "资料里提到，"
         return f"{prefix}{content}。"
+
+    def _source_norm(self, source_tier: str | None) -> float:
+        return {
+            "official_verified": 1.0,
+            "safety_policy": 1.0,
+            "operator_event": 1.0,
+            "unverified_reference": 0.72,
+        }.get(source_tier or "", 0.8)
 
     def _freshness_norm(self, updated_at: str | None) -> float:
         if not updated_at:

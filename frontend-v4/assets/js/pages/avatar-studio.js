@@ -5,7 +5,7 @@
   var api = A.api;
   var ui = A.ui;
   var AVATARS = {
-    xiaoyun: { imageUrl: '/assets/images/digital-avatar-a.png', alt: '形象 A' },
+    xiaoyun: { imageUrl: '/assets/images/digital-avatar-a.png', speakingImageUrl: '/assets/images/digital-avatar-a-open.png', alt: '男性形象 A' },
     yunchuan: { imageUrl: '/assets/images/digital-avatar-b.png', alt: '形象 B' }
   };
   var currentImageUrl = AVATARS.xiaoyun.imageUrl;
@@ -42,6 +42,11 @@
     if (useDefaultImage !== false) currentImageUrl = AVATARS[nextRole].imageUrl;
     byId('avatar-preview-frame').setAttribute('data-avatar-role', nextRole);
     byId('avatar-preview-image').src = currentImageUrl;
+    if (currentImageUrl === AVATARS[nextRole].imageUrl && AVATARS[nextRole].speakingImageUrl) {
+      byId('avatar-preview-image').setAttribute('data-speaking-src', AVATARS[nextRole].speakingImageUrl);
+    } else {
+      byId('avatar-preview-image').removeAttribute('data-speaking-src');
+    }
     byId('avatar-preview-image').alt = AVATARS[nextRole].alt + '讲解形象预览';
   }
 

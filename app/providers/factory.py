@@ -41,9 +41,9 @@ class ProviderFactory:
     @staticmethod
     def get_audio():
         """Return the configured speech provider."""
-        if settings.audio_provider_enabled and (settings.dashscope_api_key or settings.vision_api_key):
+        if settings.tts_provider_enabled or settings.dashscope_api_key or settings.vision_api_key:
             from app.providers.audio.dashscope import DashScopeAudioProvider
-            logger.info("[Audio] Using DashScope provider (CosyVoice + Paraformer)")
+            logger.info("[Audio] Using Qwen-ASR + Edge TTS provider")
             return DashScopeAudioProvider()
         if settings.isi_enabled:
             from app.providers.audio.aliyun_isi import AliyunISIProvider

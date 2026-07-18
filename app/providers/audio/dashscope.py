@@ -1,12 +1,8 @@
-"""Audio Provider —— TTS 使用 Microsoft Edge TTS (免费)，ASR 使用 DashScope Paraformer。
+"""Local-friendly speech provider using Qwen-ASR and Microsoft Edge TTS."""
 
-TTS: edge-tts 流式合成 → 保存 mp3 → 返回 URL
-ASR: DashScope Paraformer 异步识别（需百炼开通 Paraformer 权限）
-"""
-
-import asyncio
-import json
+import base64
 import logging
+import mimetypes
 import uuid
 from pathlib import Path
 
@@ -16,33 +12,29 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://dashscope.aliyuncs.com"
+BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 UPLOADS_DIR = Path(__file__).resolve().parents[3] / "uploads"
 
-
-# ── edge-tts 音色映射 ──────────────────────────────────
-
 VOICE_MAP = {
-    "guide_female": "zh-CN-XiaoxiaoNeural",   # 温柔女声（默认导游）
-    "guide_male":   "zh-CN-YunxiNeural",       # 成熟男声
-    "xiaoyun":      "zh-CN-XiaoxiaoNeural",
-    "xiaogang":     "zh-CN-YunxiNeural",
-    "xiaomei":      "zh-CN-XiaoyiNeural",      # 活泼女声
-    "xiaowei":      "zh-CN-YunyangNeural",     # 新闻男声
+    "guide_female": "zh-CN-XiaoxiaoNeural",
+    "guide_male": "zh-CN-YunxiNeural",
+    "xiaoyun": "zh-CN-XiaoxiaoNeural",
+    "xiaogang": "zh-CN-YunxiNeural",
+    "xiaomei": "zh-CN-XiaoyiNeural",
+    "xiaowei": "zh-CN-YunyangNeural",
 }
 
+
 class DashScopeAudioProvider:
-    """音频 Provider —— edge-tts (TTS) + DashScope Paraformer (ASR)。"""
+    """Speech provider for short visitor questions and guide narration."""
 
     def __init__(self) -> None:
         self._api_key = settings.dashscope_api_key or settings.vision_api_key
-        self._asr_headers = {
+        self._headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
         }
-        logger.info("[Audio] Provider initialized (TTS=edge-tts, ASR=Paraformer)")
-
-    # ── TTS 语音合成 (edge-tts) ─────────────────────────
+        logger.info("[Audio] Provider initialized (ASR=Qwen3-ASR, TTS=Edge TTS)")
 
     async def tts_synthesize(
         self,
@@ -51,64 +43,56 @@ class DashScopeAudioProvider:
         speed: float = 1.0,
         audio_format: str = "mp3",
     ) -> dict:
-        """使用 Microsoft Edge TTS 合成语音。
-
-        Args:
-            text: 要合成的文本
-            voice: 前端音色名 → 映射到 edge-tts 神经语音
-            speed: 语速倍率
-            audio_format: mp3 (edge-tts 输出 mp3)
-
-        Returns:
-            {"audioUrl": "/uploads/tts/xxx.mp3", "duration": 5.2, "success": True}
-        """
         if not text.strip():
-            return {"audioUrl": "", "duration": 0.0, "voice": voice,
-                    "format": audio_format, "success": False}
+            return {
+                "audioUrl": "", "duration": 0.0, "voice": voice,
+                "format": audio_format, "success": False, "error": "Text is empty",
+            }
 
-        edge_voice = VOICE_MAP.get(voice, "zh-CN-XiaoxiaoNeural")
+        edge_voice = VOICE_MAP.get(voice, VOICE_MAP["guide_female"])
         rate_percent = max(-50, min(100, round((float(speed) - 1.0) * 100)))
         rate = f"{rate_percent:+d}%"
+        tts_dir = UPLOADS_DIR / "tts"
+        tts_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"{uuid.uuid4().hex[:12]}.mp3"
+        filepath = tts_dir / filename
 
         try:
             import edge_tts
 
             communicate = edge_tts.Communicate(text, edge_voice, rate=rate)
-
-            tts_dir = UPLOADS_DIR / "tts"
-            tts_dir.mkdir(parents=True, exist_ok=True)
-            filename = f"{uuid.uuid4().hex[:12]}.mp3"
-            filepath = tts_dir / filename
-
-            with open(filepath, "wb") as f:
+            with filepath.open("wb") as output:
                 async for chunk in communicate.stream():
                     if chunk["type"] == "audio":
-                        f.write(chunk["data"])
-
-            audio_url = f"/uploads/tts/{filename}"
+                        output.write(chunk["data"])
             file_size = filepath.stat().st_size
-            duration = round(max(0.9, file_size / 16000), 1)  # 按 16kbps 估算
-            logger.info("[TTS] edge-tts synthesized: %s (%d bytes, voice=%s)",
-                        audio_url, file_size, edge_voice)
+            if file_size <= 0:
+                raise ValueError("TTS returned an empty audio file")
+        except ImportError:
+            logger.error("[TTS] edge-tts is not installed")
             return {
-                "audioUrl": audio_url,
-                "duration": duration,
-                "voice": voice,
-                "format": "mp3",
-                "success": True,
+                "audioUrl": "", "duration": 0.0, "voice": voice,
+                "format": audio_format, "success": False,
+                "error": "TTS engine is not installed (edge-tts)",
+            }
+        except Exception as exc:
+            filepath.unlink(missing_ok=True)
+            logger.error("[TTS] edge-tts failed: %s", exc)
+            return {
+                "audioUrl": "", "duration": 0.0, "voice": voice,
+                "format": audio_format, "success": False, "error": str(exc),
             }
 
-        except ImportError:
-            logger.error("[TTS] edge-tts not installed. Run: pip install edge-tts")
-            return {"audioUrl": "", "duration": 0.0, "voice": voice,
-                    "format": audio_format, "success": False,
-                    "error": "TTS 引擎未安装 (edge-tts)"}
-        except Exception as e:
-            logger.error("[TTS] edge-tts error: %s", e)
-            return {"audioUrl": "", "duration": 0.0, "voice": voice,
-                    "format": audio_format, "success": False, "error": str(e)}
-
-    # ── ASR 语音识别 (Paraformer) ───────────────────────
+        audio_url = f"/uploads/tts/{filename}"
+        duration = round(max(0.9, file_size / 16000), 1)
+        logger.info("[TTS] Synthesized %s (%d bytes, voice=%s)", audio_url, file_size, edge_voice)
+        return {
+            "audioUrl": audio_url,
+            "duration": duration,
+            "voice": voice,
+            "format": "mp3",
+            "success": True,
+        }
 
     async def asr_transcribe(
         self,
@@ -117,81 +101,89 @@ class DashScopeAudioProvider:
         text_hint: str = "",
         current_spot: str = "",
     ) -> dict:
-        """Paraformer 录音文件识别（异步提交 + 轮询）。
+        """Transcribe a short local upload or public URL with Qwen3-ASR-Flash."""
+        if not self._api_key:
+            return self._asr_error(audio_format, "百炼语音识别 API Key 未配置")
 
-        要求: 百炼 API Key 需开通 Paraformer 权限 + 音频文件公网 URL。
-        """
-        if not (audio_url.startswith("http://") or audio_url.startswith("https://")):
-            return {"text": "", "confidence": 0.0, "success": False,
-                    "format": audio_format,
-                    "error": "Paraformer ASR 需要公网可访问的音频链接"}
+        try:
+            audio_input = self._encode_audio_input(audio_url, audio_format)
+        except (OSError, ValueError) as exc:
+            return self._asr_error(audio_format, str(exc))
 
-        # 提交异步识别任务
-        url = f"{BASE_URL}/api/v1/services/audio/asr/transcription"
-        headers = {**self._asr_headers, "X-DashScope-Async": "enable"}
+        del text_hint, current_spot
+        messages = [{
+            "role": "user",
+            "content": [{"type": "input_audio", "input_audio": {"data": audio_input}}],
+        }]
         payload = {
-            "model": "paraformer-v2",
-            "input": {"file_urls": [audio_url]},
-            "parameters": {"language_hints": ["zh", "en"], "channel_id": [0]},
+            "model": settings.asr_model,
+            "messages": messages,
+            "stream": False,
+            "asr_options": {"enable_itn": True},
+        }
+        base_url = (settings.vision_base_url or BASE_URL).rstrip("/")
+
+        try:
+            async with httpx.AsyncClient(timeout=settings.asr_timeout) as client:
+                response = await client.post(
+                    f"{base_url}/chat/completions",
+                    headers=self._headers,
+                    json=payload,
+                )
+                response.raise_for_status()
+                data = response.json()
+        except httpx.TimeoutException:
+            logger.warning("[ASR] Qwen-ASR request timed out")
+            return self._asr_error(audio_format, "语音识别请求超时")
+        except (httpx.HTTPError, ValueError) as exc:
+            logger.error("[ASR] Qwen-ASR request failed: %s", exc)
+            return self._asr_error(audio_format, f"语音识别请求失败: {exc}")
+
+        choices = data.get("choices") or []
+        content = choices[0].get("message", {}).get("content", "") if choices else ""
+        if isinstance(content, list):
+            content = "".join(
+                item.get("text", "") for item in content if isinstance(item, dict)
+            )
+        transcript = str(content).strip()
+        if not transcript:
+            return self._asr_error(audio_format, "语音识别未返回文字")
+
+        logger.info("[ASR] Qwen-ASR completed: %s", transcript[:80])
+        return {
+            "text": transcript,
+            "confidence": 0.0,
+            "success": True,
+            "format": audio_format,
+            "warning": "识别模型未返回置信度",
         }
 
-        async with httpx.AsyncClient(timeout=30) as client:
-            try:
-                resp = await client.post(url, headers=headers, json=payload)
-                resp.raise_for_status()
-                data = resp.json()
-                task_id = data.get("output", {}).get("task_id", "")
-                if not task_id:
-                    return {"text": "", "confidence": 0.0, "success": False,
-                            "format": audio_format,
-                            "error": f"获取 task_id 失败: {data}"}
-                logger.info("[ASR] Paraformer task submitted: %s", task_id)
-            except httpx.HTTPStatusError as e:
-                body = e.response.text if e.response else ""
-                # 权限不足 → 明确提示
-                if "InvalidParameter" in body or "does not support" in body:
-                    logger.warning("[ASR] Paraformer not available for this API key")
-                    return {"text": "", "confidence": 0.0, "success": False,
-                            "format": audio_format,
-                            "error": "百炼 Key 未开通 Paraformer ASR 权限"}
-                logger.error("[ASR] Submit error: %s", e)
-                return {"text": "", "confidence": 0.0, "success": False,
-                        "format": audio_format, "error": str(e)}
-            except httpx.HTTPError as e:
-                logger.error("[ASR] Submit error: %s", e)
-                return {"text": "", "confidence": 0.0, "success": False,
-                        "format": audio_format, "error": str(e)}
+    @staticmethod
+    def _encode_audio_input(audio_url: str, audio_format: str) -> str:
+        if audio_url.startswith(("http://", "https://")):
+            return audio_url
 
-            # 轮询结果（最多 60s）
-            task_url = f"{BASE_URL}/api/v1/tasks/{task_id}"
-            for _ in range(60):
-                await asyncio.sleep(1)
-                try:
-                    tr = await client.get(task_url, headers=self._asr_headers)
-                    tr.raise_for_status()
-                    result = tr.json()
-                    status = result.get("output", {}).get("task_status", "")
-                    if status == "SUCCEEDED":
-                        results = result.get("output", {}).get("results", [])
-                        texts = []
-                        for r in results:
-                            t_url = r.get("transcription_url", "")
-                            if t_url:
-                                ar = await client.get(t_url)
-                                ar.raise_for_status()
-                                for t in ar.json().get("transcripts", []):
-                                    texts.append(t.get("text", ""))
-                        text = "".join(texts)
-                        logger.info("[ASR] Completed: %s", text[:80])
-                        return {"text": text, "confidence": 0.95,
-                                "success": True, "format": audio_format}
-                    elif status == "FAILED":
-                        logger.error("[ASR] Task failed: %s", result)
-                        return {"text": "", "confidence": 0.0,
-                                "success": False, "format": audio_format,
-                                "error": "ASR 识别失败"}
-                except httpx.HTTPError:
-                    pass
+        path = Path(audio_url).resolve()
+        upload_root = UPLOADS_DIR.resolve()
+        try:
+            path.relative_to(upload_root)
+        except ValueError as exc:
+            raise ValueError("录音文件不在允许的上传目录中") from exc
+        if not path.is_file():
+            raise ValueError("录音文件不存在")
+        if path.stat().st_size > settings.max_audio_upload_bytes:
+            raise ValueError("录音文件超过大小限制")
 
-            return {"text": "", "confidence": 0.0, "success": False,
-                    "format": audio_format, "error": "ASR 识别超时（60秒）"}
+        mime = mimetypes.guess_type(path.name)[0] or f"audio/{audio_format}"
+        encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+        return f"data:{mime};base64,{encoded}"
+
+    @staticmethod
+    def _asr_error(audio_format: str, error: str) -> dict:
+        return {
+            "text": "",
+            "confidence": 0.0,
+            "success": False,
+            "format": audio_format,
+            "error": error,
+        }

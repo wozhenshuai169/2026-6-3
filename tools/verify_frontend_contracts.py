@@ -6,7 +6,7 @@ FRONTEND = ROOT / "frontend-v4"
 
 PAGES = {
     "landing": "landing",
-    "user-portal": "user-portal",
+    "user-portal": "visitor-unified",
     "recommend": "recommend",
     "vision": "vision",
     "ai-assistant": "ai-assistant",
@@ -17,16 +17,6 @@ PAGES = {
 }
 
 EXTRA_IDS = {
-    "user-portal": {
-        "avatar-container", "avatar-status-label", "room-join-overlay", "room-code-input",
-        "room-join-btn", "room-join-error", "member-list-container", "menu-toggle", "menu-close",
-        "function-overlay", "fn-knowledge", "fn-audio", "fn-map", "fn-ai", "avatar-mode",
-        "text-mode", "btn-switch-text", "btn-switch-avatar", "public-chat-area",
-        "public-chat-input", "public-chat-send", "narration-text", "btn-voice", "spot-chip",
-        "spot-chip-name", "tts-player", "page-body", "route-progress-bar", "route-progress-fill",
-        "route-progress-text", "route-spots-pills", "spot-info-card", "spot-info-name",
-        "spot-info-desc", "fn-result-modal", "fn-result-title", "fn-result-body",
-    },
     "guide-panel": {
         "room-id-display", "route-name-display", "member-count", "member-status-dot",
         "current-spot-display", "scenic-area-display", "progress-display", "pending-requests-row",
@@ -38,7 +28,14 @@ EXTRA_IDS = {
     },
 }
 
-DYNAMIC_IDS = {"typing-indicator", "requests-close", "help-card"}
+DYNAMIC_IDS = {
+    "typing-indicator",
+    "requests-close",
+    "help-card",
+    "topbar-action-close",
+    "topbar-action-overlay",
+    "public-answer-loading",
+}
 
 failures = []
 for page, script in PAGES.items():

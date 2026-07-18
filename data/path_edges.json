@@ -1,1 +1,277 @@
-[]
+[
+  {
+    "edgeId": "e01",
+    "fromNodeId": "ls_entrance",
+    "toNodeId": "ls_dazhaobi",
+    "distanceMeters": 120,
+    "walkingMinutes": 2,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e02",
+    "fromNodeId": "ls_dazhaobi",
+    "toNodeId": "ls_wuming_bridge",
+    "distanceMeters": 180,
+    "walkingMinutes": 3,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e03",
+    "fromNodeId": "ls_wuming_bridge",
+    "toNodeId": "ls_buddha_foot",
+    "distanceMeters": 220,
+    "walkingMinutes": 4,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e04",
+    "fromNodeId": "ls_buddha_foot",
+    "toNodeId": "ls_wuzhi_gate",
+    "distanceMeters": 170,
+    "walkingMinutes": 3,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e05",
+    "fromNodeId": "ls_wuzhi_gate",
+    "toNodeId": "ls_bodhi_avenue",
+    "distanceMeters": 220,
+    "walkingMinutes": 4,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e06",
+    "fromNodeId": "ls_bodhi_avenue",
+    "toNodeId": "ls_jiulong",
+    "distanceMeters": 300,
+    "walkingMinutes": 5,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e07",
+    "fromNodeId": "ls_wuzhi_gate",
+    "toNodeId": "ls_jiulong",
+    "distanceMeters": 420,
+    "walkingMinutes": 7,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e08",
+    "fromNodeId": "ls_jiulong",
+    "toNodeId": "ls_demon_relief",
+    "distanceMeters": 260,
+    "walkingMinutes": 5,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e09",
+    "fromNodeId": "ls_demon_relief",
+    "toNodeId": "ls_ashoka",
+    "distanceMeters": 190,
+    "walkingMinutes": 3,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e10",
+    "fromNodeId": "ls_ashoka",
+    "toNodeId": "ls_baizi",
+    "distanceMeters": 180,
+    "walkingMinutes": 3,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e11",
+    "fromNodeId": "ls_baizi",
+    "toNodeId": "ls_xiangfu",
+    "distanceMeters": 230,
+    "walkingMinutes": 4,
+    "difficulty": "medium",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e12",
+    "fromNodeId": "ls_xiangfu",
+    "toNodeId": "ls_museum",
+    "distanceMeters": 240,
+    "walkingMinutes": 4,
+    "difficulty": "medium",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e13",
+    "fromNodeId": "ls_museum",
+    "toNodeId": "ls_buddha",
+    "distanceMeters": 360,
+    "walkingMinutes": 7,
+    "difficulty": "high",
+    "accessible": false,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e14",
+    "fromNodeId": "ls_ashoka",
+    "toNodeId": "ls_palace",
+    "distanceMeters": 420,
+    "walkingMinutes": 7,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e15",
+    "fromNodeId": "ls_palace",
+    "toNodeId": "ls_pagoda",
+    "distanceMeters": 260,
+    "walkingMinutes": 5,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e16",
+    "fromNodeId": "ls_pagoda",
+    "toNodeId": "ls_mandala",
+    "distanceMeters": 210,
+    "walkingMinutes": 4,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e17",
+    "fromNodeId": "ls_buddha",
+    "toNodeId": "ls_palace",
+    "distanceMeters": 520,
+    "walkingMinutes": 9,
+    "difficulty": "medium",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e18",
+    "fromNodeId": "ls_buddha",
+    "toNodeId": "ls_pagoda",
+    "distanceMeters": 470,
+    "walkingMinutes": 8,
+    "difficulty": "medium",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e19",
+    "fromNodeId": "ls_palace",
+    "toNodeId": "ls_mandala",
+    "distanceMeters": 390,
+    "walkingMinutes": 7,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e20",
+    "fromNodeId": "ls_palace",
+    "toNodeId": "ls_wujinyi",
+    "distanceMeters": 150,
+    "walkingMinutes": 3,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "route_order_estimate"
+  },
+  {
+    "edgeId": "e21",
+    "fromNodeId": "ls_dazhaobi",
+    "toNodeId": "fac_rest_entrance",
+    "distanceMeters": 80,
+    "walkingMinutes": 2,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "facility_area_estimate"
+  },
+  {
+    "edgeId": "e22",
+    "fromNodeId": "ls_jiulong",
+    "toNodeId": "fac_toilet_jiulong",
+    "distanceMeters": 120,
+    "walkingMinutes": 2,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "facility_area_estimate"
+  },
+  {
+    "edgeId": "e23",
+    "fromNodeId": "ls_buddha",
+    "toNodeId": "fac_rest_buddha",
+    "distanceMeters": 140,
+    "walkingMinutes": 3,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "facility_area_estimate"
+  },
+  {
+    "edgeId": "e24",
+    "fromNodeId": "ls_palace",
+    "toNodeId": "fac_service_palace",
+    "distanceMeters": 100,
+    "walkingMinutes": 2,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "facility_area_estimate"
+  },
+  {
+    "edgeId": "e25",
+    "fromNodeId": "ls_palace",
+    "toNodeId": "fac_first_aid_palace",
+    "distanceMeters": 120,
+    "walkingMinutes": 2,
+    "difficulty": "low",
+    "accessible": true,
+    "status": "open",
+    "distanceBasis": "facility_area_estimate"
+  }
+]

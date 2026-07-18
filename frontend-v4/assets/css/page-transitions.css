@@ -1,0 +1,123 @@
+/* Shared cross-page navigation motion. Keep transforms subtle to avoid mobile jank. */
+@view-transition {
+  navigation: auto;
+}
+
+:root {
+  --page-motion-duration: 320ms;
+  --page-motion-exit-duration: 180ms;
+  --page-motion-ease: cubic-bezier(.22, 1, .36, 1);
+  background: var(--p-bg, #f7f6f2);
+}
+
+/* Retire the legacy per-section entrance animations when this shared layer is loaded. */
+body,
+.app-topbar,
+.workspace,
+.landing-visual,
+.identity-panel,
+.visitor-layout,
+.assistant-layout,
+.admin-layout,
+.route-columns,
+.vision-columns {
+  animation-name: none !important;
+}
+
+::view-transition-group(root) {
+  animation-duration: var(--page-motion-duration);
+  animation-timing-function: var(--page-motion-ease);
+  background: var(--p-bg, #f7f6f2);
+}
+
+::view-transition-old(root) {
+  animation: page-motion-forward-out var(--page-motion-exit-duration) ease both;
+}
+
+::view-transition-new(root) {
+  animation: page-motion-forward-in var(--page-motion-duration) var(--page-motion-ease) both;
+}
+
+html[data-navigation-direction="back"]::view-transition-old(root) {
+  animation-name: page-motion-back-out;
+}
+
+html[data-navigation-direction="back"]::view-transition-new(root) {
+  animation-name: page-motion-back-in;
+}
+
+html[data-navigation-direction="replace"]::view-transition-old(root) {
+  animation-name: page-motion-fade-out;
+}
+
+html[data-navigation-direction="replace"]::view-transition-new(root) {
+  animation-name: page-motion-fade-in;
+}
+
+/* Fallback used only when cross-document View Transitions are unavailable. */
+html.page-motion-fallback body.is-page-leaving {
+  pointer-events: none;
+  animation: page-motion-forward-out var(--page-motion-exit-duration) ease both !important;
+  will-change: opacity, transform;
+}
+
+html.page-motion-fallback[data-navigation-direction="back"] body.is-page-leaving {
+  animation-name: page-motion-back-out !important;
+}
+
+html.page-motion-fallback body.is-page-entering {
+  animation: page-motion-forward-in var(--page-motion-duration) var(--page-motion-ease) both !important;
+  will-change: opacity, transform;
+}
+
+html.page-motion-fallback[data-navigation-direction="back"] body.is-page-entering {
+  animation-name: page-motion-back-in !important;
+}
+
+@keyframes page-motion-forward-out {
+  to { opacity: 0; transform: translate3d(-10px, 0, 0) scale(.997); }
+}
+
+@keyframes page-motion-forward-in {
+  from { opacity: 0; transform: translate3d(14px, 0, 0) scale(.997); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes page-motion-back-out {
+  to { opacity: 0; transform: translate3d(10px, 0, 0) scale(.997); }
+}
+
+@keyframes page-motion-back-in {
+  from { opacity: 0; transform: translate3d(-14px, 0, 0) scale(.997); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes page-motion-fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes page-motion-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --page-motion-duration: 280ms;
+    --page-motion-exit-duration: 160ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  html.page-motion-fallback body.is-page-leaving,
+  html.page-motion-fallback body.is-page-entering {
+    animation: none !important;
+  }
+}

@@ -11,7 +11,8 @@ from app.services.rooms import get_room
 logger = logging.getLogger(__name__)
 
 SUPPORTED_FORMATS = {"wav", "mp3", "webm", "ogg", "m4a"}
-UPLOADS_TTS_DIR = Path("uploads") / "tts"
+UPLOADS_DIR = Path(__file__).resolve().parents[2] / "uploads"
+UPLOADS_TTS_DIR = UPLOADS_DIR / "tts"
 
 
 def _validate_format(audio_format: str | None = None) -> str:
@@ -28,10 +29,25 @@ def _uploaded_file_from_url(audio_url: str) -> Path | None:
     return UPLOADS_TTS_DIR / audio_url.removeprefix(prefix)
 
 
+def _local_audio_file(audio_url: str) -> Path | None:
+    if not audio_url.startswith("/uploads/audio/"):
+        return None
+    candidate = (UPLOADS_DIR / "audio" / audio_url.removeprefix("/uploads/audio/")).resolve()
+    audio_root = (UPLOADS_DIR / "audio").resolve()
+    try:
+        candidate.relative_to(audio_root)
+    except ValueError:
+        return None
+    return candidate if candidate.is_file() else None
+
+
 def _provider_audio_url(audio_url: str) -> str:
     """Turn an authenticated local upload path into a provider-readable URL."""
     if audio_url.startswith(("http://", "https://")):
         return audio_url
+    local_file = _local_audio_file(audio_url)
+    if local_file:
+        return str(local_file)
     if audio_url.startswith("/uploads/") and settings.public_base_url:
         return f"{settings.public_base_url.rstrip('/')}{audio_url}"
     return audio_url
@@ -64,7 +80,7 @@ async def asr_transcribe(
 
     if not settings.enable_asr:
         return {"text": "", "confidence": 0.0, "success": False, "format": fmt, "error": "语音识别服务未启用"}
-    if not settings.audio_provider_enabled:
+    if not settings.asr_provider_enabled:
         return {
             "text": "",
             "confidence": 0.0,
@@ -92,7 +108,7 @@ async def asr_transcribe(
             }
 
     result["format"] = fmt
-    result["warning"] = None if settings.audio_provider_enabled else "语音识别服务未配置。"
+    result.setdefault("warning", None)
     return result
 
 
@@ -123,7 +139,7 @@ async def tts_synthesize(
             "success": False,
             "error": "讲解语音服务未启用",
         }
-    if not settings.audio_provider_enabled:
+    if not settings.tts_provider_enabled:
         return {
             "audioUrl": "",
             "duration": 0.0,
@@ -178,6 +194,6 @@ async def tts_synthesize(
                 }
             )
 
-    result["warning"] = None if settings.audio_provider_enabled else "讲解语音服务未配置。"
+    result.setdefault("warning", None)
 
     return result

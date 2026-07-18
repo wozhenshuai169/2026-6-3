@@ -1,0 +1,288 @@
+@media (max-width: 699px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0 !important;
+    overflow-x: hidden;
+  }
+
+  body.app-page,
+  body.landing-page {
+    min-height: 100dvh;
+    height: auto;
+    overflow-y: auto;
+  }
+
+  .app-topbar,
+  .landing-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    min-width: 0;
+    height: auto;
+    min-height: 58px;
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .app-brand small,
+  .landing-brand small,
+  .topbar-secondary {
+    display: none;
+  }
+
+  .topbar-actions,
+  .landing-actions {
+    margin-left: auto;
+    gap: 6px;
+  }
+
+  .topbar-actions .btn span:not(.material-icons),
+  .landing-actions .btn span:not(.material-icons) {
+    display: none;
+  }
+
+  .app-nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .app-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app-workspace,
+  .admin-content,
+  .landing-content {
+    width: 100%;
+    min-width: 0;
+    padding: 14px;
+  }
+
+  .page-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .page-head h1 {
+    font-size: 24px;
+  }
+
+  .two-column,
+  .three-column,
+  .route-layout,
+  .vision-layout,
+  .assistant-layout,
+  .dashboard-grid,
+  .avatar-studio-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .modal-card,
+  .dialog-card {
+    position: absolute;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: 88dvh;
+    border-radius: 12px 12px 0 0;
+    overflow-y: auto;
+  }
+
+  .landing-shell,
+  .landing-main {
+    min-height: 100dvh;
+    height: auto;
+  }
+
+  .landing-content,
+  .landing-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .landing-hero,
+  .landing-visual {
+    min-height: 320px;
+    height: 42dvh;
+  }
+
+  .identity-grid,
+  .entry-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .landing-footer {
+    display: none;
+  }
+
+  .route-layout,
+  .vision-layout {
+    display: grid;
+    gap: 12px;
+  }
+
+  .route-panel,
+  .map-panel,
+  .vision-panel,
+  .upload-panel {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .route-actions,
+  .vision-actions,
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .route-actions .btn,
+  .vision-actions .btn,
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .camera-notes,
+  .vision-result-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .assistant-layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+
+  .assistant-context {
+    order: 1;
+    max-height: none;
+  }
+
+  .assistant-chat {
+    order: 2;
+    min-height: 64dvh;
+  }
+
+  .assistant-composer {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+  }
+
+  .admin-layout,
+  .admin-shell-layout {
+    display: block;
+    min-width: 0;
+  }
+
+  .admin-side-nav,
+  .admin-sidebar {
+    position: sticky;
+    top: 58px;
+    z-index: 20;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    padding: 8px 10px;
+    gap: 6px;
+    overflow-x: auto;
+  }
+
+  .admin-side-nav a,
+  .admin-sidebar a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .kb-summary,
+  .summary-grid,
+  .dashboard-kpis,
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .table-wrap {
+    overflow: visible;
+  }
+
+  .knowledge-table,
+  .knowledge-table tbody,
+  .knowledge-table tr,
+  .knowledge-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .knowledge-table thead {
+    display: none;
+  }
+
+  .knowledge-table tr {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line, #dde3ea);
+    border-radius: 8px;
+    background: var(--surface, #fff);
+  }
+
+  .knowledge-table td {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 10px;
+    padding: 6px 0;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .knowledge-table td::before {
+    color: var(--muted, #667085);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .knowledge-table td:nth-child(1)::before { content: "名称"; }
+  .knowledge-table td:nth-child(2)::before { content: "分类"; }
+  .knowledge-table td:nth-child(3)::before { content: "来源"; }
+  .knowledge-table td:nth-child(4)::before { content: "状态"; }
+  .knowledge-table td:nth-child(5)::before { content: "更新时间"; }
+  .knowledge-table td:nth-child(6)::before { content: "操作"; }
+
+  .dashboard-grid {
+    display: grid;
+  }
+
+  .chart-card,
+  .insight-card {
+    min-width: 0;
+  }
+
+  .avatar-studio-grid {
+    display: grid;
+    height: auto;
+  }
+
+  .avatar-preview,
+  .avatar-settings {
+    min-width: 0;
+    height: auto;
+  }
+}
+
+@media (max-width: 370px) {
+  .kb-summary,
+  .summary-grid,
+  .dashboard-kpis,
+  .kpi-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

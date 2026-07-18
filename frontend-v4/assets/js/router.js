@@ -49,7 +49,8 @@ Aurelian.router = (function () {
 
   /** Navigate back */
   function goBack() {
-    window.history.back();
+    if (Aurelian.navigateBack) Aurelian.navigateBack(getBase() + PAGE_PATHS.landing);
+    else window.history.back();
   }
 
   /** Store params and navigate to page */

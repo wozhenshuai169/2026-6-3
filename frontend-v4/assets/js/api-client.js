@@ -53,8 +53,10 @@ Aurelian.api = (function () {
               Aurelian.state.clear();
               if (Aurelian.router) {
                 Aurelian.router.go('landing');
+              } else if (Aurelian.navigateWithMotion) {
+                Aurelian.navigateWithMotion('../../pages/landing/index.html', { replace: true });
               } else {
-                window.location.href = '../pages/landing/index.html';
+                window.location.href = '../../pages/landing/index.html';
               }
               resolve({ ok: false, error: { status: 401, message: '登录已过期，请重新登录', code: 'UNAUTHORIZED' } });
               return;
