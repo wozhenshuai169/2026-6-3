@@ -17,3 +17,4 @@ edge-tts>=7.0
 
 # ── 工具 ──
 certifi>=2025.0
+pypdf>=5.0

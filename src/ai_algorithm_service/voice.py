@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import os
 from pathlib import PurePath
 
@@ -36,22 +35,13 @@ class VoiceAdapter:
         if self.asr_endpoint:
             return self._real_asr(fmt=fmt, audio_path=audio_path, audio_url=audio_url)
 
-        if text_hint and text_hint.strip():
-            return ASRResult(text=text_hint.strip(), confidence=0.88, format=fmt)
-
-        source = (audio_path or audio_url or "").lower()
-        demos = [
-            (["toilet", "washroom", "restroom", "cesuo"], "我想去厕所", 0.84),
-            (["lost", "miss", "zoushi"], "我找不到队伍了", 0.86),
-            (["tired", "rest", "elderly"], "老人走不动了，附近能休息吗", 0.82),
-            (["bell", "zhonglou"], "这张图是不是钟楼", 0.80),
-            (["route", "short"], "我想换一条少走路的路线", 0.81),
-        ]
-        for keywords, text, confidence in demos:
-            if any(keyword in source for keyword in keywords):
-                return ASRResult(text=text, confidence=confidence, format=fmt)
-
-        return ASRResult(text="", confidence=0.35, format=fmt, success=False, error="我没有听清，可以再说一遍或改用文字输入")
+        return ASRResult(
+            text="",
+            confidence=0.0,
+            format=fmt,
+            success=False,
+            error="语音识别服务未配置",
+        )
 
     def tts(self, text: str, *, voice: str | None = None, audio_format: str = "mp3") -> TTSResult:
         if not text.strip():
@@ -60,13 +50,13 @@ class VoiceAdapter:
             return TTSResult(audioUrl=None, voice=voice or self.voice, format=audio_format, success=False, error="只支持 wav / mp3 音频格式")
         if self.tts_endpoint:
             return self._real_tts(text=text, voice=voice or self.voice, audio_format=audio_format)
-        digest = hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
-        duration = max(900, min(12000, len(text) * 180))
         return TTSResult(
-            audioUrl=f"/static/tts/{digest}.{audio_format}",
+            audioUrl=None,
             voice=voice or self.voice,
             format=audio_format,
-            durationMs=duration,
+            durationMs=0,
+            success=False,
+            error="讲解语音服务未配置",
         )
 
     def _infer_format(self, source: str) -> str:

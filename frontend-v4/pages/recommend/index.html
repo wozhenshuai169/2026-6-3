@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>云游智导 · 灵山胜境路线</title>
+  <link rel="stylesheet" href="../../assets/css/tailwind.generated.css">
+  <link rel="stylesheet" href="../../assets/css/material-icons.css">
+  <link rel="stylesheet" href="../../assets/css/platform.css">
+  <link rel="stylesheet" href="../../assets/css/tools.css">
+  <link rel="stylesheet" href="../../assets/css/recommend-map.css">
+</head>
+<body class="app-page">
+  <header class="app-topbar">
+    <div class="app-brand">
+      <span class="material-icons brand-icon">landscape</span>
+      <strong>云游智导</strong>
+      <span>灵山胜境路线</span>
+    </div>
+    <nav class="app-nav">
+      <a href="../user-portal/index.html">实时导览</a>
+      <a class="active">路线规划</a>
+      <a href="../vision/index.html">图像识景</a>
+      <a href="../ai-assistant/index.html">私人问答</a>
+    </nav>
+    <div class="app-actions">
+      <button onclick="history.back()"><span class="material-icons">arrow_back</span>返回</button>
+    </div>
+  </header>
+
+  <main class="workspace route-workspace">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">灵山胜境路线</span>
+        <h1>灵山胜境个性化路线</h1>
+        <p>根据游览时间、兴趣和体力安排景点顺序，并查看预计步行距离。</p>
+      </div>
+      <div id="map-status" class="status map-status-loading">正在读取景区路线</div>
+    </div>
+
+    <div class="two-col route-columns">
+      <section class="surface preference-panel">
+        <div id="scenic-context" class="scenic-live-card" aria-live="polite">
+          <div class="scenic-loading-row">
+            <div class="loading-spinner"></div>
+            <div>
+              <strong>正在读取灵山胜境</strong>
+              <p>正在整理景点、出入口与周边信息。</p>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title preference-title">选择你的偏好</h2>
+        <div class="form-group">
+          <label>兴趣标签</label>
+          <div class="chip-row" id="interest-tags">
+            <button class="tag-btn" data-val="history">历史</button>
+            <button class="tag-btn" data-val="architecture">建筑</button>
+            <button class="tag-btn" data-val="photography">摄影</button>
+            <button class="tag-btn" data-val="family">亲子</button>
+            <button class="tag-btn" data-val="culture">佛教文化</button>
+            <button class="tag-btn" data-val="nature">自然风光</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>游览时间</label>
+          <div class="chip-row" id="time-options">
+            <button class="tag-btn" data-val="30">30 分钟</button>
+            <button class="tag-btn tag-active" data-val="60">1 小时</button>
+            <button class="tag-btn" data-val="180">半日</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>体力水平</label>
+          <div class="chip-row" id="stamina-options">
+            <button class="tag-btn" data-val="low">低 · 少走路</button>
+            <button class="tag-btn tag-active" data-val="medium">中等</button>
+            <button class="tag-btn" data-val="high">充沛</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>同行与环境</label>
+          <div class="chip-row" id="companion-tags">
+            <button class="tag-btn" data-val="elderly">有老人</button>
+            <button class="tag-btn" data-val="children">有儿童</button>
+            <button class="tag-btn" data-val="crowd">避开人流</button>
+          </div>
+        </div>
+        <button id="btn-generate" class="btn primary generate-btn">
+          <span class="material-icons">route</span>查看推荐路线
+        </button>
+      </section>
+
+      <section class="surface route-preview">
+        <div id="route-placeholder" class="route-placeholder">
+          <span class="material-icons">map</span>
+          <h2>路线将在这里显示</h2>
+          <p>路线只安排灵山胜境内部景点；拈花湾作为独立景区，不会混入园内步行路线。</p>
+        </div>
+        <div id="loading-area" class="hidden empty">
+          <div>
+            <div class="loading-spinner" style="margin:auto"></div>
+            <p>正在计算景点之间的步行路线…</p>
+          </div>
+        </div>
+        <div id="result-area" class="hidden enter result-layout">
+          <div class="result-head">
+            <div>
+              <span class="eyebrow">路线建议</span>
+              <h2 id="result-route-name"></h2>
+            </div>
+            <span id="result-score" class="score"></span>
+          </div>
+          <div class="result-meta">
+            <span id="result-time"></span>
+            <span id="result-distance"></span>
+            <span id="result-difficulty"></span>
+            <span id="result-source"></span>
+          </div>
+          <div id="result-spots" class="result-spots"></div>
+          <div id="result-map-note" class="map-evidence"></div>
+          <div id="result-reason" class="reason"></div>
+          <div id="result-matched" class="chip-row"></div>
+          <div class="result-actions">
+            <button class="btn soft" onclick="location.href='../user-portal/index.html'">保存到我的行程</button>
+            <button class="btn primary" onclick="location.href='../user-portal/index.html'">开始导览</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/state.js"></script>
+  <script src="../../assets/js/api-client.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/ui.js"></script>
+  <script src="../../assets/js/pages/recommend.js"></script>
+</body>
+</html>

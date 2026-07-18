@@ -1,0 +1,188 @@
+{
+  "source": "景点景区旅游数据行为分析数据.xlsx",
+  "generatedAt": "2026-07-16",
+  "rowCount": 140447,
+  "privacy": "仅保留景点级聚合统计，不导出游客ID、昵称、年龄或单条消费记录。",
+  "attractions": [
+    {
+      "attractionName": "同里古镇",
+      "sampleCount": 5476,
+      "averageStayDuration": 3.99,
+      "averageRating": null
+    },
+    {
+      "attractionName": "宁波方特东方神画",
+      "sampleCount": 5396,
+      "averageStayDuration": 8.98,
+      "averageRating": null
+    },
+    {
+      "attractionName": "杭州宋城",
+      "sampleCount": 5387,
+      "averageStayDuration": 8.97,
+      "averageRating": null
+    },
+    {
+      "attractionName": "金茂大厦",
+      "sampleCount": 5345,
+      "averageStayDuration": 2.76,
+      "averageRating": null
+    },
+    {
+      "attractionName": "周庄",
+      "sampleCount": 5333,
+      "averageStayDuration": 3.97,
+      "averageRating": null
+    },
+    {
+      "attractionName": "东方明珠",
+      "sampleCount": 5316,
+      "averageStayDuration": 2.75,
+      "averageRating": null
+    },
+    {
+      "attractionName": "豫园",
+      "sampleCount": 5304,
+      "averageStayDuration": 1.99,
+      "averageRating": null
+    },
+    {
+      "attractionName": "上海科技馆",
+      "sampleCount": 5292,
+      "averageStayDuration": 2.75,
+      "averageRating": null
+    },
+    {
+      "attractionName": "世纪公园",
+      "sampleCount": 5277,
+      "averageStayDuration": 3.14,
+      "averageRating": null
+    },
+    {
+      "attractionName": "西湖风景名胜区",
+      "sampleCount": 5273,
+      "averageStayDuration": 4.0,
+      "averageRating": null
+    },
+    {
+      "attractionName": "上海博物馆",
+      "sampleCount": 5262,
+      "averageStayDuration": 2.75,
+      "averageRating": null
+    },
+    {
+      "attractionName": "乌镇",
+      "sampleCount": 5255,
+      "averageStayDuration": 4.01,
+      "averageRating": null
+    },
+    {
+      "attractionName": "上海海洋水族馆",
+      "sampleCount": 5248,
+      "averageStayDuration": 4.5,
+      "averageRating": null
+    },
+    {
+      "attractionName": "上海海昌海洋公园",
+      "sampleCount": 5236,
+      "averageStayDuration": 4.5,
+      "averageRating": null
+    },
+    {
+      "attractionName": "西塘古镇",
+      "sampleCount": 5228,
+      "averageStayDuration": 3.98,
+      "averageRating": null
+    },
+    {
+      "attractionName": "上海欢乐谷",
+      "sampleCount": 5181,
+      "averageStayDuration": 9.0,
+      "averageRating": null
+    },
+    {
+      "attractionName": "朱家角古镇景区",
+      "sampleCount": 5178,
+      "averageStayDuration": 3.99,
+      "averageRating": null
+    },
+    {
+      "attractionName": "上海野生动物园",
+      "sampleCount": 5158,
+      "averageStayDuration": 4.49,
+      "averageRating": null
+    },
+    {
+      "attractionName": "拙政园",
+      "sampleCount": 5149,
+      "averageStayDuration": 3.99,
+      "averageRating": null
+    },
+    {
+      "attractionName": "上海之巅观光厅",
+      "sampleCount": 5115,
+      "averageStayDuration": 2.75,
+      "averageRating": null
+    },
+    {
+      "attractionName": "方塔园",
+      "sampleCount": 538,
+      "averageStayDuration": 4.01,
+      "averageRating": null
+    },
+    {
+      "attractionName": "金山城市沙滩",
+      "sampleCount": 311,
+      "averageStayDuration": 3.95,
+      "averageRating": null
+    },
+    {
+      "attractionName": "锦溪古镇",
+      "sampleCount": 309,
+      "averageStayDuration": 4.0,
+      "averageRating": null
+    },
+    {
+      "attractionName": "江南三民文化村",
+      "sampleCount": 309,
+      "averageStayDuration": 2.04,
+      "averageRating": null
+    },
+    {
+      "attractionName": "东湖",
+      "sampleCount": 309,
+      "averageStayDuration": 4.04,
+      "averageRating": null
+    },
+    {
+      "attractionName": "云澜湾温泉",
+      "sampleCount": 308,
+      "averageStayDuration": 4.09,
+      "averageRating": null
+    },
+    {
+      "attractionName": "平江路历史街区",
+      "sampleCount": 308,
+      "averageStayDuration": 3.97,
+      "averageRating": null
+    },
+    {
+      "attractionName": "吴淞炮台湾湿地森林公园",
+      "sampleCount": 307,
+      "averageStayDuration": 3.15,
+      "averageRating": null
+    },
+    {
+      "attractionName": "南通狼山风景名胜区",
+      "sampleCount": 307,
+      "averageStayDuration": 4.04,
+      "averageRating": null
+    },
+    {
+      "attractionName": "梅园",
+      "sampleCount": 306,
+      "averageStayDuration": 4.07,
+      "averageRating": null
+    }
+  ]
+}

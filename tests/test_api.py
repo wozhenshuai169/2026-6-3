@@ -1,840 +1,1068 @@
-"""
-功能测试：覆盖 FastAPI 应用层所有 API 端点。
-
-运行方式（在项目根目录 d:\\软件杯）：
-    pytest tests/test_api.py -v
-    或
-    python -m pytest tests/test_api.py -v
-"""
+import io
+import base64
+import json
+import re
+import wave
+from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-client = TestClient(app)
+from starlette.websockets import WebSocketDisconnect
 
 
-# ── 工具函数 ──────────────────────────────────────────────
-
-def register_user(name: str = "测试游客") -> dict:
-    """注册一个新用户并返回完整的 response JSON。"""
-    resp = client.post("/api/auth/register", json={
-        "userName": name,
-        "password": "123456",
-    })
-    assert resp.status_code == 200, resp.text
-    return resp.json()
+def _wav_bytes() -> bytes:
+    output = io.BytesIO()
+    with wave.open(output, "wb") as audio:
+        audio.setnchannels(1)
+        audio.setsampwidth(2)
+        audio.setframerate(8000)
+        audio.writeframes(b"\x00\x00" * 80)
+    return output.getvalue()
 
 
-def create_room(token: str, room_name: str = "测试房间",
-                scenic_id: str = "scenic_001", route_id: str = "route_001") -> dict:
-    """创建一个新房间并返回完整的 response JSON。"""
-    resp = client.post("/api/rooms", json={
-        "token": token,
-        "roomName": room_name,
-        "scenicAreaId": scenic_id,
-        "routeId": route_id,
-    })
-    assert resp.status_code == 200, resp.text
-    return resp.json()
+def _admin(client):
+    response = client.post(
+        "/api/auth/login",
+        json={"userName": "admin", "password": "test-admin-secret"},
+    )
+    assert response.status_code == 200, response.text
+    return response.json()
 
 
-# ═══════════════════════════════════════════════════════════
-# 健康检查
-# ═══════════════════════════════════════════════════════════
+@pytest.fixture
+def fake_deepseek(monkeypatch):
+    from types import SimpleNamespace
 
-class TestHealthCheck:
-    """GET / — 根路径健康检查"""
+    from app.core.config import settings
+    import app.services.ai as ai_service
 
-    def test_root_returns_message(self):
-        resp = client.get("/")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["message"] == "A5 Backend Running"
+    calls = []
 
+    class FakeDeepSeek:
+        async def chat(self, messages, **kwargs):
+            calls.append({"messages": messages, "kwargs": kwargs})
+            return SimpleNamespace(content="我是云游智导的导览助手，可以为你介绍景点和游览信息。")
 
-# ═══════════════════════════════════════════════════════════
-# 用户认证  /api/auth
-# ═══════════════════════════════════════════════════════════
-
-class TestAuthRegister:
-    """POST /api/auth/register — 用户注册"""
-
-    def test_register_returns_200_with_correct_fields(self):
-        resp = client.post("/api/auth/register", json={
-            "userName": "张三",
-            "password": "pass123",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "userId" in data
-        assert data["userName"] == "张三"
-        assert "token" in data
-        assert len(data["token"]) > 0
-
-    def test_register_multiple_users_get_unique_ids(self):
-        u1 = register_user("用户A")
-        u2 = register_user("用户B")
-        assert u1["userId"] != u2["userId"]
-        assert u1["token"] != u2["token"]
-
-    def test_register_missing_fields_returns_422(self):
-        resp = client.post("/api/auth/register", json={})
-        assert resp.status_code == 422
-
-    def test_register_missing_password_returns_422(self):
-        resp = client.post("/api/auth/register", json={"userName": "test"})
-        assert resp.status_code == 422
+    previous_key = settings.deepseek_api_key
+    settings.deepseek_api_key = "configured-for-test"
+    monkeypatch.setattr(ai_service, "get_llm", lambda: FakeDeepSeek())
+    try:
+        yield calls
+    finally:
+        settings.deepseek_api_key = previous_key
 
 
-# ═══════════════════════════════════════════════════════════
-# 房间管理  /api/rooms
-# ═══════════════════════════════════════════════════════════
+def test_health_error_model_and_security_headers(client):
+    assert client.get("/health/live").json() == {"status": "live"}
+    ready = client.get("/health/ready")
+    assert ready.status_code == 200
+    assert ready.json()["database"] == "ok"
+    assert ready.headers["x-content-type-options"] == "nosniff"
+    assert ready.headers["x-frame-options"] == "DENY"
+    assert ready.headers["x-request-id"]
 
-class TestRoomCreate:
-    """POST /api/rooms — 创建房间"""
+    error = client.get("/api/auth/me")
+    assert error.status_code == 401
+    assert set(error.json()) == {"detail", "errorCode", "requestId"}
+    assert error.json()["errorCode"] == "UNAUTHORIZED"
 
-    def test_create_room_with_valid_token(self):
-        user = register_user("房主")
-        resp = client.post("/api/rooms", json={
-            "token": user["token"],
-            "roomName": "故宫深度游",
-            "scenicAreaId": "scenic_001",
-            "routeId": "route_001",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "roomId" in data
-        assert data["status"] == "created"
 
-    def test_create_room_with_invalid_token_returns_401(self):
-        resp = client.post("/api/rooms", json={
-            "token": "invalid-token-xxxxx",
-            "roomName": "test",
+def test_account_guest_logout_and_strict_bearer(client, auth_helpers):
+    user = auth_helpers["register"]()
+    headers = auth_helpers["headers"](user)
+    me = client.get("/api/auth/me", headers=headers)
+    assert me.status_code == 200
+    assert me.json()["userId"] == user["userId"]
+
+    guest = auth_helpers["guest"]("guide")
+    assert guest["role"] == "guide"
+
+    rejected = client.post(
+        "/api/rooms",
+        json={
+            "token": guest["token"],
+            "roomName": "Body token must fail",
             "scenicAreaId": "s1",
             "routeId": "r1",
-        })
-        assert resp.status_code == 401
-        assert resp.json()["detail"] == "无效的认证令牌"
+        },
+    )
+    assert rejected.status_code == 401
 
-    def test_create_room_missing_token_returns_422(self):
-        resp = client.post("/api/rooms", json={
-            "roomName": "test",
-            "scenicAreaId": "s1",
-            "routeId": "r1",
-        })
-        assert resp.status_code == 422
+    assert client.post("/api/auth/logout", headers=headers).status_code == 204
+    assert client.get("/api/auth/me", headers=headers).status_code == 401
 
 
-class TestRoomGetStatus:
-    """GET /api/rooms/{roomId} — 获取房间状态"""
+def test_room_lifecycle_membership_and_leadership(client, auth_helpers):
+    guide = auth_helpers["guest"]("guide", "leader")
+    tourist = auth_helpers["guest"]("tourist", "member")
+    outsider = auth_helpers["guest"]("tourist", "outsider")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
 
-    def test_get_existing_room(self):
-        user = register_user("查询者")
-        room = create_room(user["token"], "我的房间")
-        resp = client.get(f"/api/rooms/{room['roomId']}")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["roomId"] == room["roomId"]
-        assert data["status"] == "active"
-        assert isinstance(data["members"], list)
-        assert "currentSpot" in data
+    assert client.get(f"/api/rooms/{room_id}", headers=headers(outsider)).status_code == 403
+    joined = client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    assert joined.status_code == 200
 
-    def test_get_nonexistent_room_returns_404(self):
-        resp = client.get("/api/rooms/nonexistent-room-id")
-        assert resp.status_code == 404
-        assert resp.json()["detail"] == "房间不存在"
+    paused = client.patch(
+        f"/api/rooms/{room_id}/status",
+        headers=headers(guide),
+        json={"status": "paused"},
+    )
+    assert paused.json()["status"] == "paused"
+    assert client.post(
+        f"/api/ai/public-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "question": "What is this place?",
+            "needAudio": False,
+        },
+    ).status_code == 409
+    assert client.post(f"/api/rooms/{room_id}/join", headers=headers(outsider), json={}).status_code == 409
 
-
-class TestRoomJoin:
-    """POST /api/rooms/{roomId}/join — 加入房间"""
-
-    def test_join_room_with_valid_token(self):
-        owner = register_user("房主A")
-        room = create_room(owner["token"], "可加入房")
-        joiner = register_user("加入者A")
-
-        resp = client.post(f"/api/rooms/{room['roomId']}/join", json={
-            "token": joiner["token"],
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["roomId"] == room["roomId"]
-        assert data["userId"] == joiner["userId"]
-        assert data["status"] == "joined"
-
-    def test_join_nonexistent_room_returns_404(self):
-        user = register_user("幽灵加入者")
-        resp = client.post("/api/rooms/ghost-room-id/join", json={
-            "token": user["token"],
-        })
-        assert resp.status_code == 404
-        assert resp.json()["detail"] == "房间不存在"
-
-    def test_join_room_with_invalid_token_returns_401(self):
-        owner = register_user("房主B")
-        room = create_room(owner["token"], "私密房")
-        resp = client.post(f"/api/rooms/{room['roomId']}/join", json={
-            "token": "bad-token",
-        })
-        assert resp.status_code == 401
-        assert resp.json()["detail"] == "无效的认证令牌"
-
-    def test_join_room_members_list_grows(self):
-        """验证加入后房间成员列表确实增长"""
-        owner = register_user("房主C")
-        room = create_room(owner["token"], "测试增长")
-
-        # 初始成员列表为空（leader 不在 members 里）
-        status_before = client.get(f"/api/rooms/{room['roomId']}").json()
-        count_before = len(status_before["members"])
-
-        joiner = register_user("加入者C")
-        client.post(f"/api/rooms/{room['roomId']}/join", json={
-            "token": joiner["token"],
-        })
-
-        status_after = client.get(f"/api/rooms/{room['roomId']}").json()
-        assert len(status_after["members"]) == count_before + 1
-        assert status_after["members"][-1]["userId"] == joiner["userId"]
+    assert client.patch(
+        f"/api/rooms/{room_id}/status",
+        headers=headers(guide),
+        json={"status": "active"},
+    ).status_code == 200
+    transferred = client.patch(
+        f"/api/rooms/{room_id}/leader",
+        headers=headers(guide),
+        json={"userId": tourist["userId"]},
+    )
+    assert transferred.status_code == 200
+    assert transferred.json()["leaderId"] == tourist["userId"]
+    assert client.patch(
+        f"/api/rooms/{room_id}/status",
+        headers=headers(guide),
+        json={"status": "ended"},
+    ).status_code == 403
+    assert client.patch(
+        f"/api/rooms/{room_id}/status",
+        headers=headers(tourist),
+        json={"status": "ended"},
+    ).status_code == 200
+    assert client.post(
+        f"/api/rooms/{room_id}/messages",
+        headers=headers(tourist),
+        json={"content": "too late"},
+    ).status_code == 409
+    assert client.patch(
+        f"/api/rooms/{room_id}/status",
+        headers=headers(tourist),
+        json={"status": "active"},
+    ).status_code == 409
 
 
-class TestRoomUpdateSpot:
-    """POST /api/rooms/{roomId}/current-spot — 更新当前景点"""
+def test_leave_kick_and_leader_guard(client, auth_helpers):
+    guide = auth_helpers["register"]("guide", "guide")
+    member = auth_helpers["register"]("tourist", "member")
+    other = auth_helpers["register"]("tourist", "other")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    for user in (member, other):
+        assert client.post(f"/api/rooms/{room_id}/join", headers=headers(user), json={}).status_code == 200
 
-    def test_update_spot_success(self):
-        user = register_user("导游A")
-        room = create_room(user["token"], "景点更新房")
-        resp = client.post(f"/api/rooms/{room['roomId']}/current-spot", json={
-            "spotId": "spot_002",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["roomId"] == room["roomId"]
-        assert data["currentSpot"] == "spot_002"
-        assert data["status"] == "updated"
-
-    def test_update_spot_nonexistent_room_returns_404(self):
-        resp = client.post("/api/rooms/fake-room/current-spot", json={
-            "spotId": "spot_001",
-        })
-        assert resp.status_code == 404
-
-    def test_update_spot_persists(self):
-        """验证更新后 GET 能看到新景点"""
-        user = register_user("导游B")
-        room = create_room(user["token"], "持久化房")
-        client.post(f"/api/rooms/{room['roomId']}/current-spot", json={
-            "spotId": "spot_003",
-        })
-        status = client.get(f"/api/rooms/{room['roomId']}").json()
-        assert status["currentSpot"] == "spot_003"
+    assert client.delete(f"/api/rooms/{room_id}/members/me", headers=headers(guide)).status_code == 409
+    assert client.delete(
+        f"/api/rooms/{room_id}/members/{member['userId']}", headers=headers(other)
+    ).status_code == 403
+    assert client.delete(
+        f"/api/rooms/{room_id}/members/{member['userId']}", headers=headers(guide)
+    ).status_code == 200
+    assert client.get(f"/api/rooms/{room_id}", headers=headers(member)).status_code == 403
+    assert client.delete(f"/api/rooms/{room_id}/members/me", headers=headers(other)).status_code == 200
 
 
-class TestAvatarState:
-    """GET /api/rooms/{roomId}/avatar-state — 数字人状态"""
+def test_message_cursor_and_websocket_ticket_are_stable_and_single_use(client, auth_helpers):
+    guide = auth_helpers["register"]("guide", "ws-guide")
+    tourist = auth_helpers["register"]("tourist", "ws-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
 
-    def test_avatar_state_for_existing_room(self):
-        user = register_user("数字人测试")
-        room = create_room(user["token"], "验证房")
-        resp = client.get(f"/api/rooms/{room['roomId']}/avatar-state")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "aiStatus" in data
-        assert "emotion" in data
-        assert "action" in data
-        assert "text" in data
-        assert "audioUrl" in data
-        # 房间刚创建，有 leader 但无 members → member_count == 0
-        assert data["aiStatus"] == "idle"
+    for index in range(5):
+        response = client.post(
+            f"/api/rooms/{room_id}/messages",
+            headers=headers(tourist),
+            json={"content": f"message-{index}"},
+        )
+        assert response.status_code == 200
 
-    def test_avatar_state_nonexistent_room_returns_404(self):
-        resp = client.get("/api/rooms/ghost-room/avatar-state")
-        assert resp.status_code == 404
-        assert resp.json()["detail"] == "房间不存在"
+    first = client.get(f"/api/rooms/{room_id}/messages?limit=2", headers=headers(tourist)).json()
+    second = client.get(
+        f"/api/rooms/{room_id}/messages?limit=2&cursor={first['nextCursor']}",
+        headers=headers(tourist),
+    ).json()
+    first_ids = {item["id"] for item in first["messages"]}
+    assert first["nextCursor"]
+    assert first_ids.isdisjoint({item["id"] for item in second["messages"]})
 
-    def test_avatar_state_with_spot_returns_speaking(self):
-        """设置景点 + 有成员 → aiStatus 应为 speaking"""
-        owner = register_user("导游X")
-        room = create_room(owner["token"], "讲解房")
-        # 有人加入 → member_count > 0
-        joiner = register_user("游客X")
-        client.post(f"/api/rooms/{room['roomId']}/join", json={
-            "token": joiner["token"],
-        })
-        # 设置景点
-        client.post(f"/api/rooms/{room['roomId']}/current-spot", json={
-            "spotId": "spot_001",
-        })
+    ticket_response = client.post(
+        "/api/auth/ws-ticket", headers=headers(tourist), json={"roomId": room_id}
+    )
+    ticket = ticket_response.json()["ticket"]
+    with client.websocket_connect(f"/ws/rooms/{room_id}?ticket={ticket}") as websocket:
+        assert websocket.receive_json()["type"] == "room.connected"
+        websocket.send_json({"type": "message", "content": "live-message"})
+        event = websocket.receive_json()
+        assert event["type"] == "room.message"
+        assert event["data"]["content"] == "live-message"
 
-        resp = client.get(f"/api/rooms/{room['roomId']}/avatar-state")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["aiStatus"] == "speaking"
-        assert data["emotion"] == "friendly"
-        assert data["action"] == "speaking"
-        assert "spot_001" in data["text"] or "入口广场" in data["text"]
+    with pytest.raises(WebSocketDisconnect):
+        with client.websocket_connect(f"/ws/rooms/{room_id}?ticket={ticket}") as websocket:
+            websocket.receive_json()
 
 
-# ═══════════════════════════════════════════════════════════
-# 音频处理  /api/audio
-# ═══════════════════════════════════════════════════════════
+def test_audio_upload_validates_identity_signature_and_filename(client, auth_helpers):
+    guide = auth_helpers["register"]("guide", "audio-guide")
+    tourist = auth_helpers["register"]("tourist", "audio-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    form = {"roomId": room_id, "userId": tourist["userId"], "channel": "public"}
 
-class TestAudioASR:
-    """POST /api/audio/asr — 语音识别"""
+    uploaded = client.post(
+        "/api/audio/upload",
+        headers=headers(tourist),
+        data=form,
+        files={"file": ("../../voice.wav", _wav_bytes(), "audio/wav")},
+    )
+    assert uploaded.status_code == 200, uploaded.text
+    payload = uploaded.json()
+    assert payload["audioUrl"].startswith("/uploads/audio/audio_")
+    assert ".." not in payload["audioUrl"]
 
-    def test_asr_existing_room(self):
-        """带 text_hint → 高置信度直接返回"""
-        user = register_user("ASR测试者")
-        room = create_room(user["token"])
-        client.post(f"/api/rooms/{room['roomId']}/current-spot", json={
-            "spotId": "spot_002",
-        })
-        resp = client.post("/api/audio/asr", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "channel": "public",
-            "audioUrl": "https://example.com/audio/test.wav",
-            "textHint": "请问这个建筑有什么历史？",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "text" in data
-        assert "confidence" in data
-        assert data["confidence"] == 0.88  # text_hint 高置信度
-        assert "这个建筑有什么历史" in data["text"]
-
-    def test_asr_nonexistent_room_returns_404(self):
-        resp = client.post("/api/audio/asr", json={
-            "roomId": "fake-room-id",
-            "userId": "user_001",
-            "channel": "public",
-            "audioUrl": "https://example.com/audio/test.wav",
-        })
-        assert resp.status_code == 404
-        assert resp.json()["detail"] == "房间不存在"
-
-    def test_asr_without_spot_returns_generic_text(self):
-        """无 demo 关键词 → 低置信度通用文本"""
-        user = register_user("ASR无景点")
-        room = create_room(user["token"])
-        resp = client.post("/api/audio/asr", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "channel": "public",
-            "audioUrl": "https://example.com/test.wav",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["confidence"] == 0.35  # 无关键词匹配，低置信度
-        assert "景区" in data["text"]
-
-    def test_asr_private_channel(self):
-        """私人频道 ASR 也正常工作"""
-        user = register_user("ASR私聊")
-        room = create_room(user["token"])
-        resp = client.post("/api/audio/asr", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "channel": "private",
-            "audioUrl": "https://example.com/private.wav",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["confidence"] == 0.35  # 无关键词匹配
+    forged = client.post(
+        "/api/audio/upload",
+        headers=headers(tourist),
+        data=form,
+        files={"file": ("voice.wav", b"not-wave", "audio/wav")},
+    )
+    assert forged.status_code == 415
+    spoofed = dict(form, userId=guide["userId"])
+    assert client.post(
+        "/api/audio/upload",
+        headers=headers(tourist),
+        data=spoofed,
+        files={"file": ("voice.wav", _wav_bytes(), "audio/wav")},
+    ).status_code == 403
 
 
-class TestAudioTTS:
-    """POST /api/audio/tts — 语音合成"""
+def test_tts_rejects_missing_provider_file_without_creating_demo(monkeypatch):
+    import asyncio
+    from uuid import uuid4
 
-    def test_tts_default_params(self):
-        resp = client.post("/api/audio/tts", json={
-            "text": "欢迎来到故宫博物院，这里是中国最大的古代文化艺术博物馆。",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "audioUrl" in data
-        assert "duration" in data
-        assert data["audioUrl"].startswith("/static/tts/")  # 对齐 VoiceAdapter.tts()
-        assert data["duration"] > 0
+    from app.core.config import settings
+    import app.services.audio as audio_service
 
-    def test_tts_custom_voice_and_speed(self):
-        resp = client.post("/api/audio/tts", json={
-            "text": "前方是钟楼，建于明代。",
-            "voice": "guide_male",
-            "speed": 1.5,
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert isinstance(data["duration"], (int, float))
-        # 速度加倍，duration 应该减少
-        assert data["duration"] > 0
+    missing_name = f"missing-{uuid4().hex}.mp3"
+    missing_url = f"/uploads/tts/{missing_name}"
 
-    def test_tts_short_text_min_duration(self):
-        """短文本最小 900ms → 0.9s"""
-        resp = client.post("/api/audio/tts", json={
-            "text": "你好",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["duration"] >= 0.9  # 对齐 VoiceAdapter: min 900ms
+    class MissingFileAudio:
+        async def tts_synthesize(self, **kwargs):
+            return {
+                "audioUrl": missing_url,
+                "duration": 2.0,
+                "voice": kwargs["voice"],
+                "format": "mp3",
+                "success": True,
+            }
 
-    def test_tts_same_text_same_url(self):
-        """相同文本应生成相同音频 URL"""
-        text = "前方转弯"
-        resp1 = client.post("/api/audio/tts", json={"text": text})
-        resp2 = client.post("/api/audio/tts", json={"text": text})
-        assert resp1.json()["audioUrl"] == resp2.json()["audioUrl"]
+    previous_tts = settings.enable_tts
+    previous_key = settings.dashscope_api_key
+    settings.enable_tts = True
+    settings.dashscope_api_key = "configured-for-test"
+    monkeypatch.setattr(audio_service, "get_audio", lambda: MissingFileAudio())
+    try:
+        result = asyncio.run(audio_service.tts_synthesize("测试讲解", room_id="test-room"))
+    finally:
+        settings.enable_tts = previous_tts
+        settings.dashscope_api_key = previous_key
 
-    def test_tts_empty_body_returns_422(self):
-        resp = client.post("/api/audio/tts", json={})
-        assert resp.status_code == 422
+    assert result["success"] is False
+    assert result["audioUrl"] == ""
+    assert result["error"] == "讲解语音文件生成失败"
+    assert not (audio_service.UPLOADS_TTS_DIR / missing_name).exists()
 
 
-# ═══════════════════════════════════════════════════════════
-# AI 问答  /api/ai
-# ═══════════════════════════════════════════════════════════
+def test_vision_rejects_forged_base64_without_calling_external_service(
+    client, auth_helpers, monkeypatch
+):
+    import app.api.vision as vision_api
 
-class TestAIPublicQuestion:
-    """POST /api/ai/public-question — 公共问答"""
-
-    def test_public_question_existing_room(self):
-        user = register_user("问答测试者")
-        room = create_room(user["token"])
-        resp = client.post("/api/ai/public-question", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "question": "这个建筑是什么时候建的？",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["roomId"] == room["roomId"]
-        assert "answer" in data
-        assert len(data["answer"]) > 0  # 真实 LLM / Mock 均有回答
-
-    def test_public_question_nonexistent_room_returns_404(self):
-        resp = client.post("/api/ai/public-question", json={
-            "roomId": "fake-room",
-            "userId": "user_001",
-            "question": "这是哪里？",
-        })
-        assert resp.status_code == 404
-
-    def test_public_question_with_current_spot(self):
-        """有当前景点时，LLM 生成对应讲解"""
-        user = register_user("景点问答")
-        room = create_room(user["token"])
-        client.post(f"/api/rooms/{room['roomId']}/current-spot", json={
-            "spotId": "spot_002",
-        })
-        resp = client.post("/api/ai/public-question", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "question": "这里有什么历史？",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert len(data["answer"]) > 0  # 真实 LLM 回答
-
-
-class TestAIVoiceQuestion:
-    """POST /api/ai/public-voice-question — 语音问答完整链路"""
-
-    def test_voice_question_public_channel(self):
-        user = register_user("语音问答者")
-        room = create_room(user["token"])
-        client.post(f"/api/rooms/{room['roomId']}/current-spot", json={
-            "spotId": "spot_001",
-        })
-        resp = client.post("/api/ai/public-voice-question", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "channel": "public",
-            "audioUrl": "https://example.com/query.wav",
-            "textHint": "这个建筑是什么时候建的？",  # text_hint 避免低置信度 → ask_clarification
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        # 检查完整链路的五个输出
-        assert "asrText" in data
-        assert data["decision"] == "interrupt_and_answer"  # text_hint → 高置信度 → 正常回答
-        assert "answer" in data
-        assert "audioUrl" in data
-        assert data["audioUrl"].startswith("/static/tts/")  # 对齐 VoiceAdapter.tts()
-        assert "resumeText" in data
-        assert "resumeAudioUrl" in data
-        # sources 包含至少一个来源
-        assert len(data["sources"]) >= 1
-        assert data["sources"][0]["title"] == "主展厅历史资料"
-
-    def test_voice_question_private_channel(self):
-        """私人频道 → decision 应为 private_reply"""
-        user = register_user("私聊语音")
-        room = create_room(user["token"])
-        resp = client.post("/api/ai/public-voice-question", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "channel": "private",
-            "audioUrl": "https://example.com/private-query.wav",
-            "textHint": "附近有洗手间吗？",  # text_hint 避免低置信度 → ask_clarification
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["decision"] == "private_reply"
-
-    def test_voice_question_nonexistent_room_returns_404(self):
-        resp = client.post("/api/ai/public-voice-question", json={
-            "roomId": "no-such-room",
-            "userId": "user_001",
-            "channel": "public",
-            "audioUrl": "https://example.com/test.wav",
-        })
-        assert resp.status_code == 404
-
-
-# ═══════════════════════════════════════════════════════════
-# 图片识景  /api/vision
-# ═══════════════════════════════════════════════════════════
-
-class TestVisionRecognize:
-    """POST /api/vision/recognize — 图片识景"""
-
-    def test_recognize_with_known_spot(self):
-        """通过 imageUrl 中的关键词匹配 bell_tower"""
-        user = register_user("识景者")
-        room = create_room(user["token"])
-        resp = client.post("/api/vision/recognize", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "imageUrl": "https://example.com/bell_tower_photo.jpg",  # 匹配 vision_spots.json
-            "currentSpotId": "",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["recognizedSpot"]["spotId"] == "bell_tower"  # 对齐 vision_spots.json
-        assert data["recognizedSpot"]["spotName"] == "钟楼"
-        assert data["recognizedSpot"]["confidence"] == 0.87
-        assert len(data["description"]) > 0
-        assert len(data["relatedSpots"]) >= 1
-        # 对齐新 VisionResult: 应有 visualFeatures
-        assert len(data.get("visualFeatures", [])) >= 1
-
-    def test_recognize_default_when_spot_unknown(self):
-        """未知景点默认返回钟楼（回退）"""
-        user = register_user("未知识景")
-        room = create_room(user["token"])
-        resp = client.post("/api/vision/recognize", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "imageUrl": "https://example.com/unknown_xyz.jpg",
-            "currentSpotId": "",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["recognizedSpot"]["spotName"] == "钟楼"  # 默认回退到钟楼
-        assert data["recognizedSpot"]["confidence"] == 0.28  # 未匹配，低置信度
-
-    def test_recognize_uses_room_current_spot_when_not_given(self):
-        """不传 currentSpotId 时使用房间的 currentSpot 作为 hint"""
-        user = register_user("房间识景")
-        room = create_room(user["token"])
-        client.post(f"/api/rooms/{room['roomId']}/current-spot", json={
-            "spotId": "main_hall",  # 使用 vision_spots.json 中的 spotId
-        })
-        resp = client.post("/api/vision/recognize", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "imageUrl": "https://example.com/main_hall.jpg",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["recognizedSpot"]["spotName"] == "主展厅"  # main_hall → 主展厅
-
-    def test_recognize_nonexistent_room_returns_404(self):
-        resp = client.post("/api/vision/recognize", json={
-            "roomId": "ghost-room",
-            "userId": "user_001",
-            "imageUrl": "https://example.com/img.jpg",
-        })
-        assert resp.status_code == 404
-
-
-# ═══════════════════════════════════════════════════════════
-# 路线推荐  /api/recommend
-# ═══════════════════════════════════════════════════════════
-
-class TestRouteRecommend:
-    """POST /api/recommend/route — 路线推荐"""
-
-    def test_recommend_default_route(self):
-        """默认偏好 → routes.json 中得分最高的路线"""
-        user = register_user("路线推荐者")
-        room = create_room(user["token"])
-        resp = client.post("/api/recommend/route", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "preferences": {
-                "interest": [],
-                "timeLimit": 60,
-                "physicalStrength": "medium",
-                "withChildren": False,
-                "withElderly": False,
-                "avoidCrowd": False,
+    async def fixed_recognition(*args, **kwargs):
+        return {
+            "recognizedSpot": {
+                "spotId": "lingshan_buddha",
+                "spotName": "灵山大佛",
+                "confidence": 0.9,
             },
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        # 对齐 routes.json 加分制：所有路线都满足时间要求，得分最高者胜出
-        assert "routeName" in data
-        assert data["estimatedTime"] > 0
-        assert len(data["spots"]) >= 1
-        assert len(data["reason"]) > 0
-        # 对齐新字段
-        assert "scoreBreakdown" in data
-        assert "difficulty" in data
-        assert "matchedPreferences" in data
+            "description": "识别输入已通过接口校验。",
+            "relatedSpots": [],
+            "visualFeatures": ["景区建筑"],
+            "category": "spot",
+            "warning": None,
+            "sources": [],
+        }
 
-    def test_recommend_elderly_route(self):
-        """有老人 → 优先低难度路线（加分制 staminaScore + companionScore）"""
-        user = register_user("老人路线")
-        room = create_room(user["token"])
-        resp = client.post("/api/recommend/route", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "preferences": {
-                "interest": [],
-                "timeLimit": 60,
-                "physicalStrength": "medium",
-                "withChildren": False,
-                "withElderly": True,
-                "avoidCrowd": False,
+    monkeypatch.setattr(vision_api, "recognize_image", fixed_recognition)
+    guide = auth_helpers["register"]("guide", "vision-guide")
+    tourist = auth_helpers["register"]("tourist", "vision-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    request = {"roomId": room_id, "userId": tourist["userId"], "currentSpotId": ""}
+
+    forged = dict(request, imageUrl="data:image/png;base64," + base64.b64encode(b"not-png").decode())
+    assert client.post("/api/vision/recognize", headers=headers(tourist), json=forged).status_code == 422
+
+    png_header = b"\x89PNG\r\n\x1a\n" + b"test-image"
+    valid = dict(request, imageUrl="data:image/png;base64," + base64.b64encode(png_header).decode())
+    response = client.post("/api/vision/recognize", headers=headers(tourist), json=valid)
+    assert response.status_code == 200, response.text
+    assert response.json()["warning"] is None
+
+
+def test_configured_llm_failure_is_503_not_mock_success(client, auth_helpers, monkeypatch):
+    from app.core.config import settings
+    import app.services.ai as ai_service
+
+    class FailingLlm:
+        async def chat(self, *args, **kwargs):
+            raise RuntimeError("provider unavailable")
+
+    guide = auth_helpers["register"]("guide", "provider-guide")
+    tourist = auth_helpers["register"]("tourist", "provider-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    client.post(
+        f"/api/rooms/{room_id}/current-spot",
+        headers=headers(guide),
+        json={"spotId": "lingshan_dazhaobi"},
+    )
+    previous_key = settings.deepseek_api_key
+    settings.deepseek_api_key = "configured-for-test"
+    monkeypatch.setattr(ai_service, "get_llm", lambda: FailingLlm())
+    try:
+        response = client.post(
+            "/api/ai/public-question",
+            headers=headers(tourist),
+            json={
+                "roomId": room_id,
+                "userId": tourist["userId"],
+                "question": "这里有什么历史？",
+                "needAudio": False,
             },
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        # 对齐 routes.json 加分制：family_friendly + less_walking 路线得分更高
-        assert data["difficulty"] in ("low", "medium")
-        assert "less_walking" in data["matchedPreferences"] or "family_friendly" in data["matchedPreferences"]
+        )
+    finally:
+        settings.deepseek_api_key = previous_key
+    assert response.status_code == 503
+    assert response.json()["errorCode"] == "LLM_UNAVAILABLE"
 
-    def test_recommend_history_interest_route(self):
-        """兴趣包含"历史" → interestScore +3 的路线获胜"""
-        user = register_user("历史迷")
-        room = create_room(user["token"])
-        resp = client.post("/api/recommend/route", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
+
+def test_solo_question_uses_deepseek_without_a_room(client, auth_helpers, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.core.config import settings
+    import app.services.ai as ai_service
+
+    calls = []
+
+    class FakeDeepSeek:
+        async def chat(self, messages, **kwargs):
+            calls.append({"messages": messages, "kwargs": kwargs})
+            return SimpleNamespace(content="**前方有休息需求时**，请先在[附近设施](https://example.com)中查看_实时服务点_。")
+
+    async def fake_tts(text, voice="guide_female", speed=1.0, room_id=None):
+        assert room_id is None
+        assert voice == "xiaomei"
+        assert text == "前方有休息需求时，请先在附近设施中查看实时服务点。"
+        assert "*" not in text
+        return {
+            "success": True,
+            "audioUrl": "/uploads/audio/solo-test.wav",
+            "duration": 1.25,
+            "warning": None,
+        }
+
+    tourist = auth_helpers["register"]("tourist", "solo-tourist")
+    headers = auth_helpers["headers"]
+    previous_key = settings.deepseek_api_key
+    settings.deepseek_api_key = "configured-for-test"
+    monkeypatch.setattr(ai_service, "get_llm", lambda: FakeDeepSeek())
+    monkeypatch.setattr(ai_service, "tts_synthesize", fake_tts)
+    monkeypatch.setattr(ai_service, "search_knowledge", lambda *args, **kwargs: [])
+    try:
+        response = client.post(
+            "/api/ai/solo-question",
+            headers=headers(tourist),
+            json={
+                "userId": tourist["userId"],
+                "question": "附近有休息区吗？",
+                "currentSpotId": "lingshan_dazhaobi",
+                "needAudio": True,
+                "voice": "xiaomei",
+            },
+        )
+    finally:
+        settings.deepseek_api_key = previous_key
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["provider"] == "deepseek"
+    assert payload["mode"] == "solo"
+    assert payload["audioUrl"] == "/uploads/audio/solo-test.wav"
+    assert payload["answer"] == "前方有休息需求时，请先在附近设施中查看实时服务点。"
+    assert calls and calls[0]["messages"][-1]["content"] == "附近有休息区吗？"
+    assert calls[0]["kwargs"]["context"]["mode"] == "solo"
+    solo_prompt = calls[0]["messages"][0]["content"]
+    assert "不得冒充真人" in solo_prompt
+    assert "专业中文 AI" not in solo_prompt
+
+
+def test_solo_question_never_falls_back_to_mock(client, auth_helpers, monkeypatch):
+    from app.core.config import settings
+    import app.services.ai as ai_service
+
+    tourist = auth_helpers["register"]("tourist", "solo-no-key")
+    previous_key = settings.deepseek_api_key
+    settings.deepseek_api_key = ""
+    monkeypatch.setattr(
+        ai_service,
+        "get_llm",
+        lambda: (_ for _ in ()).throw(AssertionError("mock provider must not be used")),
+    )
+    try:
+        response = client.post(
+            "/api/ai/solo-question",
+            headers=auth_helpers["headers"](tourist),
+            json={
+                "userId": tourist["userId"],
+                "question": "介绍一下当前景点",
+                "needAudio": False,
+            },
+        )
+    finally:
+        settings.deepseek_api_key = previous_key
+
+    assert response.status_code == 503
+    assert response.json()["errorCode"] == "LLM_NOT_CONFIGURED"
+
+
+def test_guide_start_narration_generates_audio_for_room_members(client, auth_helpers, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.core.config import settings
+    import app.services.narration as narration_service
+
+    class FakeDeepSeek:
+        async def chat(self, messages, **kwargs):
+            assert "灵山大佛" in messages[0]["content"]
+            assert "现场讲解员的口吻" in messages[0]["content"]
+            assert "现场中文数字导游" not in messages[0]["content"]
+            return SimpleNamespace(content="**各位游客**，欢迎来到[灵山大佛](https://example.com)。#请放慢脚步_欣赏庄严的佛教文化景观。")
+
+    async def fake_tts(text, voice="guide_female", speed=1.0, room_id=None):
+        assert room_id
+        assert text.startswith("各位游客")
+        assert text == "各位游客，欢迎来到灵山大佛。请放慢脚步欣赏庄严的佛教文化景观。"
+        assert not any(symbol in text for symbol in "*#_[]()`~")
+        assert voice == "guide_male"
+        return {
+            "success": True,
+            "audioUrl": "/uploads/tts/room-narration-test.mp3",
+            "duration": 6.5,
+            "warning": None,
+        }
+
+    guide = auth_helpers["register"]("guide", "narration-guide")
+    tourist = auth_helpers["register"]("tourist", "narration-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+
+    previous_deepseek = settings.deepseek_api_key
+    previous_vision = settings.vision_api_key
+    settings.deepseek_api_key = "configured-for-test"
+    settings.vision_api_key = "configured-for-test"
+    monkeypatch.setattr(narration_service, "get_llm", lambda: FakeDeepSeek())
+    monkeypatch.setattr(narration_service, "tts_synthesize", fake_tts)
+    monkeypatch.setattr(narration_service, "search_knowledge", lambda *args, **kwargs: [])
+    try:
+        before_start = client.get(
+            f"/api/rooms/{room_id}/avatar-state",
+            headers=headers(tourist),
+        )
+        response = client.post(
+            f"/api/rooms/{room_id}/narration/start",
+            headers=headers(guide),
+            json={"spotId": "lingshan_buddha", "voice": "guide_male"},
+        )
+        forbidden = client.post(
+            f"/api/rooms/{room_id}/narration/start",
+            headers=headers(tourist),
+            json={"spotId": "lingshan_buddha"},
+        )
+        avatar = client.get(
+            f"/api/rooms/{room_id}/avatar-state",
+            headers=headers(tourist),
+        )
+    finally:
+        settings.deepseek_api_key = previous_deepseek
+        settings.vision_api_key = previous_vision
+
+    assert response.status_code == 200, response.text
+    assert before_start.status_code == 200
+    assert before_start.json()["aiStatus"] == "idle"
+    assert before_start.json()["audioUrl"] == ""
+    assert "等待团长" in before_start.json()["text"]
+    payload = response.json()
+    assert payload["llmProvider"] == "deepseek"
+    assert payload["voice"] == "guide_male"
+    assert payload["audioUrl"] == "/uploads/tts/room-narration-test.mp3"
+    assert payload["narrationId"]
+    assert payload["text"] == "各位游客，欢迎来到灵山大佛。请放慢脚步欣赏庄严的佛教文化景观。"
+    assert forbidden.status_code == 403
+    assert avatar.status_code == 200
+    assert avatar.json()["narrationId"] == payload["narrationId"]
+    assert avatar.json()["audioUrl"] == payload["audioUrl"]
+
+
+def test_feedback_and_dashboard_use_real_database_aggregates(client, auth_helpers):
+    guide = auth_helpers["register"]("guide", "stats-guide")
+    tourist = auth_helpers["register"]("tourist", "stats-tourist")
+    second_tourist = auth_helpers["register"]("tourist", "stats-tourist-two")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    for user in (tourist, second_tourist):
+        client.post(f"/api/rooms/{room_id}/join", headers=headers(user), json={})
+        response = client.post(
+            "/api/feedback",
+            headers=headers(user),
+            json={
+                "roomId": room_id,
+                "userId": user["userId"],
+                "score": 2,
+                "scene": "tour",
+                "comment": "语音太快，有些内容听不清",
+                "tags": ["语音体验"],
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["emotion"] == "negative"
+    admin = _admin(client)
+    satisfaction = client.get(
+        "/api/dashboard/satisfaction", headers=headers(admin)
+    ).json()
+    assert satisfaction["totalResponses"] >= 2
+    assert satisfaction["distribution"]["2"] >= 2
+    assert satisfaction["emotion"]["negative"] >= 2
+    assert len(satisfaction["trend"]) == 7
+    report = client.get("/api/dashboard/visitor-report", headers=headers(admin)).json()
+    assert any(item["topic"] == "语音体验" for item in report["attentionTopics"])
+    assert any("语音体验" in item for item in report["serviceSuggestions"])
+    metrics = client.get("/api/dashboard/system-metrics", headers=headers(admin)).json()
+    assert {"p50LatencyMs", "p95LatencyMs", "under5SecondsRate"} <= set(metrics)
+    assert client.get("/api/dashboard/overview", headers=headers(tourist)).status_code == 403
+
+
+def test_avatar_settings_are_server_persisted_and_admin_controlled(client, auth_helpers):
+    original = client.get("/api/avatar-settings")
+    assert original.status_code == 200
+    original_data = original.json()
+    tourist = auth_helpers["register"]("tourist", "avatar-tourist")
+    admin = _admin(client)
+    payload = {
+        "role": "yunchuan",
+        "outfit": "culture_red",
+        "imageUrl": "/assets/images/digital-guide-main.webp",
+        "voice": "guide_male",
+        "speed": 1.2,
+        "emotion": "calm",
+        "lipSync": True,
+        "emotionSync": True,
+        "idleMotion": False,
+    }
+    assert client.put(
+        "/api/avatar-settings", headers=auth_helpers["headers"](tourist), json=payload
+    ).status_code == 403
+    saved = client.put(
+        "/api/avatar-settings", headers=auth_helpers["headers"](admin), json=payload
+    )
+    assert saved.status_code == 200, saved.text
+    assert client.get("/api/avatar-settings").json()["voice"] == "guide_male"
+    restore = {key: original_data[key] for key in payload}
+    assert client.put(
+        "/api/avatar-settings", headers=auth_helpers["headers"](admin), json=restore
+    ).status_code == 200
+
+
+def test_route_template_selection_respects_interest_and_companions():
+    from app.services.scenic_map import _select_route_template, get_scenic_area
+
+    area = get_scenic_area("lingshan_shengjing")
+    assert _select_route_template(area, {"timeLimit": 180, "interest": ["history"]})["routeId"] == "lingshan_history"
+    assert _select_route_template(area, {"timeLimit": 180, "interest": ["nature"]})["routeId"] == "lingshan_nature"
+    assert _select_route_template(area, {"timeLimit": 180, "withChildren": True})["routeId"] == "lingshan_family"
+    assert _select_route_template(
+        area,
+        {"timeLimit": 180, "physicalStrength": "low", "withElderly": True},
+    )["routeId"] == "lingshan_easy"
+
+
+def test_knowledge_upload_chinese_search_detail_rebuild_and_delete(client, auth_helpers):
+    admin = _admin(client)
+    headers = auth_helpers["headers"](admin)
+    content = "钟楼始建于明代，是古城的重要地标。游客可以了解古代报时制度。".encode()
+    uploaded = client.post(
+        "/api/kb/upload",
+        headers=headers,
+        files={"file": ("history.md", content, "text/markdown")},
+    )
+    assert uploaded.status_code == 200, uploaded.text
+    document = uploaded.json()
+    assert document["status"] == "indexed"
+    assert document["chunkCount"] == 1
+
+    queried = client.post(
+        "/api/kb/test-query",
+        headers=headers,
+        json={"query": "古代报时制度", "limit": 5},
+    )
+    assert queried.status_code == 200, queried.text
+    assert any(item["source"] == "history.md" for item in queried.json()["results"])
+    assert client.get(f"/api/kb/docs/{document['docId']}", headers=headers).status_code == 200
+    rebuilt = client.post("/api/kb/rebuild", headers=headers).json()
+    assert rebuilt["failed"] == 0
+    assert client.delete(f"/api/kb/docs/{document['docId']}", headers=headers).status_code == 204
+    assert client.get(f"/api/kb/docs/{document['docId']}", headers=headers).status_code == 404
+
+
+def test_lingshan_spot_knowledge_supports_route_spot_ids(client):
+    response = client.get("/api/spots/lingshan_dazhaobi")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["spotName"] == "灵山大照壁"
+    assert payload["scenicAreaName"] == "灵山胜境"
+    assert payload["description"]
+    assert isinstance(payload["chunks"], list)
+
+
+def test_scenic_seed_replaces_legacy_builtin_chunks_and_preserves_uploads(tmp_path):
+    from app.core.config import settings
+    from app.core.database import database, reset_database_initialization_for_tests
+    from app.services.knowledge import seed_scenic_chunks
+
+    previous_path = settings.database_path
+    settings.database_path = str(tmp_path / "knowledge-sync.db")
+    reset_database_initialization_for_tests()
+    try:
+        with database() as connection:
+            connection.execute(
+                """
+                INSERT INTO kb_documents (
+                    doc_id, original_name, file_name, file_url, suffix, size, status, uploaded_at
+                ) VALUES ('uploaded-doc', '管理员资料.md', 'uploaded-doc.md',
+                          '/uploads/kb/uploaded-doc.md', '.md', 12, 'indexed', 1)
+                """
+            )
+            rows = [
+                ("legacy-demo", None, "旧主展厅", "旧示例资料"),
+                ("uploaded-001", "uploaded-doc", "管理员补充", "管理员上传内容"),
+            ]
+            for chunk_id, doc_id, title, content in rows:
+                connection.execute(
+                    """
+                    INSERT INTO kb_chunks (
+                        chunk_id, doc_id, title, source, content, created_at
+                    ) VALUES (?, ?, ?, '测试', ?, 1)
+                    """,
+                    (chunk_id, doc_id, title, content),
+                )
+                connection.execute(
+                    "INSERT INTO kb_chunks_fts (chunk_id, title, content, source) VALUES (?, ?, ?, '测试')",
+                    (chunk_id, title, content),
+                )
+
+        seed_scenic_chunks()
+
+        with database() as connection:
+            assert connection.execute(
+                "SELECT 1 FROM kb_chunks WHERE chunk_id = 'legacy-demo'"
+            ).fetchone() is None
+            assert connection.execute(
+                "SELECT 1 FROM kb_chunks_fts WHERE chunk_id = 'legacy-demo'"
+            ).fetchone() is None
+            assert connection.execute(
+                "SELECT content FROM kb_chunks WHERE chunk_id = 'uploaded-001'"
+            ).fetchone()["content"] == "管理员上传内容"
+            built_in_count = connection.execute(
+                "SELECT COUNT(*) AS total FROM kb_chunks WHERE doc_id IS NULL"
+            ).fetchone()["total"]
+            expected_count = len(
+                json.loads((Path(__file__).resolve().parents[1] / "data/scenic_chunks.json").read_text(encoding="utf-8"))
+            )
+            assert built_in_count == expected_count
+    finally:
+        settings.database_path = previous_path
+        reset_database_initialization_for_tests()
+
+
+def test_openapi_and_v4_contract(client):
+    root_response = client.get("/", follow_redirects=False)
+    assert root_response.status_code == 307
+    assert root_response.headers["location"] == "/pages/landing/index.html"
+
+    schema = client.get("/openapi.json").json()
+    assert schema["info"]["title"] == "云游智导景区导览服务"
+    expected = {
+        ("/api/auth/guest", "post"),
+        ("/api/auth/ws-ticket", "post"),
+        ("/api/ai/solo-question", "post"),
+        ("/api/audio/upload", "post"),
+        ("/api/rooms/{roomId}/narration/start", "post"),
+        ("/api/feedback", "post"),
+        ("/api/rooms/{roomId}/status", "patch"),
+        ("/api/rooms/{roomId}/messages", "get"),
+        ("/api/rooms/{roomId}/messages", "post"),
+    }
+    for path, method in expected:
+        assert method in schema["paths"][path]
+
+    root = Path(__file__).resolve().parents[1]
+    api_client = (root / "frontend-v4/assets/js/api-client.js").read_text(encoding="utf-8")
+    landing = (root / "frontend-v4/assets/js/pages/landing.js").read_text(encoding="utf-8")
+    guide_html = (root / "frontend-v4/pages/guide-panel/index.html").read_text(encoding="utf-8")
+    guide_script = (root / "frontend-v4/assets/js/pages/guide-panel.js").read_text(encoding="utf-8")
+    landing_html = (root / "frontend-v4/pages/landing/index.html").read_text(encoding="utf-8")
+    visitor_html = (root / "frontend-v4/pages/user-portal/index.html").read_text(encoding="utf-8")
+    visitor_script = (root / "frontend-v4/assets/js/pages/visitor-unified.js").read_text(encoding="utf-8")
+    assert "Authorization" in api_client and "Bearer" in api_client
+    assert "admin123" not in landing
+    assert 'id="btn-notifications"' in guide_html
+    assert 'id="btn-more"' in guide_html
+    assert 'data-more-action="refresh"' in guide_html
+    assert 'id="guide-audio-seek"' in guide_html
+    assert 'id="narration-voice"' in guide_html
+    assert 'id="leader-sync-status"' in guide_html
+    assert 'id="leader-audience-summary"' in guide_html
+    assert 'guide-panel-mobile.css' in guide_html
+    assert 'id="leader-mobile-sheet"' in guide_html
+    assert 'id="chapter-track"' in guide_html
+    assert 'data-avatar-role="head-only"' in guide_html
+    assert 'type="range"' in guide_html
+    assert "voice: voice" in guide_script
+    assert "handleAudioSeek" in guide_script
+    assert "showNotificationCenter" in guide_script
+    assert "handleMoreAction" in guide_script
+    assert "connectRoomSocket" in guide_script
+    assert "handleRoomSocketEvent" in guide_script
+    assert "renderMobilePanel" in guide_script
+    assert "data-mobile-action=\"collect\"" in guide_script
+    assert "renderChapterTrack" in guide_script
+    assert "isHeadOnly" in guide_script
+    assert "各位朋友，欢迎来到主展厅" not in guide_html
+    assert "根据当前景点资料准备讲解并播放" in guide_html
+    assert 'id="modal-voice"' in landing_html
+    assert 'id="room-voice-select"' in visitor_html
+    assert 'id="visitor-voice"' in visitor_html
+    assert 'data-tool="vision"' in visitor_html
+    assert 'data-tool="route"' in visitor_html
+    assert 'id="guide-person-invoke"' in visitor_html
+    assert 'id="chat-drawer"' in visitor_html
+    assert 'id="visitor-switch-role"' in visitor_html
+    assert "A.auth.logout()" in visitor_script
+    assert 'pages/user-portal.js' not in visitor_html
+    assert "sendPublicQuestion" in visitor_script
+    assert "activateGuide('arrival')" in visitor_script
+    assert "long press" not in visitor_script
+    assert "direct/" in visitor_script
+    assert "MediaRecorder" in visitor_script
+    assert "chat-media" in visitor_script
+    assert "小周" not in visitor_html
+
+    natural_ui_files = [
+        (root / "frontend-v4/index.html").read_text(encoding="utf-8"),
+        api_client,
+        (root / "frontend-v4/assets/js/components.js").read_text(encoding="utf-8"),
+        landing_html,
+        guide_html,
+        guide_script,
+        visitor_html,
+        visitor_script,
+        (root / "frontend-v4/pages/ai-assistant/index.html").read_text(encoding="utf-8"),
+        (root / "frontend-v4/assets/js/pages/ai-assistant.js").read_text(encoding="utf-8"),
+        (root / "frontend-v4/pages/vision/index.html").read_text(encoding="utf-8"),
+        (root / "frontend-v4/assets/js/pages/vision.js").read_text(encoding="utf-8"),
+        (root / "frontend-v4/pages/recommend/index.html").read_text(encoding="utf-8"),
+        (root / "frontend-v4/assets/js/pages/recommend.js").read_text(encoding="utf-8"),
+        (root / "frontend-v4/pages/dashboard/index.html").read_text(encoding="utf-8"),
+        (root / "frontend-v4/pages/knowledge-base/index.html").read_text(encoding="utf-8"),
+        (root / "frontend-v4/pages/avatar-studio/index.html").read_text(encoding="utf-8"),
+    ]
+    forbidden_ui_phrases = [
+        "AI 正在思考",
+        "AI 正在讲解",
+        "AI 实时生成",
+        "高德真实",
+        "不使用 Mock",
+        "Key 不会发送到浏览器",
+        "置信度：",
+        "94.2%",
+        "4.8 / 5",
+        "数字人引擎在线",
+        "高于赛题目标",
+        "检测到你可能需要帮助",
+        "请确认后端已启动",
+    ]
+    visible_ui = "\n".join(natural_ui_files)
+    for phrase in forbidden_ui_phrases:
+        assert phrase not in visible_ui
+
+    ai_service = (root / "app/services/ai.py").read_text(encoding="utf-8")
+    narration_service = (root / "app/services/narration.py").read_text(encoding="utf-8")
+    vision_provider = (root / "app/providers/vision/qwen_vl.py").read_text(encoding="utf-8")
+    vision_service = (root / "app/services/vision.py").read_text(encoding="utf-8")
+    audio_service = (root / "app/services/audio.py").read_text(encoding="utf-8")
+    assert "不得冒充真人" in ai_service
+    assert "专业中文 AI 导游" not in ai_service
+    assert "专业中文 AI 独自导览助手" not in ai_service
+    assert "现场中文数字导游" not in narration_service
+    assert "智能图片识别助手" not in vision_provider
+    assert "Mock vision mode is active." not in vision_service
+    assert "_write_demo_wav" not in audio_service
+    assert "Mock audio mode is active." not in audio_service
+
+    html_paths = [
+        root / "frontend-v4/index.html",
+        root / "frontend-v4/pages/landing/index.html",
+        root / "frontend-v4/pages/guide-panel/index.html",
+        root / "frontend-v4/pages/user-portal/index.html",
+        root / "frontend-v4/pages/ai-assistant/index.html",
+        root / "frontend-v4/pages/vision/index.html",
+        root / "frontend-v4/pages/recommend/index.html",
+        root / "frontend-v4/pages/dashboard/index.html",
+        root / "frontend-v4/pages/knowledge-base/index.html",
+        root / "frontend-v4/pages/avatar-studio/index.html",
+    ]
+    for path in html_paths:
+        html = path.read_text(encoding="utf-8")
+        ids = re.findall(r'id="([^"]+)"', html)
+        assert len(ids) == len(set(ids))
+
+
+def test_real_validation_manifest_targets_product_api_contract():
+    root = Path(__file__).resolve().parents[1]
+    manifest = json.loads(
+        (root / "test_data" / "real_model_validation" / "manifest.json").read_text(encoding="utf-8")
+    )
+    runner = root / "tools" / "run_real_model_validation.py"
+    assert manifest["version"] == 2
+    assert runner.exists()
+    assert all("endpoint" not in case for group in manifest["testGroups"].values() for case in group)
+
+
+def test_public_question_no_action_still_uses_deepseek(client, auth_helpers, fake_deepseek):
+    guide = auth_helpers["register"]("guide", "public-ai-guide")
+    tourist = auth_helpers["register"]("tourist", "public-ai-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+
+    response = client.post(
+        "/api/ai/public-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "question": "你是谁？",
+            "needAudio": False,
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["provider"] == "deepseek"
+    assert response.json()["answer"] == "我是云游智导的导览助手，可以为你介绍景点和游览信息。"
+    assert fake_deepseek
+    assert fake_deepseek[0]["messages"][-1]["content"] == "你是谁？"
+    identity_prompt = fake_deepseek[0]["messages"][0]["content"]
+    assert "不得冒充真人" in identity_prompt
+    assert "专业中文 AI" not in identity_prompt
+
+
+def test_browser_recognized_voice_uses_ai_without_audio_upload_and_is_counted(
+    client, auth_helpers, fake_deepseek
+):
+    guide = auth_helpers["register"]("guide", "browser-voice-guide")
+    tourist = auth_helpers["register"]("tourist", "browser-voice-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    admin = _admin(client)
+    before = client.get("/api/dashboard/overview", headers=headers(admin)).json()
+
+    public_response = client.post(
+        "/api/ai/public-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "question": "灵山大佛有多高？",
+            "needAudio": False,
+            "inputMode": "voice",
+            "asrConfidence": 0.92,
+        },
+    )
+    solo_response = client.post(
+        "/api/ai/solo-question",
+        headers=headers(tourist),
+        json={
+            "userId": tourist["userId"],
+            "question": "九龙灌浴讲的是什么？",
+            "currentSpotId": "jiulong_guanyu",
+            "needAudio": False,
+            "inputMode": "voice",
+            "asrConfidence": 0.88,
+        },
+    )
+
+    assert public_response.status_code == 200, public_response.text
+    assert solo_response.status_code == 200, solo_response.text
+    assert public_response.json()["provider"] == "deepseek"
+    assert solo_response.json()["provider"] == "deepseek"
+    after = client.get("/api/dashboard/overview", headers=headers(admin)).json()
+    assert after["voiceQuestionCount"] == before["voiceQuestionCount"] + 2
+    assert after["questionCount"] == before["questionCount"]
+
+
+def test_unified_algorithm_private_need_is_not_persisted_publicly(client, auth_helpers, fake_deepseek):
+    from app.services.users import get_user_memory_tags
+
+    guide = auth_helpers["register"]("guide", "unified-guide")
+    tourist = auth_helpers["register"]("tourist", "unified-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    before = client.get(f"/api/rooms/{room_id}/messages", headers=headers(tourist)).json()["messages"]
+
+    response = client.post(
+        "/api/ai/public-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "question": "老人走不动了，附近可以休息吗？",
+            "needAudio": False,
+        },
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["decision"] == "private_reply"
+    assert payload["provider"] == "deepseek"
+    assert fake_deepseek
+    assert any(event["type"] == "suggest_private_channel" for event in payload["events"])
+    after = client.get(f"/api/rooms/{room_id}/messages", headers=headers(tourist)).json()["messages"]
+    assert len(after) == len(before)
+    memory = get_user_memory_tags(tourist["userId"])
+    assert memory["stamina"] == "low"
+    assert "elderly" in memory["companions"]
+
+
+def test_unified_algorithm_voice_clarification_and_route_score(client, auth_helpers):
+    guide = auth_helpers["register"]("guide", "unified-route-guide")
+    tourist = auth_helpers["register"]("tourist", "unified-route-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+
+    voice = client.post(
+        "/api/ai/public-voice-question",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
+            "channel": "public",
+            "audioUrl": "https://example.com/audio/unclear.wav",
+            "audioFormat": "wav",
+        },
+    )
+    assert voice.status_code == 200, voice.text
+    assert voice.json()["decision"] == "ask_clarification"
+
+    route = client.post(
+        "/api/recommend/route",
+        headers=headers(tourist),
+        json={
+            "roomId": room_id,
+            "userId": tourist["userId"],
             "preferences": {
                 "interest": ["历史"],
-                "timeLimit": 90,
-                "physicalStrength": "high",
-                "withChildren": False,
-                "withElderly": False,
-                "avoidCrowd": False,
-            },
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        # 对齐加分制：interest=["历史"] 的路由有 interestScore=+3 优势
-        assert data["scoreBreakdown"]["interestScore"] >= 3
-
-    def test_recommend_children_route(self):
-        """带小孩 → family_friendly 路线得分更高（companionScore +2）"""
-        user = register_user("亲子游")
-        room = create_room(user["token"])
-        resp = client.post("/api/recommend/route", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "preferences": {
-                "interest": [],
-                "timeLimit": 60,
-                "physicalStrength": "medium",
-                "withChildren": True,
-                "withElderly": False,
-                "avoidCrowd": False,
-            },
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "family_friendly" in data["matchedPreferences"]
-
-    def test_recommend_low_strength_route(self):
-        """体力低 → less_walking 路线有 staminaScore +2 优势"""
-        user = register_user("体力低")
-        room = create_room(user["token"])
-        resp = client.post("/api/recommend/route", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "preferences": {
-                "interest": [],
-                "timeLimit": 60,
+                "timeLimit": 40,
                 "physicalStrength": "low",
                 "withChildren": False,
-                "withElderly": False,
-                "avoidCrowd": False,
-            },
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "less_walking" in data["matchedPreferences"]
-
-    def test_recommend_avoid_crowd_route(self):
-        """避拥挤 → avoidCrowd 触发 less_walking 偏好"""
-        user = register_user("避人群")
-        room = create_room(user["token"])
-        resp = client.post("/api/recommend/route", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "preferences": {
-                "interest": [],
-                "timeLimit": 60,
-                "physicalStrength": "medium",
-                "withChildren": False,
-                "withElderly": False,
+                "withElderly": True,
                 "avoidCrowd": True,
             },
-        })
-        assert resp.status_code == 200
-        # 对齐：avoidCrowd 表示偏好轻松路线
-        assert "reason" in resp.json()
+        },
+    )
+    assert route.status_code == 200, route.text
+    recommendation = route.json()
+    assert recommendation["routeId"] == "lingshan_easy"
+    assert sum(recommendation["scoreBreakdown"].values()) == recommendation["score"]
+    assert recommendation["spots"]
 
-    def test_recommend_nonexistent_room_returns_404(self):
-        resp = client.post("/api/recommend/route", json={
-            "roomId": "fake-room",
-            "userId": "user_001",
-            "preferences": {
-                "interest": [],
-                "timeLimit": 60,
-                "physicalStrength": "medium",
-                "withChildren": False,
-                "withElderly": False,
-                "avoidCrowd": True,
+
+def test_unified_algorithm_safety_alert_is_leader_only_websocket_event(
+    client, auth_helpers, fake_deepseek, monkeypatch
+):
+    import app.services.ai as ai_service
+
+    async def fixed_asr(*args, **kwargs):
+        return {
+            "text": "我和团队走散了，现在找不到团长",
+            "confidence": 0.99,
+            "success": True,
+            "format": "wav",
+            "warning": None,
+        }
+
+    async def fixed_tts(*args, **kwargs):
+        return {
+            "audioUrl": "/uploads/tts/safety-test.mp3",
+            "duration": 1.0,
+            "success": True,
+            "warning": None,
+        }
+
+    monkeypatch.setattr(ai_service, "asr_transcribe", fixed_asr)
+    monkeypatch.setattr(ai_service, "tts_synthesize", fixed_tts)
+    guide = auth_helpers["register"]("guide", "alert-guide")
+    tourist = auth_helpers["register"]("tourist", "alert-tourist")
+    headers = auth_helpers["headers"]
+    room_id = auth_helpers["create_room"](guide)
+    client.post(f"/api/rooms/{room_id}/join", headers=headers(tourist), json={})
+    ticket = client.post(
+        "/api/auth/ws-ticket", headers=headers(guide), json={"roomId": room_id}
+    ).json()["ticket"]
+
+    with client.websocket_connect(f"/ws/rooms/{room_id}?ticket={ticket}") as leader_socket:
+        assert leader_socket.receive_json()["type"] == "room.connected"
+        response = client.post(
+            "/api/ai/public-voice-question",
+            headers=headers(tourist),
+            json={
+                "roomId": room_id,
+                "userId": tourist["userId"],
+                "channel": "private",
+                "audioUrl": "https://example.com/audio/lost.wav",
+                "audioFormat": "wav",
             },
-        })
-        assert resp.status_code == 404
-
-    def test_recommend_all_spots_have_required_fields(self):
-        """每个推荐景点都包含 spotId, spotName, stayMinutes"""
-        user = register_user("字段验证")
-        room = create_room(user["token"])
-        resp = client.post("/api/recommend/route", json={
-            "roomId": room["roomId"],
-            "userId": user["userId"],
-            "preferences": {
-                "interest": [],
-                "timeLimit": 60,
-                "physicalStrength": "medium",
-                "withChildren": False,
-                "withElderly": False,
-                "avoidCrowd": False,
-            },
-        })
-        for spot in resp.json()["spots"]:
-            assert "spotId" in spot
-            assert "spotName" in spot
-            assert "stayMinutes" in spot
-            assert isinstance(spot["stayMinutes"], int)
-            assert spot["stayMinutes"] > 0
-
-
-# ═══════════════════════════════════════════════════════════
-# 422 验证错误
-# ═══════════════════════════════════════════════════════════
-
-class TestValidationErrors:
-    """Pydantic 验证 → 422"""
-
-    @pytest.mark.parametrize("endpoint,body", [
-        ("/api/rooms", {}),
-        ("/api/rooms", {"token": "t"}),
-        ("/api/rooms/nonexistent/join", {}),
-        ("/api/rooms/nonexistent/current-spot", {}),
-        ("/api/audio/asr", {}),
-        ("/api/ai/public-question", {}),
-        ("/api/ai/public-voice-question", {}),
-        ("/api/vision/recognize", {}),
-        ("/api/recommend/route", {}),
-    ])
-    def test_missing_required_fields_returns_422(self, endpoint, body):
-        resp = client.post(endpoint, json=body)
-        assert resp.status_code == 422, f"{endpoint} with {body}: expected 422, got {resp.status_code}"
-
-
-# ═══════════════════════════════════════════════════════════
-# 端到端场景测试
-# ═══════════════════════════════════════════════════════════
-
-class TestEndToEndScenarios:
-    """模拟完整的用户使用流程"""
-
-    def test_full_guided_tour_flow(self):
-        """完整导览流程：注册 → 创建房间 → 加入 → 设置景点 → ASR → 问答 → 路线推荐 → 化身状态"""
-        # 1. 导游注册并创建房间
-        guide = register_user("导游小王")
-        room = create_room(guide["token"], "故宫一日游")
-
-        # 2. 两名游客加入
-        tourist_a = register_user("游客A")
-        tourist_b = register_user("游客B")
-        client.post(f"/api/rooms/{room['roomId']}/join", json={"token": tourist_a["token"]})
-        client.post(f"/api/rooms/{room['roomId']}/join", json={"token": tourist_b["token"]})
-
-        # 3. 验证房间成员
-        status = client.get(f"/api/rooms/{room['roomId']}").json()
-        assert len(status["members"]) == 2
-
-        # 4. 导游设置当前景点
-        client.post(f"/api/rooms/{room['roomId']}/current-spot", json={
-            "spotId": "spot_002",
-        })
-        assert client.get(f"/api/rooms/{room['roomId']}").json()["currentSpot"] == "spot_002"
-
-        # 5. 数字人状态应为 speaking
-        avatar = client.get(f"/api/rooms/{room['roomId']}/avatar-state").json()
-        assert avatar["aiStatus"] == "speaking"
-
-        # 6. 游客语音提问（带 textHint 保证高置信度）
-        voice_resp = client.post("/api/ai/public-voice-question", json={
-            "roomId": room["roomId"],
-            "userId": tourist_a["userId"],
-            "channel": "public",
-            "audioUrl": "https://example.com/question.wav",
-            "textHint": "这个建筑有什么历史故事？",
-        })
-        assert voice_resp.status_code == 200
-        assert voice_resp.json()["decision"] == "interrupt_and_answer"  # text_hint → 高置信度
-
-        # 7. 路线推荐（兴趣为历史 → interestScore 加分）
-        route_resp = client.post("/api/recommend/route", json={
-            "roomId": room["roomId"],
-            "userId": tourist_a["userId"],
-            "preferences": {
-                "interest": ["历史"],
-                "timeLimit": 120,
-                "physicalStrength": "medium",
-                "withChildren": False,
-                "withElderly": False,
-                "avoidCrowd": False,
-            },
-        })
-        assert route_resp.status_code == 200
-        assert route_resp.json()["scoreBreakdown"]["interestScore"] >= 3
-
-    def test_register_then_join_multiple_rooms(self):
-        """用户加入多个房间"""
-        user = register_user("多房用户")
-        guide = register_user("多房导游")
-
-        room1 = create_room(guide["token"], "上午场")
-        room2 = create_room(guide["token"], "下午场")
-
-        r1 = client.post(f"/api/rooms/{room1['roomId']}/join", json={"token": user["token"]})
-        r2 = client.post(f"/api/rooms/{room2['roomId']}/join", json={"token": user["token"]})
-        assert r1.status_code == 200
-        assert r2.status_code == 200
-
-        # 两个房间成员列表都应有该用户
-        s1 = client.get(f"/api/rooms/{room1['roomId']}").json()
-        s2 = client.get(f"/api/rooms/{room2['roomId']}").json()
-        assert any(m["userId"] == user["userId"] for m in s1["members"])
-        assert any(m["userId"] == user["userId"] for m in s2["members"])
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["decision"] == "emergency_alert"
+        assert response.json()["provider"] == "deepseek"
+        alert = leader_socket.receive_json()
+        assert alert["type"] == "room.alert"
+        assert alert["data"]["riskLevel"] == "high"
