@@ -27,10 +27,22 @@
 
     <section class="stage-pane">
       <div id="guide-stage" class="guide-stage" data-status="idle" data-emotion="friendly">
-        <div class="guide-avatar-area"><div id="guide-avatar-frame" class="guide-avatar-frame" data-avatar-role="xiaoyun"><img id="guide-avatar-image" src="../../assets/images/digital-avatar-a.png" data-speaking-src="../../assets/images/digital-avatar-a-open.png" alt="男性卡通数字人头像"><span id="guide-avatar-mouth" class="lip-sync-mouth" data-mouth-level="0" aria-hidden="true"></span></div></div>
+        <div class="guide-avatar-area"><div id="guide-avatar-frame" class="guide-avatar-frame" data-avatar-role="head-only"><img id="guide-avatar-image" src="../../assets/images/digital-guide-foreground.png" alt="温柔女声数字讲解员"><span id="guide-avatar-mouth" class="lip-sync-mouth" data-mouth-level="0" aria-hidden="true"></span></div></div>
         <div class="stage-status"><span class="speaking-dot"></span><span id="ai-status-badge">待命</span><span id="ai-action-display">等待开始讲解</span></div>
         <p id="leader-audience-summary" class="leader-audience-summary">游客端将在景点切换后同步更新</p>
         <p class="subtitle">点击“开始讲解”后，系统会根据当前景点资料准备讲解并播放。</p>
+      </div>
+      <div class="guide-voice-toolbar">
+        <label class="narration-voice-picker" for="narration-voice">
+          <span><span class="material-icons">record_voice_over</span>讲解音色</span>
+          <select id="narration-voice">
+            <option value="guide_female">温柔女声</option>
+            <option value="xiaomei">活力女声</option>
+            <option value="guide_male">沉稳男声</option>
+            <option value="xiaowei">专业男声</option>
+          </select>
+          <small>切换后数字人形象会同步更新，下次讲解使用新音色</small>
+        </label>
       </div>
       <div class="chapter-panel">
         <div class="chapter-current"><small>当前章节</small><strong id="current-spot-display">灵山大照壁</strong><span id="progress-display">第 1 段 / 共 5 段</span></div>
@@ -49,16 +61,6 @@
       <section class="context-block route-block"><h3>路线进度</h3><div class="route-list"><button class="route-step active">灵山大照壁 <span>正在讲解</span></button><button class="route-step">九龙灌浴 <span>待讲解</span></button><button class="route-step">灵山大佛 <span>待讲解</span></button></div></section>
       <section class="context-block request-card"><button id="btn-view-requests2"><span><span class="material-icons">chat_bubble_outline</span>私人请求 <b id="requests-badge">0</b></span><span class="material-icons">chevron_right</span></button></section>
       <div class="spot-picker"><button id="spot-selector-btn" aria-expanded="false"><span id="spot-selector-label">切换景点</span><span class="material-icons">expand_more</span></button><div id="spot-dropdown" class="spot-dropdown hidden"></div></div>
-      <label class="narration-voice-picker" for="narration-voice">
-        <span><span class="material-icons">record_voice_over</span>讲解音色</span>
-        <select id="narration-voice">
-          <option value="guide_female">温暖女声</option>
-          <option value="xiaomei">活力女声</option>
-          <option value="guide_male">沉稳男声</option>
-          <option value="xiaowei">专业男声</option>
-        </select>
-        <small>下次准备讲解时生效</small>
-      </label>
       <span id="route-name-display" class="sr-only">—</span>
     </aside>
   </main>
@@ -82,6 +84,6 @@
   <div id="route-modal" class="modal-layer hidden"><div class="modal-card"><p class="eyebrow">创建导览房间</p><h2>选择今天的导览路线</h2><div id="route-list" class="route-options"></div><div class="modal-actions"><button id="route-cancel" class="command">取消</button><button id="route-confirm" class="command primary" disabled>确认并创建</button></div></div></div>
   <div id="leader-mobile-sheet" class="leader-mobile-sheet hidden" role="dialog" aria-modal="true" aria-label="成员、路线与管理"><div id="leader-mobile-backdrop" class="leader-mobile-backdrop"></div><section class="leader-mobile-card"><header><div><small>领队工作台</small><h2>成员、路线与管理</h2></div><button id="leader-mobile-close" type="button" aria-label="关闭"><span class="material-icons">close</span></button></header><nav><button type="button" data-leader-panel="members" class="is-active">成员</button><button type="button" data-leader-panel="route">路线</button><button type="button" data-leader-panel="manage">管理</button></nav><div id="leader-mobile-content"></div></section></div>
 
-  <script src="../../assets/js/config.js"></script><script src="../../assets/js/state.js"></script><script src="../../assets/js/api-client.js"></script><script src="../../assets/js/auth.js"></script><script src="../../assets/js/ui.js"></script><script src="../../assets/js/router.js"></script><script src="../../assets/js/components.js"></script><script src="../../assets/js/lip-sync.js"></script><script src="../../assets/js/pages/guide-panel.js"></script>
+  <script src="../../assets/js/config.js"></script><script src="../../assets/js/state.js"></script><script src="../../assets/js/api-client.js"></script><script src="../../assets/js/auth.js"></script><script src="../../assets/js/ui.js"></script><script src="../../assets/js/router.js"></script><script src="../../assets/js/components.js"></script><script src="../../assets/js/avatar-voice-map.js"></script><script src="../../assets/js/lip-sync.js"></script><script src="../../assets/js/pages/guide-panel.js"></script>
 </body>
 </html>

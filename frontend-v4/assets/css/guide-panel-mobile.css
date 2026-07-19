@@ -12,6 +12,9 @@
   .visitor-pane, .context-pane { display: none; }
   .stage-pane { height: 100%; min-height: 0; gap: 0; }
   .guide-stage { flex: 1; min-height: 0; border-radius: 0; box-shadow: none; }
+  .guide-voice-toolbar { flex: 0 0 auto; padding: 7px 10px 0; background: var(--surface); }
+  .guide-voice-toolbar .narration-voice-picker { width: 100%; grid-template-columns: auto minmax(0,1fr); gap: 4px 8px; padding: 8px 10px; }
+  .guide-voice-toolbar .narration-voice-picker small { font-size: 9px; }
   .guide-avatar-area { inset: 12% 9% 25%; }
   .guide-avatar-frame { width: min(72vw, 330px); height: auto; aspect-ratio: 1; border-radius: 22px; }
   .stage-status { top: 12px; left: 12px; font-size: 11px; }
@@ -63,6 +66,9 @@
   .visitor-pane, .context-pane { display: none; }
   .stage-pane { height: 100%; min-height: 0; gap: 0; }
   .guide-stage { flex: 1; min-height: 0; border-radius: 0; box-shadow: none; }
+  .guide-voice-toolbar { flex: 0 0 auto; padding: 7px 10px 0; background: var(--surface); }
+  .guide-voice-toolbar .narration-voice-picker { width: 100%; grid-template-columns: auto minmax(0,1fr); gap: 4px 8px; padding: 8px 10px; }
+  .guide-voice-toolbar .narration-voice-picker small { font-size: 9px; }
   .guide-avatar-area { inset: 12% 9% 25%; }
   .guide-avatar-frame { width: min(72vw, 330px); height: auto; aspect-ratio: 1; border-radius: 22px; }
   .stage-status { top: 12px; left: 12px; font-size: 11px; }

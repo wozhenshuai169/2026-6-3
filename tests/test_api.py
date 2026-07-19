@@ -527,6 +527,7 @@ def test_guide_start_narration_generates_audio_for_room_members(client, auth_hel
     assert forbidden.status_code == 403
     assert avatar.status_code == 200
     assert avatar.json()["narrationId"] == payload["narrationId"]
+    assert avatar.json()["voice"] == "guide_male"
     assert avatar.json()["audioUrl"] == payload["audioUrl"]
 
 
@@ -739,6 +740,7 @@ def test_openapi_and_v4_contract(client):
     landing_html = (root / "frontend-v4/pages/landing/index.html").read_text(encoding="utf-8")
     visitor_html = (root / "frontend-v4/pages/user-portal/index.html").read_text(encoding="utf-8")
     visitor_script = (root / "frontend-v4/assets/js/pages/visitor-unified.js").read_text(encoding="utf-8")
+    avatar_voice_map = (root / "frontend-v4/assets/js/avatar-voice-map.js").read_text(encoding="utf-8")
     assert "Authorization" in api_client and "Bearer" in api_client
     assert "admin123" not in landing
     assert 'id="btn-notifications"' in guide_html
@@ -751,8 +753,9 @@ def test_openapi_and_v4_contract(client):
     assert 'guide-panel-mobile.css' in guide_html
     assert 'id="leader-mobile-sheet"' in guide_html
     assert 'id="chapter-track"' in guide_html
-    assert 'src="../../assets/images/digital-avatar-a.png"' in guide_html
-    assert 'data-speaking-src="../../assets/images/digital-avatar-a-open.png"' in guide_html
+    assert 'src="../../assets/images/digital-guide-foreground.png"' in guide_html
+    assert 'class="guide-voice-toolbar"' in guide_html
+    assert 'avatar-voice-map.js' in guide_html
     assert 'type="range"' in guide_html
     assert "voice: voice" in guide_script
     assert "handleAudioSeek" in guide_script
@@ -763,7 +766,7 @@ def test_openapi_and_v4_contract(client):
     assert "renderMobilePanel" in guide_script
     assert "data-mobile-action=\"collect\"" in guide_script
     assert "renderChapterTrack" in guide_script
-    assert "isHeadOnly" in guide_script
+    assert "applyVoiceAvatar" in guide_script
     assert "各位朋友，欢迎来到主展厅" not in guide_html
     assert "根据当前景点资料准备讲解并播放" in guide_html
     assert 'id="modal-voice"' in landing_html
@@ -774,6 +777,10 @@ def test_openapi_and_v4_contract(client):
     assert 'id="guide-person-invoke"' in visitor_html
     assert 'id="chat-drawer"' in visitor_html
     assert 'id="visitor-switch-role"' in visitor_html
+    assert 'avatar-voice-map.js' in visitor_html
+    assert "digital-guide-foreground.png" in avatar_voice_map
+    assert "digital-avatar-professional-male.png" in avatar_voice_map
+    assert "professional-male" in avatar_voice_map
     assert "A.auth.logout()" in visitor_script
     assert 'pages/user-portal.js' not in visitor_html
     assert "sendPublicQuestion" in visitor_script

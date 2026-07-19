@@ -4,11 +4,9 @@
   var A = window.Aurelian;
   var api = A.api;
   var ui = A.ui;
-  var AVATARS = {
-    xiaoyun: { imageUrl: '/assets/images/digital-avatar-a.png', speakingImageUrl: '/assets/images/digital-avatar-a-open.png', alt: '男性形象 A' },
-    yunchuan: { imageUrl: '/assets/images/digital-avatar-b.png', alt: '形象 B' }
-  };
-  var currentImageUrl = AVATARS.xiaoyun.imageUrl;
+  var avatarVoices = A.avatarVoices;
+  var currentImageUrl = avatarVoices.get('guide_female').imageUrl;
+  var usingCustomImage = false;
   var lipSyncController = null;
 
   function byId(id) {
@@ -16,12 +14,13 @@
   }
 
   function config() {
-    var role = selectedRole();
+    var voice = byId('avatar-voice').value;
+    var character = avatarVoices.get(voice);
     return {
-      role: role,
+      role: character.configRole,
       outfit: byId('avatar-outfit').value,
       imageUrl: currentImageUrl,
-      voice: byId('avatar-voice').value,
+      voice: voice,
       speed: Number(byId('avatar-speed').value),
       emotion: byId('avatar-emotion').value,
       lipSync: byId('lip-sync').checked,
@@ -30,38 +29,35 @@
     };
   }
 
-  function selectedRole() {
-    var checked = document.querySelector('input[name="avatar-role"]:checked');
-    return checked && AVATARS[checked.value] ? checked.value : 'xiaoyun';
-  }
-
-  function selectRole(role, useDefaultImage) {
-    var nextRole = AVATARS[role] ? role : 'xiaoyun';
-    var radio = document.querySelector('input[name="avatar-role"][value="' + nextRole + '"]');
+  function selectCharacter(voice, useDefaultImage) {
+    var character = avatarVoices.get(voice);
+    var nextVoice = avatarVoices.voices[voice] ? voice : 'guide_female';
+    var radio = document.querySelector('input[name="avatar-character"][value="' + nextVoice + '"]');
     if (radio) radio.checked = true;
-    if (useDefaultImage !== false) currentImageUrl = AVATARS[nextRole].imageUrl;
-    byId('avatar-preview-frame').setAttribute('data-avatar-role', nextRole);
-    byId('avatar-preview-image').src = currentImageUrl;
-    if (currentImageUrl === AVATARS[nextRole].imageUrl && AVATARS[nextRole].speakingImageUrl) {
-      byId('avatar-preview-image').setAttribute('data-speaking-src', AVATARS[nextRole].speakingImageUrl);
-    } else {
-      byId('avatar-preview-image').removeAttribute('data-speaking-src');
+    byId('avatar-voice').value = nextVoice;
+    if (useDefaultImage !== false) {
+      currentImageUrl = character.imageUrl;
+      usingCustomImage = false;
     }
-    byId('avatar-preview-image').alt = AVATARS[nextRole].alt + '讲解形象预览';
+    avatarVoices.apply(nextVoice, byId('avatar-preview-image'), byId('avatar-preview-frame'), {
+      customImageUrl: usingCustomImage ? currentImageUrl : '',
+      customRole: character.role
+    });
   }
 
   function applyConfig(c) {
     if (!c) return;
-    var role = AVATARS[c.role] ? c.role : 'xiaoyun';
+    var voice = avatarVoices.voices[c.voice] ? c.voice : 'guide_female';
     byId('avatar-outfit').value = c.outfit || 'modern_black';
-    byId('avatar-voice').value = c.voice || 'guide_female';
+    byId('avatar-voice').value = voice;
     byId('avatar-speed').value = c.speed || 1;
     byId('avatar-emotion').value = c.emotion || 'friendly';
     byId('lip-sync').checked = c.lipSync !== false;
     byId('emotion-sync').checked = c.emotionSync !== false;
     byId('idle-motion').checked = c.idleMotion !== false;
-    currentImageUrl = c.imageUrl && c.imageUrl.indexOf('/uploads/avatar/') === 0 ? c.imageUrl : AVATARS[role].imageUrl;
-    selectRole(role, false);
+    usingCustomImage = avatarVoices.isCustomImage(c.imageUrl);
+    currentImageUrl = usingCustomImage ? c.imageUrl : avatarVoices.get(voice).imageUrl;
+    selectCharacter(voice, false);
     if (lipSyncController) lipSyncController.setEnabled(byId('lip-sync').checked);
     refreshPreview();
   }
@@ -69,7 +65,7 @@
   function refreshPreview() {
     byId('speed-output').textContent = byId('avatar-speed').value + '×';
     byId('preview-line').textContent = '你好，我是智能导游。欢迎来到灵山胜境，让我陪你了解这里的故事。';
-    byId('avatar-preview-image').dataset.role = selectedRole();
+    byId('avatar-preview-image').dataset.role = avatarVoices.get(byId('avatar-voice').value).role;
     byId('avatar-preview-image').dataset.outfit = byId('avatar-outfit').value;
   }
 
@@ -97,11 +93,15 @@
   function init() {
     var previewAudio = byId('avatar-preview-audio');
     lipSyncController = A.lipSync.attach(previewAudio, byId('avatar-preview-mouth'));
-    document.querySelectorAll('input[name="avatar-role"]').forEach(function (radio) {
+    document.querySelectorAll('input[name="avatar-character"]').forEach(function (radio) {
       radio.addEventListener('change', function () {
-        selectRole(radio.value, true);
+        selectCharacter(radio.value, true);
         refreshPreview();
       });
+    });
+    byId('avatar-voice').addEventListener('change', function () {
+      selectCharacter(this.value, true);
+      refreshPreview();
     });
     ['avatar-outfit', 'avatar-emotion'].forEach(function (id) {
       byId(id).addEventListener('change', refreshPreview);

@@ -112,7 +112,7 @@ async def generate_room_narration(
 
         narration_id = uuid4().hex
         duration = float(tts.get("duration", 0.0) or 0.0)
-        save_room_narration(room_id, narration_id, text, audio_url, duration)
+        save_room_narration(room_id, narration_id, text, audio_url, duration, voice)
         result = {
             "roomId": room_id,
             "spotId": spot_id,

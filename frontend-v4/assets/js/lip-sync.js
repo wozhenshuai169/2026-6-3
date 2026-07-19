@@ -9,13 +9,9 @@
 
   function attach(audio, mouth) {
     var enabled = true;
-    var frameImage = mouth && mouth.matches && mouth.matches('img')
-      ? mouth
-      : mouth && mouth.parentElement && mouth.parentElement.querySelector('img[data-speaking-src]');
-    var closedSrc = frameImage ? (frameImage.currentSrc || frameImage.src) : '';
-    var speakingSrc = '';
+    var frameImage = null;
     var showingOpenFrame = false;
-    if (frameImage && mouth !== frameImage) mouth.hidden = true;
+    var lastFrameSwitchAt = 0;
     var context = null;
     var analyser = null;
     var source = null;
@@ -24,20 +20,45 @@
     var smoothed = 0;
     var silentFrames = 0;
 
+    function resolveFrameImage() {
+      if (mouth && mouth.matches && mouth.matches('img')) return mouth;
+      if (!mouth || !mouth.parentElement) return null;
+      return mouth.parentElement.querySelector('img[data-speaking-src], img[data-closed-src]');
+    }
+
     function setLevel(level) {
       if (!mouth) return;
       var activeLevel = enabled ? level : 0;
       mouth.setAttribute('data-mouth-level', String(activeLevel));
+      frameImage = resolveFrameImage();
       if (!frameImage) return;
+      var closedValue = frameImage.getAttribute('data-closed-src') || frameImage.src || '';
       var configuredOpenSrc = frameImage.getAttribute('data-speaking-src') || '';
-      speakingSrc = configuredOpenSrc ? new URL(configuredOpenSrc, document.baseURI).href : '';
-      if (!showingOpenFrame && frameImage.currentSrc !== speakingSrc) {
-        closedSrc = frameImage.currentSrc || frameImage.src;
+      var closedSrc = closedValue ? new URL(closedValue, document.baseURI).href : '';
+      var speakingSrc = configuredOpenSrc ? new URL(configuredOpenSrc, document.baseURI).href : '';
+      var hasSpeakingFrame = Boolean(speakingSrc);
+      if (mouth !== frameImage) mouth.hidden = hasSpeakingFrame;
+      if (!hasSpeakingFrame) {
+        showingOpenFrame = false;
+        return;
       }
-      var shouldOpen = activeLevel > 0 && Boolean(speakingSrc);
-      if (shouldOpen === showingOpenFrame) return;
+
+      var currentSrc = frameImage.currentSrc || frameImage.src || '';
+      if (currentSrc === closedSrc && showingOpenFrame) {
+        showingOpenFrame = false;
+        lastFrameSwitchAt = 0;
+      } else if (currentSrc === speakingSrc && !showingOpenFrame) {
+        showingOpenFrame = true;
+        lastFrameSwitchAt = 0;
+      }
+
+      var now = global.performance && global.performance.now ? global.performance.now() : Date.now();
+      var shouldOpen = activeLevel > 0;
+      var minimumHold = showingOpenFrame ? 78 : 42;
+      if (shouldOpen === showingOpenFrame || now - lastFrameSwitchAt < minimumHold) return;
       frameImage.src = shouldOpen ? speakingSrc : closedSrc;
       showingOpenFrame = shouldOpen;
+      lastFrameSwitchAt = now;
     }
 
     function ensureGraph() {
@@ -83,12 +104,16 @@
       // Cross-origin audio without analyser data falls back to a restrained cadence.
       if (!analyser || silentFrames > 24) {
         var phase = audio.currentTime * 12.5;
-        energy = .045 + Math.max(0, Math.sin(phase)) * .07 + Math.max(0, Math.sin(phase * .47)) * .035;
+        var phraseGate = Math.sin(audio.currentTime * 2.05 + .4) > -.72 ? 1 : 0;
+        energy = phraseGate * (
+          .006 + Math.max(0, Math.sin(phase)) * .09 +
+          Math.max(0, Math.sin(phase * .53 + .7)) * .028
+        );
       }
 
       var normalized = clamp((energy - .012) / .13, 0, 1);
-      smoothed = smoothed * .56 + normalized * .44;
-      var level = smoothed < .08 ? 0 : smoothed < .3 ? 1 : smoothed < .62 ? 2 : 3;
+      smoothed = smoothed * .62 + normalized * .38;
+      var level = smoothed < .1 ? 0 : smoothed < .3 ? 1 : smoothed < .62 ? 2 : 3;
       setLevel(level);
       frameId = global.requestAnimationFrame(animate);
     }
@@ -105,6 +130,7 @@
       frameId = 0;
       smoothed = 0;
       silentFrames = 0;
+      lastFrameSwitchAt = 0;
       setLevel(0);
     }
 
@@ -114,6 +140,7 @@
       audio.addEventListener('ended', stop);
       audio.addEventListener('emptied', stop);
     }
+    frameImage = resolveFrameImage();
     if (frameImage && frameImage.getAttribute('data-speaking-src')) {
       var preload = new Image();
       preload.src = new URL(frameImage.getAttribute('data-speaking-src'), document.baseURI).href;

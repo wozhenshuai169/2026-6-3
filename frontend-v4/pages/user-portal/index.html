@@ -42,7 +42,7 @@
         <div id="avatar-container" class="guide-stage" data-status="idle">
           <p class="guide-auto-note"><span class="material-icons">near_me</span>到达景点后自动讲解</p>
           <div id="guide-person-invoke" class="guide-person-stage" role="button" tabindex="0" aria-label="长按数字人唤起讲解">
-            <img id="guide-person-image" class="guide-person" src="../../assets/images/digital-avatar-a.png" data-speaking-src="../../assets/images/digital-avatar-a-open.png" alt="男性卡通数字讲解员">
+            <img id="guide-person-image" class="guide-person" src="../../assets/images/digital-guide-foreground.png" alt="温柔女声数字讲解员">
             <span class="guide-person-hint">长按唤起</span>
           </div>
           <div class="guide-status"><strong>云游讲解</strong><span><b></b><span id="avatar-status-label">等待景点状态</span></span></div>
@@ -81,7 +81,7 @@
     <div id="drawer-joined" class="hidden"><div class="drawer-team-id"><span>同行码</span><strong id="drawer-team-id"></strong><button id="copy-team-id" type="button"><span class="material-icons">content_copy</span>复制</button></div><button id="leave-team" class="drawer-leave" type="button">离开同行小队</button><p class="drawer-label">我的聊天</p><nav id="conversation-list" class="conversation-list"></nav></div>
   </aside>
 
-  <div id="room-join-overlay" class="journey-sheet hidden" role="dialog" aria-modal="true" aria-label="加入同行小队"><div class="journey-sheet-card"><span class="eyebrow">同行小队</span><h2>和同行的人一起逛</h2><p>输入领队分享的同行码。加入后可使用群聊、私信和实时讲解。</p><label for="visitor-voice">讲解音色<select id="visitor-voice"><option value="guide_female">温暖女声</option><option value="xiaomei">活力女声</option><option value="guide_male">沉稳男声</option><option value="xiaowei">专业男声</option></select></label><label for="room-voice-select" class="sr-only">同行小队讲解音色<select id="room-voice-select"><option value="guide_female">温暖女声</option><option value="xiaomei">活力女声</option><option value="guide_male">沉稳男声</option><option value="xiaowei">专业男声</option></select></label><input id="room-code-input" autocomplete="off" placeholder="输入同行码"><p id="room-join-error" class="hidden" role="alert"></p><button id="room-join-btn" class="sheet-primary" type="button">加入同行小队</button><button id="room-solo-btn" class="sheet-secondary" type="button">先自己逛逛</button><button id="room-cancel-btn" class="sheet-cancel" type="button">取消</button></div></div>
+  <div id="room-join-overlay" class="journey-sheet hidden" role="dialog" aria-modal="true" aria-label="加入同行小队"><div class="journey-sheet-card"><span class="eyebrow">同行小队</span><h2>和同行的人一起逛</h2><p>输入领队分享的同行码。加入后可使用群聊、私信和实时讲解。</p><label for="visitor-voice">讲解音色<select id="visitor-voice"><option value="guide_female">温柔女声</option><option value="xiaomei">活力女声</option><option value="guide_male">沉稳男声</option><option value="xiaowei">专业男声</option></select></label><label for="room-voice-select" class="sr-only">同行小队讲解音色<select id="room-voice-select"><option value="guide_female">温柔女声</option><option value="xiaomei">活力女声</option><option value="guide_male">沉稳男声</option><option value="xiaowei">专业男声</option></select></label><input id="room-code-input" autocomplete="off" placeholder="输入同行码"><p id="room-join-error" class="hidden" role="alert"></p><button id="room-join-btn" class="sheet-primary" type="button">加入同行小队</button><button id="room-solo-btn" class="sheet-secondary" type="button">先自己逛逛</button><button id="room-cancel-btn" class="sheet-cancel" type="button">取消</button></div></div>
   <audio id="tts-player"></audio>
 
   <script src="../../assets/js/config.js"></script>
@@ -89,6 +89,7 @@
   <script src="../../assets/js/api-client.js"></script>
   <script src="../../assets/js/auth.js"></script>
   <script src="../../assets/js/ui.js"></script>
+  <script src="../../assets/js/avatar-voice-map.js"></script>
   <script src="../../assets/js/lip-sync.js"></script>
   <script src="../../assets/js/pages/visitor-unified.js"></script>
 </body>

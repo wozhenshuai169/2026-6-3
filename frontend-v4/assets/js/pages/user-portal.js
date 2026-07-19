@@ -75,9 +75,8 @@
     api.get('/avatar-settings').then(function(result){
       if(!result.ok||!result.data)return;
       avatarSpeed=Number(result.data.speed)||1.0;
-      var image=els.avatarContainer&&els.avatarContainer.querySelector('img');
-      if(image&&result.data.imageUrl)image.src=result.data.imageUrl;
       if(!state.get('narrationVoice'))setSelectedVoice(result.data.voice||'guide_female',false);
+      else applyVoiceAvatar(selectedVoice);
     });
   }
 
@@ -375,7 +374,14 @@
     selectedVoice=supported.indexOf(voice)!==-1?voice:'guide_female';
     state.set('narrationVoice',selectedVoice);
     syncVoiceSelectors();
-    if(notify)ui.toast('讲解音色已切换，下次语音生效','success');
+    applyVoiceAvatar(selectedVoice);
+    if(notify)ui.toast('讲解音色和数字人形象已切换，下次语音生效','success');
+  }
+
+  function applyVoiceAvatar(voice){
+    if(!A.avatarVoices)return;
+    var image=els.avatarContainer&&els.avatarContainer.querySelector('img');
+    A.avatarVoices.apply(voice,image,els.avatarContainer);
   }
 
   function syncVoiceSelectors(){

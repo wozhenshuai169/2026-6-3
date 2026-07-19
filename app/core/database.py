@@ -222,6 +222,24 @@ SET role = 'xiaoyun', image_url = '/assets/images/digital-avatar-a.png', lip_syn
 WHERE config_id = 'default' AND image_url NOT LIKE '/uploads/avatar/%';
 """
 
+_MIGRATION_10 = """
+ALTER TABLE rooms ADD COLUMN narration_voice TEXT NOT NULL DEFAULT 'guide_female';
+UPDATE avatar_settings
+SET role = CASE voice
+        WHEN 'guide_male' THEN 'xiaoyun'
+        WHEN 'xiaomei' THEN 'yunchuan'
+        ELSE 'tongtong'
+    END,
+    image_url = CASE voice
+        WHEN 'guide_male' THEN '/assets/images/digital-avatar-a.png'
+        WHEN 'xiaomei' THEN '/assets/images/digital-avatar-b.png'
+        WHEN 'xiaowei' THEN '/assets/images/digital-avatar-professional-male.png'
+        ELSE '/assets/images/digital-guide-foreground.png'
+    END,
+    lip_sync = 1
+WHERE config_id = 'default' AND image_url NOT LIKE '/uploads/avatar/%';
+"""
+
 MIGRATIONS = (
     (1, _MIGRATION_1),
     (2, _MIGRATION_2),
@@ -232,6 +250,7 @@ MIGRATIONS = (
     (7, _MIGRATION_7),
     (8, _MIGRATION_8),
     (9, _MIGRATION_9),
+    (10, _MIGRATION_10),
 )
 
 

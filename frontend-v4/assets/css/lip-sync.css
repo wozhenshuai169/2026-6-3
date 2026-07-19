@@ -73,6 +73,12 @@
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, .25), 0 0 0 1px rgba(104, 48, 44, .12);
 }
 
+[data-avatar-role="professional-male"] {
+  --mouth-x: 50%;
+  --mouth-y: 32.8%;
+  --mouth-width: 6.2%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lip-sync-mouth { transition: none; }
 }

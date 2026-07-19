@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>云游智导 · 比赛演示</title>
+  <link rel="stylesheet" href="../../assets/css/material-icons.css">
+  <link rel="stylesheet" href="../../assets/css/competition-demo.css">
+</head>
+<body>
+  <main class="demo-phone" aria-label="云游智导比赛演示">
+    <header class="demo-topbar">
+      <div class="demo-brand">
+        <span class="demo-brand-mark material-icons" aria-hidden="true">landscape</span>
+        <span><strong>云游智导</strong><small id="demo-step-label">智能随行导览</small></span>
+      </div>
+      <span class="demo-live">比赛演示</span>
+      <div class="demo-progress" aria-hidden="true"><span id="demo-progress-bar"></span></div>
+    </header>
+    <section id="demo-stage" class="demo-stage" aria-live="polite"></section>
+    <nav class="demo-dock" aria-label="导览功能">
+      <button type="button" data-nav="ask" class="active"><span class="material-icons">chat_bubble_outline</span><span>问导游</span></button>
+      <button type="button" data-nav="guide"><span class="material-icons">graphic_eq</span><span>看讲解</span></button>
+      <button type="button" data-nav="team"><span class="material-icons">groups</span><span>聊同行</span></button>
+    </nav>
+  </main>
+  <audio id="competition-audio" preload="auto"></audio>
+  <script src="../../assets/js/demo/competition-fixture.js"></script>
+  <script src="../../assets/js/demo/competition-reset.js"></script>
+  <script src="../../assets/js/demo/competition-controller.js"></script>
+  <script src="../../assets/js/demo/competition-recording.js"></script>
+</body>
+</html>

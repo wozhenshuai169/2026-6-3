@@ -96,7 +96,8 @@
       }
       els.narrationVoice.addEventListener('change', function(){
         state.set('narrationVoice', els.narrationVoice.value);
-        ui.toast('讲解音色已切换，下次讲解时生效', 'success');
+        applyVoiceAvatar(els.narrationVoice.value);
+        ui.toast('讲解音色和数字人形象已切换，下次讲解时生效', 'success');
       });
     }
     bindAudioControls();
@@ -232,19 +233,18 @@
   function loadAvatarSettings() {
     api.get('/avatar-settings').then(function(result) {
       if (!result.ok || !result.data) return;
-      var imageUrl = result.data.imageUrl || '';
-      var hasSpeakingFrame = /digital-avatar-a\.png(?:\?|$)/.test(imageUrl);
-      var isHeadOnly = /digital-guide-foreground\.png(?:\?|$)/.test(imageUrl);
-      if (els.guideAvatarImage && imageUrl) {
-        els.guideAvatarImage.src = imageUrl;
-        if (hasSpeakingFrame) els.guideAvatarImage.setAttribute('data-speaking-src', '/assets/images/digital-avatar-a-open.png');
-        else els.guideAvatarImage.removeAttribute('data-speaking-src');
-      }
-      if (els.guideAvatarFrame) els.guideAvatarFrame.setAttribute('data-avatar-role', isHeadOnly ? 'head-only' : (result.data.role || 'xiaoyun'));
+      var selected = state.get('narrationVoice') || result.data.voice || 'guide_female';
+      if (els.narrationVoice) els.narrationVoice.value = selected;
+      applyVoiceAvatar(selected, selected === result.data.voice ? result.data.imageUrl : '', result.data.role);
       if (guideLipSync) guideLipSync.setEnabled(result.data.lipSync !== false);
-      if (!state.get('narrationVoice') && els.narrationVoice) {
-        els.narrationVoice.value = result.data.voice || 'guide_female';
-      }
+    });
+  }
+
+  function applyVoiceAvatar(voice, customImageUrl, customRole) {
+    if (!A.avatarVoices) return;
+    A.avatarVoices.apply(voice, els.guideAvatarImage, els.guideAvatarFrame, {
+      customImageUrl: customImageUrl,
+      customRole: customRole
     });
   }
 

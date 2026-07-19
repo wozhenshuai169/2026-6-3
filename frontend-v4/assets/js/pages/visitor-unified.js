@@ -256,6 +256,7 @@
     A.api.get('/rooms/' + encodeURIComponent(roomId) + '/avatar-state').then(function (result) {
       if (!result.ok || !result.data) return;
       var data = result.data;
+      if (data.voice && data.voice !== selectedVoice) changeVoice(data.voice, false);
       var labels = { idle: '等待讲解', speaking: '正在讲解', paused: '讲解已暂停', listening: '聆听中', thinking: '正在思考' };
       els.guideStatus.textContent = labels[data.aiStatus] || data.aiStatus || '待命中';
       if (data.text) els.guideText.textContent = data.text;
@@ -650,9 +651,8 @@
     els.drawerClose.addEventListener('click', closeDrawer); els.drawerBackdrop.addEventListener('click', closeDrawer);
     els.drawerJoin.addEventListener('click', openJoin); els.teamEmptyJoin.addEventListener('click', openJoin); els.teamSoloMode.addEventListener('click', enterSoloMode);
     els.joinButton.addEventListener('click', joinRoom); els.joinInput.addEventListener('keydown', function (event) { if (event.key === 'Enter') joinRoom(); }); els.soloButton.addEventListener('click', enterSoloMode); els.cancelButton.addEventListener('click', closeJoin);
-    function changeVoice(value) { selectedVoice = value; A.state.set('narrationVoice', selectedVoice); els.voiceSelect.value = selectedVoice; els.visitorVoice.value = selectedVoice; }
-    els.voiceSelect.addEventListener('change', function () { changeVoice(els.voiceSelect.value); });
-    els.visitorVoice.addEventListener('change', function () { changeVoice(els.visitorVoice.value); });
+    els.voiceSelect.addEventListener('change', function () { changeVoice(els.voiceSelect.value, true); });
+    els.visitorVoice.addEventListener('change', function () { changeVoice(els.visitorVoice.value, true); });
     els.copyRoomId.addEventListener('click', copyRoomId); els.leaveRoom.addEventListener('click', function () { if (window.confirm('确定离开当前同行小队吗？')) { closeDrawer(); leaveRoom(false); } });
     els.teamSend.addEventListener('click', sendTextMessage); els.teamInput.addEventListener('keydown', function (event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendTextMessage(); } });
     var attachmentInput = document.createElement('input'); attachmentInput.type = 'file'; attachmentInput.accept = 'image/jpeg,image/png,image/webp'; attachmentInput.hidden = true; document.body.appendChild(attachmentInput);
@@ -672,10 +672,26 @@
     selectedVoice = ['guide_female', 'xiaomei', 'guide_male', 'xiaowei'].indexOf(selectedVoice) !== -1 ? selectedVoice : 'guide_female';
     els.voiceSelect.value = selectedVoice;
     els.visitorVoice.value = selectedVoice;
+    applyVoiceAvatar(selectedVoice);
     initEvents(); setScene(currentScene); renderTeamState();
     if (A.lipSync && els.tts && els.guideImage) A.lipSync.attach(els.tts, els.guideImage);
     if (roomId) hydrateRoom(false); else { els.spotName.textContent = currentSpotId || '独自导览'; els.guideArrivalName.textContent = currentSpotId || '独自导览'; }
     startRoomPolling();
+  }
+
+  function changeVoice(value, notify) {
+    var supported = ['guide_female', 'xiaomei', 'guide_male', 'xiaowei'];
+    selectedVoice = supported.indexOf(value) !== -1 ? value : 'guide_female';
+    A.state.set('narrationVoice', selectedVoice);
+    els.voiceSelect.value = selectedVoice;
+    els.visitorVoice.value = selectedVoice;
+    applyVoiceAvatar(selectedVoice);
+    if (notify) toast('讲解音色和数字人形象已切换', 'success');
+  }
+
+  function applyVoiceAvatar(voice) {
+    if (!A.avatarVoices) return;
+    A.avatarVoices.apply(voice, els.guideImage, els.guidePerson);
   }
 
   A.auth.guard(initialise);

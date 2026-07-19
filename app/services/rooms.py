@@ -34,6 +34,7 @@ def _row_to_room(connection, row) -> dict | None:
         "narrationText": row["narration_text"],
         "narrationAudioUrl": row["narration_audio_url"],
         "narrationDuration": float(row["narration_duration"] or 0.0),
+        "narrationVoice": row["narration_voice"],
     }
 
 
@@ -158,16 +159,17 @@ def save_room_narration(
     text: str,
     audio_url: str,
     duration: float,
+    voice: str,
 ) -> dict | None:
     with database() as connection:
         cursor = connection.execute(
             """
             UPDATE rooms
             SET narration_id = ?, narration_text = ?, narration_audio_url = ?,
-                narration_duration = ?, updated_at = ?
+                narration_duration = ?, narration_voice = ?, updated_at = ?
             WHERE room_id = ?
             """,
-            (narration_id, text, audio_url, float(duration), int(time()), room_id),
+            (narration_id, text, audio_url, float(duration), voice, int(time()), room_id),
         )
         if cursor.rowcount == 0:
             return None
@@ -206,6 +208,7 @@ def get_avatar_state(room_id: str) -> dict | None:
     status = room.get("status", "active")
     current_spot = room.get("currentSpot", "")
     member_count = len(room.get("members", []))
+    narration_voice = room.get("narrationVoice", "guide_female")
 
     if status != "active":
         return {
@@ -216,6 +219,7 @@ def get_avatar_state(room_id: str) -> dict | None:
             "audioUrl": room.get("narrationAudioUrl", ""),
             "narrationId": room.get("narrationId", ""),
             "duration": room.get("narrationDuration", 0.0),
+            "voice": narration_voice,
         }
     if member_count == 0:
         return {
@@ -226,6 +230,7 @@ def get_avatar_state(room_id: str) -> dict | None:
             "audioUrl": "",
             "narrationId": "",
             "duration": 0.0,
+            "voice": narration_voice,
         }
     if room.get("narrationId") and room.get("narrationAudioUrl"):
         return {
@@ -236,23 +241,26 @@ def get_avatar_state(room_id: str) -> dict | None:
             "audioUrl": room.get("narrationAudioUrl", ""),
             "narrationId": room.get("narrationId", ""),
             "duration": room.get("narrationDuration", 0.0),
+            "voice": narration_voice,
         }
     if current_spot:
         return {
             "aiStatus": "idle",
             "emotion": "friendly",
             "action": "idle",
-            "text": "当前景点已就绪，等待团长点击“开始讲解”生成 AI 讲解词。",
+            "text": "当前景点已就绪，等待团长点击“开始讲解”准备讲解内容。",
             "audioUrl": "",
             "narrationId": "",
             "duration": 0.0,
+            "voice": narration_voice,
         }
     return {
         "aiStatus": "idle",
         "emotion": "friendly",
         "action": "idle",
-        "text": "等待团长点击“开始讲解”，讲解词将由 DeepSeek 实时生成。",
+        "text": "等待团长点击“开始讲解”，系统将根据当前景点资料准备讲解。",
         "audioUrl": "",
         "narrationId": "",
         "duration": 0.0,
+        "voice": narration_voice,
     }
