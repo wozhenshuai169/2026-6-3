@@ -66,11 +66,12 @@ class RouteRecommender:
         return 2 if route.get("durationMinutes", 999) <= int(available) else 0
 
     def _reason(self, route: dict, matched: set[str], breakdown: dict[str, int]) -> str:
-        score_text = "、".join(f"{key}={value}" for key, value in breakdown.items() if value)
         if "less_walking" in matched:
-            return f"{route['title']}步行压力较低，适合当前体力状态；命中分数：{score_text}。"
+            return f"{route['title']}步行压力较低，比较适合当前体力和同行情况。"
         if "history" in matched or "architecture" in matched:
-            return f"{route['title']}覆盖历史和建筑讲解点，匹配兴趣画像；命中分数：{score_text}。"
-        if "family_friendly" in matched:
-            return f"{route['title']}节奏平稳，适合有老人或儿童同行；命中分数：{score_text}。"
-        return f"{route['title']}适合作为当前景点后的常规游览路线；命中分数：{score_text or '基础匹配'}。"
+            return f"{route['title']}包含较多历史和建筑讲解点，更贴合你的兴趣。"
+        if "family_friendly" in matched or "family" in matched:
+            return f"{route['title']}节奏比较平稳，适合与老人或儿童一起游览。"
+        if "nature" in matched:
+            return f"{route['title']}串联林荫步道与开阔景观，适合边走边欣赏自然环境。"
+        return f"{route['title']}与当前可用时间较匹配，可以作为本次游览安排。"

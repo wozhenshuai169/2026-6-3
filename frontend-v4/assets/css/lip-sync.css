@@ -1,0 +1,84 @@
+.lip-sync-mouth {
+  position: absolute;
+  z-index: 4;
+  left: var(--mouth-x, 50%);
+  top: var(--mouth-y, 64%);
+  width: var(--mouth-width, 6.8%);
+  height: 0;
+  border-radius: 48% 48% 52% 52%;
+  background: linear-gradient(180deg, #452521 0%, #6f302d 74%, #b85e59 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .2), 0 0 0 1px rgba(86, 39, 35, .16);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 20%;
+  transition: height 70ms ease, width 70ms ease, opacity 70ms ease, border-radius 70ms ease;
+}
+
+.lip-sync-mouth::after {
+  content: "";
+  position: absolute;
+  left: 27%;
+  right: 27%;
+  bottom: 10%;
+  height: 23%;
+  border-radius: 50%;
+  background: rgba(238, 128, 126, .72);
+  opacity: 0;
+}
+
+.lip-sync-mouth[data-mouth-level="1"] {
+  width: var(--mouth-width, 6.8%);
+  height: 1.05%;
+  border-radius: 50%;
+  opacity: .82;
+}
+
+.lip-sync-mouth[data-mouth-level="2"] {
+  width: calc(var(--mouth-width, 6.8%) * .9);
+  height: 2.25%;
+  opacity: .92;
+}
+
+.lip-sync-mouth[data-mouth-level="3"] {
+  width: calc(var(--mouth-width, 6.8%) * .82);
+  height: 3.55%;
+  border-radius: 44% 44% 52% 52%;
+  opacity: .96;
+}
+
+.lip-sync-mouth[data-mouth-level="3"]::after { opacity: 1; }
+
+[data-avatar-role="xiaoyun"] {
+  --mouth-x: 49.3%;
+  --mouth-y: 63.8%;
+  --mouth-width: 7.2%;
+}
+
+[data-avatar-role="yunchuan"] {
+  --mouth-x: 49.6%;
+  --mouth-y: 63.6%;
+  --mouth-width: 7%;
+}
+
+/* Head-only guide artwork has a lower facial center than the portrait cards. */
+[data-avatar-role="head-only"] {
+  --mouth-x: 50%;
+  --mouth-y: 73.1%;
+  --mouth-width: 9%;
+}
+
+[data-avatar-role="head-only"] .lip-sync-mouth {
+  background: linear-gradient(180deg, #7b3e37 0%, #a84f4b 72%, #d98379 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .25), 0 0 0 1px rgba(104, 48, 44, .12);
+}
+
+[data-avatar-role="professional-male"] {
+  --mouth-x: 50%;
+  --mouth-y: 32.8%;
+  --mouth-width: 6.2%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lip-sync-mouth { transition: none; }
+}

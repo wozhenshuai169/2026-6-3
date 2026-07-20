@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>云游智导 · 随行导览</title>
+  <link rel="stylesheet" href="../../assets/css/tailwind.generated.css">
+  <link rel="stylesheet" href="../../assets/css/material-icons.css">
+  <link rel="stylesheet" href="../../assets/css/platform.css">
+  <link rel="stylesheet" href="../../assets/css/visitor-unified.css">
+  <link rel="stylesheet" href="../../assets/css/visitor-unified-refinements.css">
+  <link rel="stylesheet" href="../../assets/css/lip-sync.css">
+</head>
+<body id="page-body" class="journey-app" data-scene="ask">
+  <main id="journey-main" class="journey-shell" aria-label="云游智导随行导览">
+    <header class="journey-header">
+      <button id="visitor-switch-role" class="journey-switch-role" type="button" aria-label="退出游客端并切换身份"><span class="material-icons" aria-hidden="true">logout</span><span>切换身份</span></button>
+      <h1 id="journey-scene-title">问导游</h1>
+      <span aria-hidden="true"></span>
+    </header>
+
+    <section class="journey-viewport" id="journey-viewport" aria-live="polite">
+      <section class="journey-surface journey-ask" data-scene="ask" aria-label="向导游提问">
+        <div class="place-context"><span class="material-icons" aria-hidden="true">location_on</span><span id="journey-spot-name">正在定位景点</span><small id="journey-spot-status">随行导览</small></div>
+        <div class="journey-chat-area">
+          <div id="public-chat-area" class="journey-messages">
+            <article class="journey-notice"><span class="journey-notice-icon material-icons">record_voice_over</span><div><strong>云游讲解</strong><p>你好，想了解这里的故事、路线，或拍照问一问都可以。</p></div></article>
+          </div>
+        </div>
+        <div class="journey-tools" aria-label="导游工具">
+          <button type="button" data-tool="vision"><span class="material-icons">photo_camera</span>拍照问</button>
+          <button type="button" data-tool="route"><span class="material-icons">alt_route</span>规划路线</button>
+        </div>
+        <footer class="journey-composer" aria-label="向导游提问">
+          <button id="btn-voice" class="composer-icon" type="button" aria-label="语音提问"><span class="material-icons">mic</span></button>
+          <input id="public-chat-input" autocomplete="off" maxlength="1000" placeholder="问景点、路线或玩法">
+          <button id="public-chat-send" class="composer-send" type="button" aria-label="发送"><span class="material-icons">arrow_upward</span></button>
+        </footer>
+      </section>
+
+      <section class="journey-surface journey-guide hidden" data-scene="guide" aria-label="数字人讲解">
+        <div id="avatar-container" class="guide-stage" data-status="idle">
+          <p class="guide-auto-note"><span class="material-icons">near_me</span>到达景点后自动讲解</p>
+          <div id="guide-person-invoke" class="guide-person-stage" role="button" tabindex="0" aria-label="长按数字人唤起讲解">
+            <img id="guide-person-image" class="guide-person" src="../../assets/images/digital-guide-foreground.png" alt="温柔女声数字讲解员">
+            <span class="guide-person-hint">长按唤起</span>
+          </div>
+          <div class="guide-status"><strong>云游讲解</strong><span><b></b><span id="avatar-status-label">等待景点状态</span></span></div>
+          <div class="guide-transcript"><p id="narration-text">到达景点后，我会为你自动讲解；也可以长按我唤起讲解。</p></div>
+        </div>
+        <div class="guide-arrival"><span class="material-icons">location_on</span><span><strong id="guide-arrival-name">等待到达景点</strong><small id="guide-arrival-meta">景点切换后自动开始讲解</small></span></div>
+        <button id="guide-question" class="guide-question" type="button"><span class="material-icons">chat_bubble_outline</span>向导游提问</button>
+      </section>
+
+      <section class="journey-surface journey-team hidden" data-scene="team" aria-label="同行聊天">
+        <header class="team-header"><div><h2 id="team-chat-title">同行聊天</h2><p id="team-chat-meta">加入小队后，和同行的人保持联系</p></div></header>
+        <button id="team-drawer-open" class="team-conversation-bar" type="button" aria-label="打开聊天列表"><span class="conversation-mark" id="team-conversation-mark">聊</span><span><strong id="team-conversation-label">选择聊天</strong><small id="team-conversation-detail">群聊和私信都在这里</small></span><span class="material-icons">keyboard_arrow_right</span></button>
+        <div id="team-empty-state" class="team-empty-state"><span class="material-icons">group_add</span><h3>还没有同行小队</h3><p>加入领队分享的同行码后，才能查看成员、群聊和私信。</p><button id="team-empty-join" type="button">加入同行小队</button><button id="team-solo-mode" type="button">先自己逛逛</button></div>
+        <div id="team-message-list" class="team-messages hidden" aria-live="polite"></div>
+        <footer id="team-composer" class="team-composer hidden">
+          <button id="team-voice-button" type="button" aria-label="录制语音消息"><span class="material-icons">graphic_eq</span></button>
+          <input id="team-message-input" autocomplete="off" maxlength="1000" placeholder="输入消息">
+          <button id="team-voice-cancel" class="hidden" type="button" aria-label="取消录音"><span class="material-icons">close</span></button>
+          <button id="team-attachment-button" type="button" aria-label="添加图片"><span class="material-icons">attach_file</span></button>
+          <button id="team-message-send" type="button">发送</button>
+        </footer>
+      </section>
+    </section>
+
+    <nav class="journey-dock" aria-label="切换导览界面">
+      <button class="is-active" type="button" data-scene-target="ask"><span class="material-icons">chat_bubble_outline</span><span>问导游</span></button>
+      <button type="button" data-scene-target="guide"><span class="material-icons">graphic_eq</span><span>看讲解</span></button>
+      <button type="button" data-scene-target="team"><span class="material-icons">groups</span><span>聊同行</span></button>
+    </nav>
+  </main>
+
+  <div id="chat-drawer-backdrop" class="chat-drawer-backdrop hidden"></div>
+  <aside id="chat-drawer" class="chat-drawer" aria-label="聊天列表" aria-hidden="true">
+    <header><div><span class="eyebrow">同行聊天</span><h2>选择会话</h2></div><button id="team-drawer-close" type="button" aria-label="关闭聊天列表"><span class="material-icons">close</span></button></header>
+    <div id="drawer-unjoined" class="drawer-unjoined"><button id="chat-join-team" class="drawer-join" type="button"><span class="material-icons">group_add</span><span><strong>加入同行小队</strong><small>输入领队分享的同行码</small></span><span class="material-icons">chevron_right</span></button><p>尚未加入时不会展示虚构成员或聊天记录。</p></div>
+    <div id="drawer-joined" class="hidden"><div class="drawer-team-id"><span>同行码</span><strong id="drawer-team-id"></strong><button id="copy-team-id" type="button"><span class="material-icons">content_copy</span>复制</button></div><button id="leave-team" class="drawer-leave" type="button">离开同行小队</button><p class="drawer-label">我的聊天</p><nav id="conversation-list" class="conversation-list"></nav></div>
+  </aside>
+
+  <div id="room-join-overlay" class="journey-sheet hidden" role="dialog" aria-modal="true" aria-label="加入同行小队"><div class="journey-sheet-card"><span class="eyebrow">同行小队</span><h2>和同行的人一起逛</h2><p>输入领队分享的同行码。加入后可使用群聊、私信和实时讲解。</p><label for="visitor-voice">讲解音色<select id="visitor-voice"><option value="guide_female">温柔女声</option><option value="xiaomei">活力女声</option><option value="guide_male">沉稳男声</option><option value="xiaowei">专业男声</option></select></label><label for="room-voice-select" class="sr-only">同行小队讲解音色<select id="room-voice-select"><option value="guide_female">温柔女声</option><option value="xiaomei">活力女声</option><option value="guide_male">沉稳男声</option><option value="xiaowei">专业男声</option></select></label><input id="room-code-input" autocomplete="off" placeholder="输入同行码"><p id="room-join-error" class="hidden" role="alert"></p><button id="room-join-btn" class="sheet-primary" type="button">加入同行小队</button><button id="room-solo-btn" class="sheet-secondary" type="button">先自己逛逛</button><button id="room-cancel-btn" class="sheet-cancel" type="button">取消</button></div></div>
+  <audio id="tts-player"></audio>
+
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/state.js"></script>
+  <script src="../../assets/js/api-client.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/ui.js"></script>
+  <script src="../../assets/js/avatar-voice-map.js"></script>
+  <script src="../../assets/js/lip-sync.js"></script>
+  <script src="../../assets/js/pages/visitor-unified.js"></script>
+</body>
+</html>

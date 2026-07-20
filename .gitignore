@@ -1,5 +1,7 @@
 # ── Python ──
 venv/
+.venv/
+node_modules/
 __pycache__/
 *.pyc
 *.pyo
@@ -11,16 +13,25 @@ build/
 # ── 测试 ──
 .pytest_cache/
 .pytest_cache/*
+.pytest-tmp/
+pytest-cache-files-*/
 tests/__pycache__/
 *.test_result.*
 test_result*.json
 test_*.json
 test_*.py
+!tests/test_backend_security.py
 tts_debug.*
 img*_result.*
 
 # ── 运行时 ──
 uploads/tts/
+uploads/audio/
+uploads/kb/
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/backups/
 *.log
 
 # ── IDE ──
@@ -42,6 +53,10 @@ Desktop.ini
 # ── Claude ──
 .claude/
 
+# ── 本地前端演示录制 ──
+artifacts/
+tools/build_frontend_demo_video.py
+
 # ── RMDB (C++ 相关) ──
 deps/
 build/
@@ -49,3 +64,15 @@ CMakeLists.txt
 src/
 !frontend-v2/src/
 rmdb_client/
+
+# ── 服务器日志 ──
+server-*.err
+server-*.out
+*.err
+*.out
+http-server.err
+http-server.out
+
+# ── 上传目录 ──
+uploads/
+.playwright-mcp/

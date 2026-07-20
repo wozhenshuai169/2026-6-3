@@ -1,6 +1,7 @@
-"""ProviderFactory —— 按环境变量解析 Provider，自动 Mock 降级。"""
+"""Resolve configured external providers without synthetic fallbacks."""
 
 import logging
+from functools import lru_cache
 
 from app.core.config import settings
 from app.providers.base import LLMProvider, VisionProvider, MapProvider
@@ -9,48 +10,46 @@ logger = logging.getLogger(__name__)
 
 
 class ProviderFactory:
-    """Provider 工厂：有 API Key 走真实实现，无 Key 降级 Mock。"""
+    """Provider factory: missing credentials are reported explicitly."""
 
     @staticmethod
     def get_llm() -> LLMProvider:
-        if settings.llm_enabled:
-            from app.providers.llm.deepseek import DeepSeekProvider
-            return DeepSeekProvider()
-        from app.providers.llm.mock import MockLLMProvider
-        return MockLLMProvider()
+        if not settings.llm_enabled:
+            raise RuntimeError("智能问答服务未配置")
+        from app.providers.llm.deepseek import DeepSeekProvider
+        return DeepSeekProvider()
 
     @staticmethod
     def get_vision() -> VisionProvider:
-        if settings.vision_enabled:
-            from app.providers.vision.qwen_vl import QwenVLVisionProvider
-            return QwenVLVisionProvider()
-        from app.providers.vision.mock import MockVisionProvider
-        return MockVisionProvider()
+        if not settings.vision_enabled:
+            raise RuntimeError("图片识别服务未配置")
+        from app.providers.vision.qwen_vl import QwenVLVisionProvider
+        return QwenVLVisionProvider()
 
     @staticmethod
+    @lru_cache(maxsize=1)
     def get_map() -> MapProvider:
-        if settings.map_enabled:
-            # 后续接入高德 / 百度地图时在此分支
-            logger.warning("[Map] Real provider not yet implemented, falling back to Mock")
-        from app.providers.map.mock import MockMapProvider
-        return MockMapProvider()
+        if not settings.map_enabled:
+            raise RuntimeError("MAP_API_KEY 未配置，真实地图服务不可用")
+        if settings.map_provider.lower() != "amap":
+            raise RuntimeError(f"不支持的地图服务：{settings.map_provider}")
+        from app.providers.map.amap import AmapMapProvider
+
+        logger.info("[Map] 使用高德 Web 服务")
+        return AmapMapProvider()
 
     @staticmethod
     def get_audio():
-        """获取音频 Provider（duck-typing，优先 DashScope）。"""
-        # 优先用 DashScope（复用百炼 API Key）
-        if settings.vision_api_key:
+        """Return the configured speech provider."""
+        if settings.tts_provider_enabled or settings.dashscope_api_key or settings.vision_api_key:
             from app.providers.audio.dashscope import DashScopeAudioProvider
-            logger.info("[Audio] Using DashScope provider (CosyVoice + Paraformer)")
+            logger.info("[Audio] Using Qwen-ASR + Edge TTS provider")
             return DashScopeAudioProvider()
-        # 备选 ISI（HMAC-SHA1 签名）
         if settings.isi_enabled:
             from app.providers.audio.aliyun_isi import AliyunISIProvider
             logger.info("[Audio] Using Aliyun ISI provider")
             return AliyunISIProvider()
-        from app.providers.audio.mock import MockAudioProvider
-        logger.info("[Audio] Using Mock provider")
-        return MockAudioProvider()
+        raise RuntimeError("语音识别与合成服务未配置")
 
 
 # 模块级单例（无状态，可安全复用）

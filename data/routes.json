@@ -1,19 +1,8 @@
 [
   {
-    "routeId": "classic",
-    "title": "经典中轴线",
-    "spotIds": ["main_hall", "courtyard", "bell_tower", "drum_tower"],
-    "tags": ["history", "architecture"],
-    "durationMinutes": 60,
-    "difficulty": "medium",
-    "walkingDifficulty": "medium",
-    "suitableForChildren": true,
-    "suitableForElderly": false
-  },
-  {
-    "routeId": "short",
-    "title": "轻松短线",
-    "spotIds": ["main_hall", "courtyard", "service_center", "east_gate"],
+    "routeId": "lingshan_easy",
+    "title": "轻松初览线",
+    "spotIds": ["lingshan_dazhaobi", "wuming_bridge", "jiulong_guanyu"],
     "tags": ["less_walking", "family_friendly"],
     "durationMinutes": 35,
     "difficulty": "low",
@@ -22,14 +11,47 @@
     "suitableForElderly": true
   },
   {
-    "routeId": "history",
-    "title": "历史深读线",
-    "spotIds": ["main_hall", "bell_tower", "drum_tower", "stone_gallery"],
-    "tags": ["history", "architecture", "deep_explanation"],
-    "durationMinutes": 80,
-    "difficulty": "high",
-    "walkingDifficulty": "high",
+    "routeId": "lingshan_classic",
+    "title": "经典文化线",
+    "spotIds": ["lingshan_dazhaobi", "wuzhi_gate", "jiulong_guanyu", "lingshan_buddha"],
+    "tags": ["history", "architecture", "culture", "photography"],
+    "durationMinutes": 60,
+    "difficulty": "medium",
+    "walkingDifficulty": "medium",
+    "suitableForChildren": true,
+    "suitableForElderly": false
+  },
+  {
+    "routeId": "lingshan_history",
+    "title": "历史文化深读线",
+    "spotIds": ["lingshan_dazhaobi", "xiangfu_temple", "lingshan_buddha", "buddhist_museum", "lingshan_palace", "wuyin_mandala"],
+    "tags": ["history", "architecture", "culture", "deep_explanation"],
+    "durationMinutes": 180,
+    "difficulty": "medium",
+    "walkingDifficulty": "medium",
     "suitableForChildren": false,
     "suitableForElderly": false
+  },
+  {
+    "routeId": "lingshan_nature",
+    "title": "自然风光漫游线",
+    "spotIds": ["buddha_foot_altar", "jiulong_guanyu", "bodhi_avenue", "lingshan_buddha", "manfeilong_pagoda"],
+    "tags": ["nature", "photography", "less_walking"],
+    "durationMinutes": 150,
+    "difficulty": "medium",
+    "walkingDifficulty": "medium",
+    "suitableForChildren": true,
+    "suitableForElderly": false
+  },
+  {
+    "routeId": "lingshan_family",
+    "title": "亲子趣味探索线",
+    "spotIds": ["jiulong_guanyu", "baizi_mile", "lingshan_palace", "wuyin_mandala"],
+    "tags": ["family", "family_friendly", "culture", "photography"],
+    "durationMinutes": 120,
+    "difficulty": "low",
+    "walkingDifficulty": "low",
+    "suitableForChildren": true,
+    "suitableForElderly": true
   }
 ]

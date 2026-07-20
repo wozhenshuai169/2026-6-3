@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>云游智导 · 讲解形象</title>
+  <link rel="stylesheet" href="../../assets/css/material-icons.css">
+  <link rel="stylesheet" href="../../assets/css/platform.css">
+  <link rel="stylesheet" href="../../assets/css/admin-page.css">
+  <link rel="stylesheet" href="../../assets/css/lip-sync.css">
+  <link rel="stylesheet" href="../../assets/css/avatar-studio.css">
+  <link rel="stylesheet" href="../../assets/css/mobile-portrait.css">
+</head>
+<body class="app-page admin-shell">
+  <header class="app-topbar">
+    <div class="app-brand"><span class="material-icons brand-icon">landscape</span><strong>云游智导</strong><span>景区运营后台</span></div>
+    <div class="app-actions"><span class="status">预览功能可用</span><button id="btn-save" class="btn primary"><span class="material-icons">save</span>保存设置</button></div>
+  </header>
+  <div class="admin-layout">
+    <aside class="side-nav">
+      <a href="../dashboard/index.html"><span class="material-icons">dashboard</span>运营概览</a>
+      <a href="../knowledge-base/index.html"><span class="material-icons">menu_book</span>知识库管理</a>
+      <a class="active"><span class="material-icons">face</span>讲解形象</a>
+      <a href="../dashboard/index.html#visitor-insights"><span class="material-icons">sentiment_satisfied</span>游客评分</a>
+      <a href="../dashboard/index.html#feedback"><span class="material-icons">feedback</span>游客反馈</a>
+    </aside>
+    <main class="workspace studio-workspace">
+      <div class="page-head">
+        <div><span class="eyebrow">讲解形象设置</span><h1>讲解形象管理</h1><p>设置讲解画面、服装、声音和表达风格，使整体形象贴合景区文化。</p></div>
+        <button id="btn-test" class="btn"><span class="material-icons">play_arrow</span>试听预览</button>
+      </div>
+      <div class="studio-grid">
+        <section class="surface avatar-preview">
+          <div id="avatar-preview-frame" class="avatar-portrait-frame" data-avatar-role="head-only">
+            <img id="avatar-preview-image" src="../../assets/images/digital-guide-foreground.png" alt="温柔女声数字讲解员预览">
+            <span id="avatar-preview-mouth" class="lip-sync-mouth" data-mouth-level="0" aria-hidden="true"></span>
+          </div>
+          <div class="preview-caption"><span id="preview-status" class="status">待命</span><p id="preview-line">你好，我是智能导游。欢迎来到灵山胜境，让我陪你了解这里的故事。</p></div>
+          <audio id="avatar-preview-audio" preload="metadata" hidden></audio>
+        </section>
+        <section class="surface control-panel">
+          <div class="control-section">
+            <h2>形象与服装</h2>
+            <fieldset class="avatar-choice-set">
+              <legend>音色对应形象</legend>
+              <div class="avatar-choice-grid">
+                <label class="avatar-choice-card"><input type="radio" name="avatar-character" value="guide_female" checked><span class="avatar-choice-thumb"><img src="../../assets/images/digital-guide-foreground.png" alt="温柔女声形象"></span><span><strong>温柔讲解员</strong><small>温柔女声</small></span></label>
+                <label class="avatar-choice-card"><input type="radio" name="avatar-character" value="xiaomei"><span class="avatar-choice-thumb"><img src="../../assets/images/digital-avatar-b.png" alt="活力女声形象"></span><span><strong>活力讲解员</strong><small>活力女声</small></span></label>
+                <label class="avatar-choice-card"><input type="radio" name="avatar-character" value="guide_male"><span class="avatar-choice-thumb"><img src="../../assets/images/digital-avatar-a.png" alt="沉稳男声形象"></span><span><strong>沉稳讲解员</strong><small>沉稳男声</small></span></label>
+                <label class="avatar-choice-card"><input type="radio" name="avatar-character" value="xiaowei"><span class="avatar-choice-thumb"><img src="../../assets/images/digital-avatar-professional-male.png" alt="专业男声形象"></span><span><strong>专业讲解员</strong><small>专业男声</small></span></label>
+              </div>
+            </fieldset>
+            <label>服装主题<select id="avatar-outfit" class="field"><option value="modern_black">现代中式 · 墨黑</option><option value="culture_red">景区文化 · 朱红</option><option value="outdoor_ivory">户外导览 · 米白</option></select></label>
+            <label>形象图片<input id="avatar-image-file" class="field" type="file" accept="image/png,image/jpeg,image/webp"><small>上传后会用于导览页的讲解画面</small></label>
+          </div>
+          <div class="control-section">
+            <h2>声音与表达</h2>
+            <label>导览音色<select id="avatar-voice" class="field"><option value="guide_female">温柔女声</option><option value="xiaomei">活力女声</option><option value="guide_male">沉稳男声</option><option value="xiaowei">专业男声</option></select><small>切换音色会自动匹配对应的数字人形象</small></label>
+            <label>语速 <output id="speed-output">1.0×</output><input id="avatar-speed" type="range" min="0.8" max="1.3" step="0.1" value="1"></label>
+            <label>表达风格<select id="avatar-emotion" class="field"><option value="friendly">亲切</option><option value="calm">沉稳</option><option value="lively">活泼</option></select></label>
+          </div>
+          <div class="control-section">
+            <h2>画面效果</h2>
+            <label class="switch-row"><span><strong>简单口型匹配</strong><small>根据讲解音频强弱切换四档嘴型</small></span><input id="lip-sync" type="checkbox" checked></label>
+            <label class="switch-row"><span><strong>表情变化</strong><small>根据讲解内容调整面部表情</small></span><input id="emotion-sync" type="checkbox" checked></label>
+            <label class="switch-row"><span><strong>眨眼与待机动作</strong><small>让静止状态看起来更自然</small></span><input id="idle-motion" type="checkbox" checked></label>
+          </div>
+          <div class="quality-note"><span class="material-icons">info</span><div><strong>设置说明</strong><p>设置保存到景区后台，游客仍可选择自己喜欢的音色。实际播放效果请在导览页面确认。</p></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../../assets/js/config.js"></script>
+  <script src="../../assets/js/state.js"></script>
+  <script src="../../assets/js/api-client.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/ui.js"></script>
+  <script src="../../assets/js/avatar-voice-map.js"></script>
+  <script src="../../assets/js/lip-sync.js"></script>
+  <script src="../../assets/js/pages/avatar-studio.js"></script>
+</body>
+</html>

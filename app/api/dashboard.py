@@ -1,21 +1,27 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from app.services.rooms import rooms
+from app.core.auth import require_roles
+
+from app.services.rooms import count_rooms
 from app.services.stats import (
     get_hot_questions,
     get_hot_spots,
     get_overview,
     get_satisfaction,
     get_system_metrics,
+    get_visitor_report,
 )
-from app.services.users import users
+from app.services.users import count_users
 
-router = APIRouter(prefix="/api/dashboard")
+router = APIRouter(prefix="/api/dashboard", dependencies=[Depends(require_roles("admin"))])
 
 
 @router.get("/overview")
 async def overview():
-    return get_overview(active_rooms=len(rooms), visitor_count=len(users))
+    return get_overview(
+        active_rooms=count_rooms(active_only=True),
+        visitor_count=count_users(today_only=True),
+    )
 
 
 @router.get("/hot-questions")
@@ -36,3 +42,8 @@ async def satisfaction():
 @router.get("/system-metrics")
 async def system_metrics():
     return get_system_metrics()
+
+
+@router.get("/visitor-report")
+async def visitor_report():
+    return get_visitor_report()

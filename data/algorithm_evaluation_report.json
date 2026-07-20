@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-07-16T20:04:48+08:00",
+  "scope": "本地固定样本评测，不代表线上真实游客准确率。",
+  "metrics": {
+    "caseCount": 60,
+    "decisionAccuracy": 0.967,
+    "privateLeakCount": 0,
+    "riskEscalationRecall": 1.0,
+    "citationHitRate": 1.0,
+    "under10sRate": 1.0,
+    "localUnder5sRate": 1.0,
+    "avgLatencyMs": 8.25,
+    "factualAccuracy": 1.0,
+    "lowAsrClarificationRate": 1.0,
+    "answerMismatchRate": 0.031,
+    "unsupportedAnswerRate": 0.0,
+    "privateInfoLeakRate": 0.0,
+    "lowConfidenceFallbackRate": 1.0,
+    "visionFeatureCoverage": 1.0,
+    "routeScoreBreakdownConsistent": true,
+    "resumeTextCoverage": 1.0
+  }
+}
